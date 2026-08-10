@@ -1,0 +1,317 @@
+/* ============================================================================
+   heynesh.com — Work ("Projects") Section: structural port
+   ----------------------------------------------------------------------------
+   Class names + values extracted verbatim from the live stylesheet:
+     nesh-staging.webflow.shared.bea9f6170.min.css (work_* cluster, chunks 5–11)
+   Adaptation: the source page offsets content by a 21vw fixed sidebar; this
+   portfolio has no sidebar, so the horizontal gutter uses the shared
+   --nm / 93.06vw container rule instead. The 400vh GSAP scroll-pin is replaced
+   with a native horizontal scroll rail (scroll-snap) so the section never
+   creates dead scroll-space around it.
+   ========================================================================== */
+
+.work_section {
+  position: relative;
+  width: 100%;
+  pointer-events: auto;
+  color: var(--cream);
+}
+
+/* Source: .work-sticky — dark gradient panel (sticky + bottom:0 in source).
+   Here it's a static full-width panel; the pin choreography is documented in
+   Work.tsx (ENABLE_WORK_PIN). */
+.work-sticky {
+  background-image: linear-gradient(#000, #222 44%);
+  width: 100%;
+  min-height: 100vh;
+  padding-top: clamp(4.27rem, 10vw, 10.5rem);
+  padding-bottom: clamp(4.27rem, 10vw, 10.5rem);
+  padding-left: 0;
+  padding-right: 0;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.work_section .work-container {
+  pointer-events: auto;
+  width: 100%;
+}
+
+/* ---------- Header: label + h2 left, intro text right (grid 1fr/1fr) ------- */
+.work-top-layout {
+  grid-column-gap: 1.11vw;
+  grid-row-gap: 1.11vw;
+  grid-template-rows: auto;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-columns: 1fr;
+  margin-bottom: 4.17vw;
+  display: grid;
+}
+
+.work-top-text {
+  max-width: clamp(18rem, 26.6vw, 30rem);
+  justify-self: end;
+  font-family: var(--font-body);
+  font-size: clamp(0.875rem, 1.18vw, 1.5rem);
+  line-height: 1.6;
+  color: var(--cream);
+  opacity: 0.85;
+}
+
+/* Eyebrow pill on dark (source: .label.is-secondary) */
+.work_section .label {
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: clamp(1px, 0.14vw, 2px) solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  margin-bottom: 0.83vw;
+  padding: 0.21em 0.83em;
+  font-family: var(--font-body-md);
+  font-size: clamp(0.625rem, 0.97vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  color: var(--ink);
+}
+.work_section .label.is-secondary {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--cream);
+}
+
+.work_section .h2-style-white {
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.05;
+  font-size: clamp(2.24rem, 4.58vw, 5rem);
+}
+
+/* Living-signal stat strip under the heading (hero accent on dark panel) */
+.work-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1.5rem, 2.78vw, 3rem);
+  margin-top: clamp(1.25rem, 2.22vw, 2.5rem);
+  color: var(--cream);
+}
+.work-stats .nm-stat__num {
+  color: var(--accent);
+}
+.work-stats .nm-stat__label {
+  color: var(--cream);
+}
+
+/* ---------- Track: horizontal rail (source: GSAP-scrubbed flex track) ------ */
+.work-track-wrap {
+  display: flex;
+  width: 100%;
+  /* Hand the horizontal overflow to an internal rail — never the page */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.work-track-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.work-track {
+  display: flex;
+  flex: none;
+  grid-column-gap: 2.08vw;
+  grid-row-gap: 2.08vw;
+  gap: 2.08vw;
+  /* Source rail starts pushed 55% in; we keep a fluid reading-gutter offset */
+  padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
+  padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
+}
+@media (min-width: 768px) {
+  .work-track {
+    padding-left: calc((100vw - 93.06vw) / 2);
+    padding-right: calc((100vw - 93.06vw) / 2);
+  }
+}
+
+/* ---------- Card ------------------------------------------------------------ */
+.work-card {
+  position: relative;
+  flex: none;
+  width: clamp(17rem, 27vw, 30rem);
+  /* Card height is the only value the source derives via runtime JS; tuned
+     constant ≈ the source's rendered proportion (~1.28 × width). */
+  height: clamp(22rem, 34.5vw, 38rem);
+  border-radius: clamp(10px, 0.83vw, 16px);
+  overflow: hidden;
+  scroll-snap-align: start;
+  text-decoration: none;
+  color: var(--cream);
+  display: block;
+  transition: transform 0.4s var(--ease-nm);
+}
+.work-card:hover {
+  transform: translateY(-4px);
+}
+.work-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.work-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transition: transform 0.5s var(--ease-nm);
+}
+.work-card:hover .work-image {
+  transform: scale(1.04);
+}
+
+/* Gradient scrim over the media (source: exact stops) */
+.work-card-content {
+  z-index: 2;
+  background-image: linear-gradient(#0000004d, #33333308 50%, #0006);
+  flex-flow: column;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 1.25vw 1.25vw 1.81vw;
+  display: flex;
+  position: absolute;
+  inset: 0%;
+}
+
+.work-card-content-top-layout {
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  display: flex;
+}
+
+/* Index + face of the card chips */
+.work-card-index {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1rem, 1.53vw, 1.75rem);
+  line-height: 1;
+  color: var(--cream);
+}
+
+.work-label-wrap {
+  grid-column-gap: 0.28vw;
+  grid-row-gap: 0.28vw;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.28vw;
+}
+
+.work-label {
+  background-color: #000;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 5.14vw;
+  padding: 0.345vw 0.69vw;
+  font-family: var(--font-body-md);
+  font-size: clamp(0.625rem, 0.97vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--cream);
+  white-space: nowrap;
+}
+
+.work-card-content-bottom-layout {
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  padding-right: clamp(2.5rem, 3.47vw, 4rem);
+  line-height: 1.3;
+  display: flex;
+  position: relative;
+  gap: 0.4vw;
+}
+
+.work-card-heading {
+  margin-top: 0;
+  margin-bottom: 0.4vw;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.94vw, 3rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--cream);
+}
+
+.work_section .op80 {
+  opacity: 0.8;
+  font-size: clamp(0.75rem, 1.04vw, 1.25rem);
+  line-height: 1.5;
+  color: var(--cream);
+  font-family: var(--font-body);
+}
+
+/* Yellow arrow FAB, bottom-right (source work-card-arrow-wrap) */
+.work-card-arrow-wrap {
+  background-color: var(--accent);
+  color: var(--ink);
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  width: clamp(1.75rem, 2.5vw, 2.75rem);
+  height: clamp(1.75rem, 2.5vw, 2.75rem);
+  transition: transform 0.3s var(--ease-nm), background-color 0.3s,
+    color 0.3s;
+  display: flex;
+  position: absolute;
+  inset: auto 0% 0% auto;
+  z-index: 3;
+}
+.work-card:hover .work-card-arrow-wrap {
+  transform: rotate(45deg);
+}
+
+.work-card-arrow {
+  flex: none;
+  width: 45%;
+  height: 45%;
+}
+
+/* ---------- Mobile (source 767px overrides) -------------------------------- */
+@media screen and (max-width: 767px) {
+  .work-top-layout {
+    grid-column-gap: clamp(0.96rem, 4.8vw, 2.3rem);
+    grid-row-gap: clamp(0.96rem, 4.8vw, 2.3rem);
+    grid-template-columns: 1fr;
+    margin-bottom: clamp(2.5rem, 12vw, 4rem);
+  }
+  .work-top-text {
+    justify-self: start;
+    max-width: 100%;
+  }
+  .work-card {
+    width: clamp(16.53rem, 82.67vw, 39.59rem);
+    height: clamp(24rem, 118vw, 40rem);
+    border-radius: clamp(0.64rem, 3.2vw, 1.53rem);
+  }
+  .work-card-content {
+    padding: clamp(0.86rem, 4.16vw + 0.026rem, 1.99rem);
+  }
+  .work-label {
+    padding: clamp(0.27rem, 1.33vw, 0.64rem) clamp(0.53rem, 2.67vw, 1.28rem);
+    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
+  }
+  .work-card-heading {
+    margin-bottom: clamp(0.32rem, 1.6vw, 0.77rem);
+    font-size: clamp(1.49rem, 7.47vw, 3.58rem);
+  }
+  .work_section .op80 {
+    font-size: clamp(0.75rem, 3.73vw, 1.5rem);
+  }
+  .work-card-arrow-wrap {
+    width: clamp(1.92rem, 9.6vw, 4.61rem);
+    height: clamp(1.92rem, 9.6vw, 4.61rem);
+  }
+}

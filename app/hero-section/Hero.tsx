@@ -1,121 +1,373 @@
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { monaSans } from "../fonts/monaSans";
 import { motion } from "framer-motion";
-import { imageAnimation, bodyAnimation } from "../animations/animations";
-import AnimatedWords from "../animations/AnimatedWords";
-import profile from "../../public/profile.webp";
+import CountUp from "../animations/CountUp";
+import "./hero.css";
+
+/* ============================================================================
+ * heynesh.com — Hero Section (faithful React/Next.js port)
+ * ----------------------------------------------------------------------------
+ * DOM structure, class names, typography, spacing and asset integration are
+ * extracted 1:1 from the live source (see hero.css header for provenance).
+ *
+ * Everything a human editor would want to personalise lives in these three
+ * config objects — no need to touch the markup below.
+ * ==========================================================================*/
+
+/** Flip to true to restore the source's 300vh scroll-pinned hero (paired with
+ *  the `padding-bottom: 180vh` source rule in hero.css). OFF by default so
+ *  your About/Work sections keep their natural document flow. */
+const ENABLE_HERO_PIN = false;
+
+/** The exact primary asset of the source hero ("Nesh" portrait). */
+const HERO_ASSETS = {
+  profileImg:
+    "https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/69708b99545c57d03ebb5cd9_Frame%202147258154.avif",
+  profileImgAlt: "Nenad Popadic",
+};
+
+/** Verbatim source copy (edit freely — markup references these values). */
+const HERO_COPY = {
+  brandMark: "NESH",
+  navLeft: ["home", "about me", "projects"],
+  navRight: ["what you get", "services", "clients", "faq"],
+  leftText: "The Webflow Expert. That’s Nenad.",
+  headingLines: ["Webflow,", "Applied", "Differently."],
+  ctaPrimary: "Book a Call",
+  ctaSecondary: "About Me",
+  rightText:
+    "Working closely with your team to deliver Webflow builds that merge creativity, technical excellence, and long-term value.",
+  projectsStat: "80+",
+  projectsLabel: "Projects",
+  yearsStat: 7,
+  yearsLabelLines: ["Years of", "experience"],
+  skills: ["Creative", "Reliable", "Strategist", "Builder", "Efficient"],
+};
+
+/** Map the source hero's nav labels onto this site's section anchors. */
+const HERO_LINKS: Record<string, string> = {
+  home: "#home",
+  "about me": "#about",
+  projects: "#work",
+  "what you get": "#work",
+  services: "#contact",
+  clients: "#reviews",
+  faq: "#contact",
+  "book a call": "#contact",
+  "about me cta": "#about",
+};
+
+/* -------------------------------------------------------------------------- */
+/* Load-in choreography (approximates the source's Webflow IX load sequence):  */
+/* pre-states from the source stylesheet (cards/cta start at opacity 0) become */
+/* framer-motion initial values that settle into the exact "at rest" state.    */
+/* -------------------------------------------------------------------------- */
+const EASE: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
+
+const logoAnim = {
+  initial: { opacity: 0, y: 40 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.9, ease: EASE, delay: 0.15 },
+};
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.7, ease: EASE, delay },
+});
+
+const lineReveal = (index: number) => ({
+  initial: { y: "110%" },
+  animate: { y: "0%" },
+  transition: { duration: 0.8, ease: EASE, delay: 0.35 + index * 0.09 },
+});
+
+const cardPop = (delay: number) => ({
+  initial: { opacity: 0, y: 32, scale: 0.96 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  transition: { duration: 0.7, ease: EASE, delay },
+});
+
+/** Animated 0 → N stat (shared primitive — the hero's count-up pattern). */
+const ExperienceNumber = ({ target }: { target: number }) => {
+  return (
+    <div className="experience-number-wrap">
+      <div className="experience-number">
+        <CountUp target={target} />
+      </div>
+    </div>
+  );
+};
+
+/** Yellow marker used by .hero-card-3-icon in the source skill chips. */
+const SkillChipIcon = () => (
+  <span className="hero-card-3-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none">
+      <path
+        d="M5 13l4 4L19 7"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </span>
+);
+
+/** Stylised Webflow "W" mark (source renders the brand glyph in --yellow). */
+const WebflowIcon = () => (
+  <span className="hero-webflow-icon" aria-hidden="true">
+    <svg viewBox="0 0 64 40" width="100%" height="100%" fill="currentColor">
+      <path d="M0 4h10.4l6.4 25.5L24.5 4h7.6l7.7 25.5L46.2 4H56.6L46 36h-7.7L30.7 12.4 23.4 36h-7.7L8.6 16.6C5.9 8.3 2.7 5.4 0 4z" />
+    </svg>
+  </span>
+);
 
 const Hero = () => {
+  /* Ghost-target FLIP (heynesh.com technique): the wordmark mounts in an
+   * mid-viewport "intro" slot and morphs into its measured resting position
+   * the moment the PreLoader's exit wipe starts. `nm:intro-exit` drives it;
+   * a 4.8s fallback guarantees the final state even if the event is missed. */
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    const settle = () => setSettled(true);
+    window.addEventListener("nm:intro-exit", settle);
+    const fallback = window.setTimeout(settle, 4800);
+    return () => {
+      window.removeEventListener("nm:intro-exit", settle);
+      window.clearTimeout(fallback);
+    };
+  }, []);
+
   return (
     <motion.section
-      className="relative z-10 flex h-[85vh] w-full items-stretch justify-center bg-[url('.//../public/hero.jpg')] bg-cover  bg-center py-0 sm:h-[90vh]  md:h-[100vh] 3xl:h-[85vh]"
       id="home"
+      className={`hero${ENABLE_HERO_PIN ? " hero--pinned" : ""}`}
       initial="initial"
       animate="animate"
+      aria-label="Hero — heynesh.com port"
     >
-      <motion.div className="absolute left-0 top-0 right-0 bottom-0 h-full w-full bg-[#0E1016] mix-blend-color"></motion.div>
-
-      <div className="absolute top-10 flex justify-between sm:w-[90%] lg:max-w-[1440px]">
-        <div>
-          <Link
-            href=""
-            aria-label="BOOK A CALL"
-          >
-            <motion.button
-              className="hidden rounded-md border-2 border-[#e4ded7] py-2 px-4 text-[14px] font-semibold text-[#e4ded7] sm:block  md:text-[16px] lg:block"
-              variants={bodyAnimation}
-            >
-              BOOK A CALL
-            </motion.button>
-          </Link>
-        </div>
-
-        <div className="flex gap-10 text-[#e4ded7] sm:gap-12 md:gap-14 lg:gap-14">
-          <Link
-            href=""
-            aria-label="View GitHub Profile"
-          >
-            <motion.p
-              className="text-[16px] font-bold text-[#e4ded7] md:text-[16px]"
-              variants={bodyAnimation}
-            >
-              GH
-            </motion.p>
-          </Link>
-          <Link
-            href=""
-            aria-label="View LinkedIn Profile"
-          >
-            <motion.p
-              className="text-[16px] font-bold text-[#e4ded7] md:text-[16px]"
-              variants={bodyAnimation}
-            >
-              LN
-            </motion.p>
-          </Link>
-          <Link
-            href=""
-            aria-label="View Twitter Profile"
-          >
-            <motion.p
-              className="text-[16px] font-bold text-[#e4ded7] md:text-[16px]"
-              variants={bodyAnimation}
-            >
-              TW
-            </motion.p>
-          </Link>
-          <Link
-            href=""
-            aria-label="View Contra Profile"
-          >
-            <motion.p
-              className="text-[16px] font-bold text-[#e4ded7] md:text-[16px]"
-              variants={bodyAnimation}
-            >
-              CO
-            </motion.p>
-          </Link>
-        </div>
-      </div>
-
-      <div className="-mt-36 flex flex-col items-center justify-center sm:-mt-20 lg:my-40 lg:-mt-2 lg:py-40 ">
-        <div
-          className={`relative flex flex-col items-center justify-center ${monaSans.className}`}
+      {/* ================= .hero-sticky — 100vh sticky frame ================= */}
+      <div className="hero-sticky">
+        {/* ---------- .nesh-logo-preload — giant yellow wordmark + nav row --- */}
+        <motion.div
+          className={`nesh-logo-preload${settled ? " is-settled" : " is-intro"}`}
+          {...logoAnim}
         >
-          <AnimatedWords
-            title="Waqas Qureshi"
-            style="inline-block overflow-hidden pt-1 -mr-4 sm:-mr-5 md:-mr-7 lg:-mr-9 -mb-1 sm:-mb-2 md:-mb-3 lg:-mb-4"
-          />
+          {/* FLIP target: `layout` animates from the intro slot (margin-top:
+              22vh, see hero.css) into the source-faithful resting position */}
           <motion.div
-            className="absolute bottom-[-110px] mx-auto sm:bottom-[-100px] md:bottom-[-130px] lg:bottom-[-150px]"
-            variants={imageAnimation}
+            className="nesh-logo-wrap"
+            layout
+            transition={{ duration: 0.9, ease: EASE }}
           >
-            <Image
-              src={profile}
-              priority
-              alt="Waqas's headshot"
-              data-blobity-tooltip="Waqas Ul haq qureshi"
-              data-blobity-invert="false"
-              className=" w-[150px] rounded-[16px] grayscale hover:grayscale-0 md:w-[200px] md:rounded-[32px] lg:w-[245px]"
-            />
+            <div className="nesh-logo">
+              {/* Source ships an inline SVG wordmark; text rendering uses the
+                  same "Tr 3 A" Bold face and the same 3.5/3.8 aspect frame. */}
+              <span className="nesh-logo-svg">{HERO_COPY.brandMark}</span>
+              <span className="nesh-copyright-wrap" aria-hidden="true">
+                <svg
+                  className="nesh-copyright-icon"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="6.4"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                  />
+                  <path
+                    d="M6.2 9.8V6.2h3.1"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M6.2 6.2 9.8 9.8"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+            </div>
+          </motion.div>
+
+          {/* ------- .hero-navigation-wrap — in-hero top link row ---------- */}
+          {/* Revealed only once the wordmark has settled into its slot        */}
+          <motion.nav
+            className="hero-navigation-wrap"
+            aria-label="Hero quick links"
+            initial={false}
+            animate={{ opacity: settled ? 1 : 0, y: settled ? 0 : 8 }}
+            transition={{ duration: 0.5, ease: EASE, delay: settled ? 0.25 : 0 }}
+          >
+            <div className="hero-links-ghost-wrapper">
+              {HERO_COPY.navLeft.map((item, i) => (
+                <span key={item} style={{ display: "contents" }}>
+                  {i > 0 && <span className="hero-navigation-sep" />}
+                  <Link
+                    href={HERO_LINKS[item] ?? "#home"}
+                    className="hero-navigation-link"
+                  >
+                    {item}
+                  </Link>
+                </span>
+              ))}
+            </div>
+            <div className="hero-links-ghost-wrapper is-hero-right-nav-item">
+              {HERO_COPY.navRight.map((item, i) => (
+                <span key={item} style={{ display: "contents" }}>
+                  {i > 0 && <span className="hero-navigation-sep" />}
+                  <Link
+                    href={HERO_LINKS[item] ?? "#home"}
+                    className="hero-navigation-link"
+                  >
+                    {item}
+                  </Link>
+                </span>
+              ))}
+            </div>
+          </motion.nav>
+        </motion.div>
+
+        {/* ---------- .profile-img-wrap — the "Nesh" portrait layer --------- */}
+        {/* Source: position:fixed, 100vw x 100vh, z-index 10 (page-level).   */}
+        {/* Contained absolutely here for strict component isolation.         */}
+        <motion.div
+          className="profile-img-wrap"
+          initial={{ opacity: 0, y: "6%" }}
+          animate={{ opacity: 1, y: "0%" }}
+          transition={{ duration: 1, ease: EASE, delay: 0.25 }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={HERO_ASSETS.profileImg}
+            alt={HERO_ASSETS.profileImgAlt}
+            className="hero-profile-img"
+            loading="eager"
+            decoding="async"
+          />
+        </motion.div>
+
+        {/* ---------- .hero-container — bottom band, 93.06vw --------------- */}
+        <div className="hero-container">
+          {/* Left flank paragraph (source: width clamp(8rem,11vw,14rem)) */}
+          <motion.div className="hero-left-text" {...fadeUp(0.55)}>
+            <div className="line-mask">
+              <span className="hero-line-text">{HERO_COPY.leftText}</span>
+            </div>
+          </motion.div>
+
+          {/* Centre: heading + buttons (absolute bottom, full width) */}
+          <div className="hero-content-layout">
+            <h1 className="hero-heading">
+              {HERO_COPY.headingLines.map((line, i) => (
+                <span className="line" key={line}>
+                  <motion.span
+                    className="hero-line-text"
+                    {...lineReveal(i)}
+                  >
+                    {line}
+                  </motion.span>
+                </span>
+              ))}
+            </h1>
+
+            <motion.div className="hero-buttons-wrap" {...fadeUp(0.75)}>
+              {/* Source pre-state: .hero-cta-button starts at opacity:0 */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.9 }}
+              >
+                <Link
+                  href={HERO_LINKS["book a call"]}
+                  className="hero-cta-button"
+                  aria-label="BOOK A CALL"
+                >
+                  {HERO_COPY.ctaPrimary}
+                </Link>
+              </motion.div>
+              <Link
+                href={HERO_LINKS["about me cta"]}
+                className="hero-button"
+                aria-label="About Me"
+              >
+                {HERO_COPY.ctaSecondary}
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Right flank paragraph (source: width clamp(200px,24.64vw,420px)) */}
+          <motion.div className="hero-right-text" {...fadeUp(0.65)}>
+            <div className="line-mask">
+              <span className="hero-line-text">{HERO_COPY.rightText}</span>
+            </div>
           </motion.div>
         </div>
-      </div>
 
-      <div
-        className="absolute bottom-10 flex items-center 
-      justify-center
-      md:bottom-10 lg:w-[90%] lg:max-w-[1440px] lg:justify-between"
-      >
-        
+        {/* ---------- .mobile-hero-image-wrap — mobile portrait swap -------- */}
+        <div className="mobile-hero-image-wrap">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={HERO_ASSETS.profileImg}
+            alt={HERO_ASSETS.profileImgAlt}
+            className="mobile-hero-image"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
 
-        <motion.div
-          className="  hidden max-w-[500px] lg:block lg:max-w-[420px]"
-          variants={bodyAnimation}
-        >
-          <p className="text-right text-[16px] font-semibold text-[#e4ded7] md:text-[20px]">DG Khan Pakistan</p>
-        </motion.div>
+        {/* ---------- .hero-cards-wrap — glass cards cluster ---------------- */}
+        {/* Source: position:fixed, bottom 2.78%, z-index 30, contained here. */}
+        <div className="hero-cards-wrap">
+          <div className="hero-cards-left">
+            {/* Card 2 — 80+ Projects */}
+            <motion.div className="hero-card-2-wrap" {...cardPop(0.85)}>
+              <div className="hero-card-2">
+                <span className="hero-card-2-bg" aria-hidden="true" />
+                <span className="hero-webflow-icon-wrap">
+                  <WebflowIcon />
+                </span>
+                <div className="hero-c-projects-text-wrap">
+                  <span className="hero-projects-number">
+                    {HERO_COPY.projectsStat}
+                  </span>
+                  <span className="hero-webflow-projects-text">
+                    {HERO_COPY.projectsLabel}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Card 1 — Years of experience (runtime counter → 7) */}
+            <motion.div className="hero-card-1-wrap" {...cardPop(0.95)}>
+              <div className="hero-card-1">
+                <span className="experience-bg" aria-hidden="true" />
+                <ExperienceNumber target={HERO_COPY.yearsStat} />
+                <div className="experience-text-wrap">
+                  {HERO_COPY.yearsLabelLines.map((l) => (
+                    <span key={l}>{l}</span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Card 3 — skill chips, floated top-right of the cluster */}
+          <motion.div className="hero-card-3" {...cardPop(1.05)}>
+            {HERO_COPY.skills.map((skill) => (
+              <div className="hero-card-3-item" key={skill}>
+                <SkillChipIcon />
+                <span>{skill}</span>
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </motion.section>
   );

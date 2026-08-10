@@ -1,11 +1,15 @@
 "use client";
 import { certificateProps } from "./certificateDetails";
 import Image from "next/image";
-import "../globals.css";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import CertificateModal from "./CertificateModal";
 
+/*
+ * CertificateCard — nm glass card: framed scan inside a dark inlay plate,
+ * organization row (logo chip + Tr 3 A name), hover reveals a yellow edge.
+ * The detailed modal contract is unchanged.
+ */
 const CertificateCard = ({
   certificateImage,
   detailUrl,
@@ -24,9 +28,7 @@ const CertificateCard = ({
   curriculumDetails,
 }: certificateProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const handleOpen = () => {
-    setIsModalOpen(true);
-  };
+  const handleOpen = () => setIsModalOpen(true);
 
   return (
     <motion.div
@@ -36,46 +38,55 @@ const CertificateCard = ({
         y: 0,
         transition: {
           duration: 0.7,
-          delay: 0.1 * index,
+          delay: 0.1 * Math.abs(index % 3),
           ease: [0.44, 0, 0.22, 0.99],
         },
       }}
-      viewport={{
-        amount: "some",
-        once: true,
-      }}
-      className="relative flex h-[473px] w-[100%] cursor-pointer flex-col items-center justify-between rounded-[23px] border-[3px] border-[#212531] bg-transparent p-[28px] transition-all hover:border-[#e4ded7] hover:bg-[#212531]/50 sm:h-[450px] lg:h-[393px] lg:max-w-[438px]"
+      viewport={{ amount: "some", once: true }}
+      className="nm-card group nm-pad flex w-full cursor-pointer flex-col items-stretch justify-between gap-5 transition-transform duration-300 hover:-translate-y-1"
     >
-      <button onClick={handleOpen} className="relative w-full flex-1 overflow-hidden rounded-[16px] focus:outline-none focus:ring-2 focus:ring-white/30">
-        <Image
-          src={certificateImage}
-          alt={`Certificate from ${organizationName}`}
-          width={438}
-          height={250}
-          className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-        />
+      <button
+        onClick={handleOpen}
+        aria-label={`Preview certificate from ${organizationName}`}
+        className="nm-plate relative block w-full cursor-zoom-in overflow-hidden rounded-[var(--radius-inner)] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <div className="relative aspect-[16/11] w-full">
+          <Image
+            src={certificateImage}
+            alt={`Certificate from ${organizationName}`}
+            fill
+            sizes="(max-width: 768px) 92vw, 420px"
+            className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+          />
+        </div>
+        <span className="absolute right-3 top-3 rounded-full bg-accent px-3 py-1 font-display text-[11px] font-medium uppercase leading-none tracking-wide text-ink opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          Preview
+        </span>
       </button>
 
-      {/* Organization Details */}
-      <div className="mt-6 flex w-full items-center gap-4">
-        <Image
-          src={organizationLogo}
-          alt={organizationName}
-          width={60}
-          height={60}
-          className="h-[50px] w-[50px] rounded-full object-cover"
-        />
-        <div className="flex flex-col">
-          <h3 className="text-[20px] font-bold uppercase leading-[24px] text-[#e4ded7]">
+      {/* Organization row */}
+      <div className="flex w-full items-center gap-3 px-1 pb-1">
+        <span className="nm-pane flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full">
+          <Image
+            src={organizationLogo}
+            alt={organizationName}
+            width={44}
+            height={44}
+            className="h-11 w-11 rounded-full object-cover"
+          />
+        </span>
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h3 className="truncate font-display text-[15px] font-medium uppercase leading-tight tracking-wide text-ink md:text-[17px]">
             {organizationName}
           </h3>
-          <p className="mt-1 text-sm font-[500] text-[#95979D]">
-            Certification
-          </p>
+          <p className="nm-small text-ink/60">Certification</p>
         </div>
+        <span className="ml-auto font-display text-[12px] font-medium uppercase tracking-wide text-ink/40">
+          {issueDate}
+        </span>
       </div>
 
-      {/* Full screen modal preview */}
+      {/* Detailed modal preview */}
       <CertificateModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -98,4 +109,3 @@ const CertificateCard = ({
 };
 
 export default CertificateCard;
-

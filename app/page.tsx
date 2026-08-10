@@ -1,9 +1,7 @@
 "use client";
 import Hero from "./hero-section/Hero";
-import useBlobity from "blobity/lib/react/useBlobity";
 import { useEffect } from "react";
 import PreLoader from "./animations/PreLoader/PreLoader";
-import { initialBlobityOptions } from "./utils/BlobityConfig";
 import NavBar from "./navbar/NavBar";
 
 import dynamic from "next/dynamic";
@@ -14,16 +12,13 @@ const Blog = dynamic(() => import("./blog-section/BlogGrid"));
 const Contact = dynamic(() => import("./contact-section/Contact"));
 const Footer = dynamic(() => import("./footer/Footer"));
 
+/*
+ * Cursor refactor: the legacy blobity custom-cursor (animated DOM mouse
+ * follower) is removed — the app now runs on native OS cursors only
+ * (`cursor-default` / `cursor-pointer`). All CSS hover states, transitions
+ * and micro-interactions on interactive elements are untouched.
+ */
 export default function Home() {
-  const blobityInstance = useBlobity(initialBlobityOptions);
-
-  useEffect(() => {
-    // Blobity instance is initialized and ready for use
-    if (blobityInstance.current) {
-      // Instance available for interactive elements
-    }
-  }, [blobityInstance]);
-
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -40,7 +35,7 @@ export default function Home() {
       <main className="flex flex-col items-center justify-center">
         <Hero />
         <Work />
-        <Certificates/>
+        <Certificates />
         <About />
         <Blog />
         <Contact />

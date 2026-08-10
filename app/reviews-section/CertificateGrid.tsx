@@ -1,30 +1,36 @@
 import CertificateCarousel from "./CertificateCarousel";
-import AnimatedWords2 from "../animations/AnimatedWords2";
-import { monaSans } from "../fonts/monaSans";
 import AnimatedBody from "../animations/AnimatedBody";
-import { motion } from "framer-motion";
 
+/*
+ * Certificates — nm design system. Heading block identical in spirit to Work
+ * (eyebrow pill + display h2 + right-aligned copy) so all sections read as
+ * one continuous page under the hero.
+ */
 const Certificates = () => {
   return (
-    <section id="certificates" className="z-10 flex w-full flex-col items-center justify-center overflow-hidden bg-[#0E1016] bg-cover bg-center pt-20 md:pb-16 lg:pb-24">
-      <div
-        className={`relative mb-16 flex w-full flex-col items-center justify-center gap-10  text-[#e4ded7] sm:items-center lg:max-w-[1440px]`}
-      >
-        <AnimatedWords2
-          title={"Certificates"}
-          style={`flex max-w-[500px] flex-col items-start text-left pr-5 ${monaSans.className} font-extrabold uppercase leading-[0.9em] text-[#e4ded7] sm:max-w-full sm:flex-row sm:items-center sm:justify-center sm:text-center lg:text-center text-[clamp(70px,14vw,155.04px)]`}
-        />
-        <AnimatedBody
-          text="Professional Certifications and Educational Achievements"
-          className="w-[90%] text-center text-[14px] font-semibold uppercase sm:w-[500px] md:w-[550px] md:text-[16px]"
-        />
-      </div>
-      <div className="w-[90%] max-w-[1345px]">
-        <CertificateCarousel />
+    <section
+      id="certificates"
+      className="nm-section z-10"
+      aria-label="Certificates"
+    >
+      <div className="nm-container">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-10">
+          <div className="flex flex-col items-start gap-4 md:gap-5">
+            <span className="nm-eyebrow">Credentials</span>
+            <h2 className="nm-h2">Certificates</h2>
+          </div>
+          <AnimatedBody
+            text="Professional certifications and educational achievements."
+            className="nm-body max-w-full md:max-w-[32ch] md:text-right"
+          />
+        </div>
+
+        <div className="mt-10 md:mt-14">
+          <CertificateCarousel />
+        </div>
       </div>
     </section>
   );
 };
 
 export default Certificates;
-

@@ -2,33 +2,38 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import AnimatedBody from "../animations/AnimatedBody";
 
+/*
+ * Footer — nm design system. Canvas background, hairline ink rule,
+ * Tr 3 A uppercase microcopy — a quiet cadence close under the hero theme.
+ */
 const Footer = () => {
   const year = new Date().getFullYear();
-  
+
   return (
-    <motion.section
-      className=" h-[15vh] w-full  items-center justify-center border-t-[3px] border-[#e4ded7]/30 bg-[#0E1016] pt-10  font-bold uppercase md:h-[20vh] md:py-16 lg:h-[10vh] lg:pt-6 lg:pb-0"
+    <motion.footer
+      className="w-full border-t border-ink/10 bg-canvas py-8 text-ink md:py-10"
       initial="initial"
       animate="animate"
+      aria-label="Footer"
     >
-      <motion.div className="mx-auto flex w-[90%] flex-row items-center justify-between text-center text-[12px] text-[#e4ded7] sm:text-[12px] md:text-[14px] lg:max-w-[1440px] lg:text-[14px]">
-        <AnimatedBody text={`Copyright ${year}`} className={"m-0 p-0"} />
-        <div className="flex flex-col sm:flex-row  sm:gap-1 md:gap-2">
+      <div className="nm-container flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <AnimatedBody
+          text={`Copyright ${year}`}
+          className="font-display text-[12px] font-medium uppercase tracking-wide md:text-[13px]"
+        />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
           <AnimatedBody
             text={"Design & Development by"}
-            className={"m-0 p-0"}
+            className="nm-small uppercase tracking-wide text-ink/60"
           />
-          <Link
-            href=""
-            aria-label="Victor's GitHub Profile"
-          >
-            <span className="underline underline-offset-2 hover:no-underline">
-              <AnimatedBody text={"Waqas Qureshi"} className={"m-0 p-0"} />
-            </span>{" "}
+          <Link href="" aria-label="Waqas Qureshi — GitHub profile">
+            <span className="font-display text-[12px] font-medium uppercase tracking-wide underline underline-offset-4 transition-colors duration-300 hover:bg-accent md:text-[13px]">
+              <AnimatedBody text={"Waqas Qureshi"} className="m-0 p-0" />
+            </span>
           </Link>
         </div>
-      </motion.div>
-    </motion.section>
+      </div>
+    </motion.footer>
   );
 };
 

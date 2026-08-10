@@ -2,40 +2,204 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   "nm" design system — extracted from the Hero section (heynesh.com port)
+   ----------------------------------------------------------------------------
+   Canonical tokens + shared primitives. Every section below the Hero inherits
+   these exact values: no new palettes, no conflicting type scales.
+   Fluid rhythm: all type/space values follow the source's clamp(min, vw, max)
+   pattern, so components scale continuously from 320px to 4K, with discrete
+   stacking changes at Tailwind's sm/md/lg breakpoints.
+   ========================================================================== */
+
+/* ---------- Typefaces (same files the Hero uses, served from Webflow CDN) --
+   Registered globally so non-home routes (e.g. /certificates/[slug]) also
+   inherit the exact type system. */
+@font-face {
+  font-family: "Ppneuemontreal";
+  src: url("https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/691d8a7b11b33d4b469b6f1c_ppneuemontreal-bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Ppneuemontreal";
+  src: url("https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/6942a13115cd4b3a65a5972f_ppneuemontreal-medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Ppneuemontreal Book";
+  src: url("https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/691d8a7bc4e9f35b184ed616_ppneuemontreal-book.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Tr 3 A";
+  src: url("https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/691d8ab14cbd4a1cf9811e7a_tr3a-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Tr 3 A";
+  src: url("https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/691d8ab1156537b9520e5061_tr3a-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Tr 3 A";
+  src: url("https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/691d8ab15c6a560ca0833ae1_tr3a-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- Design tokens (verbatim from the Hero's :root / body rules) --- */
+:root {
+  --canvas: #d5cfbe; /* page canvas */
+  --ink: #000000; /* primary text */
+  --ink-70: #000000b3; /* muted body */
+  --ink-50: #00000080; /* captions */
+  --cream: #f8f7f3; /* light text over dark imagery */
+  --accent: #ffff23; /* electric yellow — CTAs, stats, icons */
+  --glass: rgba(194, 184, 172, 0.3); /* #c2b8ac4d — glass cards */
+  --glass-pane: rgba(223, 222, 206, 0.8); /* #dfdececc — navs/panes */
+  --glass-line: rgba(255, 255, 255, 0.2); /* #fff3 — glass borders */
+  --chip: #ebeada; /* solid chip surface */
+  --raised: #e4e0ce; /* raised card surface */
+  --sand: #c9c8ba; /* chip hover */
+  --line: rgba(0, 0, 0, 0.1); /* #0000001a — hairlines */
+  --line-strong: rgba(0, 0, 0, 0.3); /* #0000004d — label borders */
+  --font-display: "Tr 3 A", Arial, sans-serif;
+  --font-body: "Ppneuemontreal Book", Arial, sans-serif;
+  --font-body-md: "Ppneuemontreal", Arial, sans-serif;
+  --ease-nm: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --radius-card: clamp(10px, 0.83vw, 16px);
+  --radius-inner: clamp(8px, 0.56vw, 11px);
+  --radius-pill: clamp(24px, 4.86vw, 90px);
+}
+
 @layer base {
-  h1 {
-    @apply text-4xl;
-    @apply font-bold;
+  html,
+  body {
+    overscroll-behavior: none;
   }
-  h2 {
-    @apply text-3xl;
-    @apply font-bold;
+
+  body {
+    /* Preloader contract — it releases scroll when the intro completes. */
+    overflow-y: hidden;
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
   }
-  h3 {
-    @apply text-2xl;
-    @apply font-bold;
-  }
-  h4 {
-    @apply text-xl;
-    @apply font-semibold;
-  }
-  h5 {
-    @apply text-lg;
-    @apply font-semibold;
-  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
   h6 {
-    @apply text-sm;
-    @apply font-semibold;
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: inherit;
+    margin: 0;
   }
-}
 
-html,
-body {
-  overscroll-behavior: none;
-}
+  h1 {
+    font-size: clamp(3rem, 5.56vw, 5.5rem);
+    line-height: 1.03;
+  }
 
-body {
-  overflow-y: hidden;
+  h2 {
+    font-size: clamp(2.5rem, 4.58vw, 5rem);
+    font-weight: 500;
+    line-height: 1.15;
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 1.94vw, 3rem);
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  h4 {
+    font-size: clamp(1rem, 1.67vw, 2.25rem);
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  h5 {
+    font-size: clamp(0.875rem, 1.25vw, 1.5rem);
+    font-weight: 500;
+  }
+
+  h6 {
+    font-size: clamp(0.75rem, 1.04vw, 1.25rem);
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--ink);
+  }
+
+  ul,
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  /* ------------------------------------------------------------------
+     Cursor refactor: the legacy blobity custom cursor is gone — global
+     pointer state is the native OS cursor. Interactive micro-interactions
+     (hover states, transitions) are preserved per-element in components.
+     ------------------------------------------------------------------ */
+  html {
+    cursor: default;
+  }
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  label,
+  summary {
+    cursor: pointer;
+  }
+  a:disabled,
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+  input[type="text"],
+  input[type="email"],
+  textarea {
+    cursor: text;
+  }
 }
 
 /* Hide scrollbar utility */
@@ -46,4 +210,298 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ============================================================================
+   Shared primitives — the Hero's building blocks, promoted to global classes
+   ========================================================================== */
+
+@layer components {
+  /* --- Layout shells ------------------------------------------------------ */
+
+  /* Source container: 93.06vw centered (matches .hero-container) */
+  .nm-container {
+    width: 93.06vw;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  @media (min-width: 1900px) {
+    .nm-container {
+      width: min(93.06vw, 1760px);
+    }
+  }
+  @media (max-width: 767px) {
+    .nm-container {
+      width: calc(100% - 2 * clamp(1.07rem, 5.33vw, 2.56rem));
+    }
+  }
+
+  /* Section rhythm: source sections sit on 10vw–15vw vertical cadence */
+  .nm-section {
+    position: relative;
+    width: 100%;
+    background-color: var(--canvas);
+    color: var(--ink);
+    padding-block: clamp(4.27rem, 10vw, 10.5rem);
+    overflow: hidden;
+  }
+  @media (max-width: 767px) {
+    .nm-section {
+      padding-block: clamp(4.27rem, 21.33vw, 10.23rem);
+    }
+  }
+
+  /* --- Typography ---------------------------------------------------------- */
+
+  /* Giant display statement (About/Contact) — same family as hero-heading */
+  .nm-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: clamp(-0.23vw, -0.02em, -0.01vw);
+    font-size: clamp(2.6rem, 7.64vw, 8.5rem);
+  }
+
+  /* Section headings (matches "Built in Webflow, Made to Perform" scale) */
+  .nm-h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.05;
+    font-size: clamp(2.24rem, 4.58vw, 5rem);
+  }
+
+  .nm-h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    line-height: 1;
+    font-size: clamp(1.25rem, 1.94vw, 3rem);
+  }
+
+  /* Uppercase pill label ("SELECTED WORK", "SELECTED CLIENTS", …) */
+  .nm-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: clamp(1px, 0.14vw, 2px) solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    padding: 0.21em 0.83em;
+    font-family: var(--font-body-md);
+    font-size: clamp(0.625rem, 0.97vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.04em;
+  }
+
+  .nm-body {
+    font-family: var(--font-body);
+    font-size: clamp(0.875rem, 1.18vw, 1.5rem);
+    line-height: 1.6;
+    color: var(--ink-70);
+  }
+
+  .nm-small {
+    font-size: clamp(0.625rem, 0.97vw, 1.5rem);
+    line-height: 1.4;
+  }
+
+  /* --- Interactive atoms --------------------------------------------------- */
+
+  /* Hero CTA pill, promoted ("Book a Call" style) */
+  .nm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55em;
+    background-color: var(--accent);
+    color: var(--ink);
+    border: 1px solid transparent;
+    border-radius: var(--radius-card);
+    padding: clamp(0.5rem, 0.695vw, 1.25rem) clamp(1rem, 1.39vw, 2.5rem);
+    font-family: var(--font-display);
+    font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform 0.3s var(--ease-nm), background-color 0.3s,
+      color 0.3s;
+  }
+  .nm-btn:hover {
+    transform: translateY(-2px);
+  }
+  .nm-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Ghost counterpart (source's nav/social chips) */
+  .nm-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    background-color: var(--chip);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: clamp(0.5rem, 0.695vw, 1.25rem) clamp(1rem, 1.39vw, 2.5rem);
+    font-family: var(--font-display);
+    font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.3s, transform 0.3s var(--ease-nm);
+  }
+  .nm-btn-ghost:hover {
+    background-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  /* Technology / tag chip — same pill family as .nm-eyebrow */
+  .nm-chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--chip);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    color: var(--ink);
+    padding: 0.34em 0.83em;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(0.625rem, 0.97vw, 1.5rem);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  /* --- Surfaces ------------------------------------------------------------- */
+
+  /* Hero glass card (backdrop blur + translucent sand) */
+  .nm-card {
+    position: relative;
+    background-color: var(--glass);
+    -webkit-backdrop-filter: blur(20px);
+                backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-line);
+    border-radius: var(--radius-card);
+    color: var(--ink);
+  }
+
+  /* Solid raised card (source: service cards / swiper cards) */
+  .nm-card-solid {
+    position: relative;
+    background-color: var(--raised);
+    border: 1px solid var(--glass-line);
+    border-radius: var(--radius-card);
+    color: var(--ink);
+  }
+
+  /* Pane (navs, modal shells) */
+  .nm-pane {
+    background-color: var(--glass-pane);
+    -webkit-backdrop-filter: blur(15px);
+                backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-line);
+    border-radius: var(--radius-card);
+  }
+
+  /* --- Data display ------------------------------------------------------------ */
+
+  /* Stat block ("80+ Projects", "7 Years of experience") — hero pattern */
+  .nm-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+    font-family: var(--font-display);
+    line-height: 1;
+  }
+  .nm-stat__num {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: clamp(2rem, 3.47vw, 4rem);
+    letter-spacing: -0.02em;
+    /* numbers read best on the ink-dark bubble from the hero cards */
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+  }
+  .nm-stat__label {
+    font-weight: 500;
+    font-size: clamp(0.75rem, 1.04vw, 1.25rem);
+    color: inherit;
+    opacity: 0.75;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* Ink variant for beige surfaces (yellow-on-beige fails contrast) */
+  .nm-stat--ink .nm-stat__num {
+    color: var(--ink);
+    text-shadow: none;
+    position: relative;
+  }
+  .nm-stat--ink .nm-stat__num::after {
+    content: "";
+    display: block;
+    width: 0.55em;
+    height: clamp(3px, 0.28vw, 5px);
+    margin-top: 0.12em;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* Dark media plate — hero cards punch white text over dark imagery, so the
+     same ink plate is reused behind stat/figure zones elsewhere */
+  .nm-plate {
+    background-image: linear-gradient(160deg, #222, #0f0f0e);
+    border-radius: var(--radius-inner);
+    color: var(--cream);
+  }
+
+  /* --- Viewport-fluid paddings (suggestion: vw metrics at every level) -----
+     Same clamp(min-px, vw, max-px) contract the hero uses — every padded
+     surface (cards, modals, chips) scales with the viewport, never jumps. */
+  .nm-pad-s {
+    padding: clamp(0.64rem, 1.11vw, 1.25rem);
+  }
+  .nm-pad {
+    padding: clamp(0.75rem, 1.67vw, 2rem);
+  }
+  .nm-pad-l {
+    padding: clamp(1.07rem, 2.08vw, 2.5rem);
+  }
+
+  /* --- Layer discipline (pointer-events) ------------------------------------
+     Ghosts, scrims, fades and brand ornaments must never intercept input —
+     the heynesh.com hero pattern (pointer-events:none + auto on interactives). */
+  .nm-decor {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* --- Motion helpers ------------------------------------------------------- */
+
+  /* Marquee (replaces animate.css %/left hack) — GPU-friendly translate loop */
+  .nm-marquee {
+    display: flex;
+    width: max-content;
+    animation: nm-marquee var(--marquee-duration, 30s) linear infinite;
+  }
+  .nm-marquee:hover {
+    animation-play-state: paused;
+  }
+  @keyframes nm-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nm-marquee {
+      animation: none;
+    }
+  }
 }

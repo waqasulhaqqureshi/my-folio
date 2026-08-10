@@ -1,0 +1,779 @@
+/* ============================================================================
+   heynesh.com — Hero Section (faithful port)
+   ----------------------------------------------------------------------------
+   Extracted 2026-08-10 from the live production stylesheet:
+     https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/css/nesh-staging.webflow.shared.bea9f6170.min.css
+   Class names, values, units (vw + clamp floors) and breakpoints are verbatim
+   from the source. Scope: everything is namespaced under `.hero`, which is
+   only used by this component in this codebase (verified — no collisions with
+   globals.css or any other section).
+   ========================================================================== */
+
+/* ---------- Typefaces -------------------------------------------------------
+   The "Tr 3 A" / "Ppneuemontreal" @font-face registrations now live globally
+   in app/globals.css (shared design system), so this file intentionally does
+   NOT re-declare them — the hero inherits the same faces as every section. */
+
+/* ---------- Design tokens (verbatim from source :root) --------------------- */
+.hero {
+  --yellow: #ffff23;
+  --black: black;
+  --white: white;
+  --tra: "Tr 3 A", Arial, sans-serif;
+
+  /* .hero (source) — the section shell.
+     Source scroll-pin: `min-height: 300vh; padding-bottom: 180vh;` drives the
+     GSAP scroll choreography and the following sections overlap it via a
+     negative margin. In this isolated drop-in the pin is OFF by default so
+     adjacent sections keep their natural flow (see Hero.tsx ENABLE_HERO_PIN). */
+  z-index: 5;
+  pointer-events: none;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  padding-bottom: 0;
+  display: flex;
+  position: relative;
+  inset: 0% 0% auto;
+  overflow: hidden;
+
+  /* body context replicated from source (bg #d5cfbe, PP Neue Montreal Book) */
+  background-color: #d5cfbe;
+  color: var(--black);
+  font-family: "Ppneuemontreal Book", Arial, sans-serif;
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+  line-height: 1.6;
+}
+
+/* Full source scroll-pin geometry — enable with ENABLE_HERO_PIN in Hero.tsx */
+.hero.hero--pinned {
+  min-height: 300vh;
+  height: auto;
+  padding-bottom: 180vh;
+  overflow: visible;
+}
+
+/* ---------- Sticky viewport frame (source: position sticky, 100vh) --------- */
+.hero .hero-sticky {
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  height: 100vh;
+  padding-bottom: 2.78vw;
+  display: flex;
+  position: sticky;
+  top: 0;
+}
+
+/* ---------- Giant yellow NESH(R) wordmark layer (top of the hero) ---------- */
+.hero .nesh-logo-preload {
+  z-index: 0;
+  pointer-events: none; /* decoration; interactives re-enable via .hero-navigation-link etc. */
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  padding: 2.78vw;
+  display: flex;
+  position: absolute;
+  inset: 0% 0% auto;
+}
+
+/* FLIP choreography (framer-motion `layout` on .nesh-logo-wrap):
+   is-intro pushes the wordmark toward mid-viewport; is-settled restores the
+   source-faithful resting slot. framer measures both rects and morphs them. */
+.hero .nesh-logo-preload.is-intro .nesh-logo-wrap {
+  margin-top: 22vh;
+}
+.hero .nesh-logo-preload.is-settled .nesh-logo-wrap {
+  margin-top: 0;
+}
+.hero .nesh-logo-wrap {
+  will-change: transform;
+}
+
+/* Reduced motion: land without the morph */
+@media (prefers-reduced-motion: reduce) {
+  .hero .nesh-logo-preload.is-intro .nesh-logo-wrap {
+    margin-top: 0;
+  }
+}
+
+.hero .nesh-logo-wrap {
+  width: 100%;
+  height: auto;
+  position: relative;
+}
+
+.hero .nesh-logo {
+  /* aspect-ratio 3.5 · transform-origin 0 0 · full-width yellow wordmark */
+  aspect-ratio: 3.5;
+  transform-origin: 0 0;
+  width: 94.44vw;
+  height: auto;
+  position: relative;
+  color: var(--yellow);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero .nesh-logo-svg {
+  /* text-rendered wordmark standing in for the source inline SVG */
+  transform-origin: 0 0;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  display: flex;
+  position: relative;
+  overflow: visible;
+  font-family: var(--tra);
+  font-weight: 700;
+  font-size: 24vw;
+  line-height: 0.75;
+  letter-spacing: -0.02em;
+  color: var(--yellow);
+  white-space: nowrap;
+}
+
+.hero .nesh-copyright-wrap {
+  z-index: 100;
+  pointer-events: none;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 0.6vw;
+  height: 0.6vw;
+  display: flex;
+  position: absolute;
+  inset: 0% -0.8vw auto auto;
+}
+
+.hero .nesh-copyright-icon {
+  width: 0.6vw;
+  color: var(--yellow);
+}
+
+/* ---------- In-hero top navigation row (below the wordmark) ---------------- */
+.hero .hero-navigation-wrap {
+  z-index: 30;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 1.67vw;
+  display: flex;
+  position: relative;
+}
+
+.hero .hero-links-ghost-wrapper {
+  grid-column-gap: 1.11vw;
+  grid-row-gap: 1.11vw;
+  justify-content: flex-start;
+  align-items: center;
+  width: auto;
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+  display: flex;
+  position: relative;
+}
+
+.hero .hero-links-ghost-wrapper.is-hero-right-nav-item {
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.hero .hero-navigation-link {
+  z-index: 1;
+  pointer-events: auto;
+  color: var(--black);
+  text-transform: uppercase;
+  font-family: var(--tra);
+  font-weight: 500;
+  line-height: 1;
+  position: relative;
+  cursor: pointer;
+}
+
+.hero .hero-link-ghost {
+  /* source measurement ghost — renders the same glyphs, transparent */
+  color: #0000;
+  text-transform: uppercase;
+  font-family: var(--tra);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.hero .hero-navigation-sep {
+  background-color: #000;
+  width: 1px;
+  height: 0.8vw;
+  display: block;
+}
+
+/* ---------- Fixed portrait layer (the "Nesh" image) ------------------------ */
+/* Source: .profile-img-wrap is position:fixed full-viewport with z-index:10,
+   living outside the <section> so it can slide above the hero during the
+   pinned scroll. For strict component isolation it is absolutely contained
+   inside the hero here (visually identical at rest). */
+.hero .profile-img-wrap {
+  z-index: 10;
+  pointer-events: none;
+  background-image: none;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  position: absolute;
+  inset: 0%;
+}
+
+.hero .hero-profile-img {
+  object-fit: contain;
+  object-position: 50% 100%;
+  width: 100%;
+  height: 100%;
+  margin-left: -3vw;
+}
+
+/* ---------- Bottom band: flank paragraphs + centered heading/buttons ------- */
+.hero .hero-container {
+  z-index: 10;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 93.06vw;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  position: relative;
+}
+
+.hero .hero-left-text {
+  z-index: 11;
+  pointer-events: auto;
+  width: clamp(8rem, 11vw, 14rem);
+  position: relative;
+}
+
+.hero .hero-right-text {
+  z-index: 10;
+  pointer-events: auto;
+  width: clamp(200px, 24.64vw, 420px);
+  position: relative;
+}
+
+/* Split-line reveal mask (source pattern: masked line lines wipe in) */
+.hero .line-mask {
+  overflow: hidden;
+  display: block;
+  position: relative;
+}
+
+.hero .hero-line-text {
+  display: block;
+}
+
+.hero .hero-content-layout {
+  z-index: 10;
+  pointer-events: none;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  display: flex;
+  position: absolute;
+  inset: auto 0% 0%;
+}
+
+.hero .hero-heading {
+  pointer-events: auto;
+  margin-top: 0;
+  margin-bottom: 1.67vw;
+  color: #f8f7f3;
+  font-family: var(--tra);
+  font-size: clamp(3rem, 5.3vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.03;
+  text-align: center;
+}
+
+.hero .hero-heading .line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero .hero-buttons-wrap {
+  grid-column-gap: 0.83vw;
+  grid-row-gap: 0.83vw;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+/* Primary CTA (source animates it from opacity:0 on load) */
+.hero .hero-cta-button {
+  pointer-events: auto;
+  color: var(--black);
+  background-color: #ffff23;
+  border-radius: 0.83vw;
+  padding: clamp(0.5rem, 0.695vw, 1.25rem) 1.39vw;
+  font-family: var(--tra);
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.hero .hero-button {
+  pointer-events: auto;
+  color: var(--black);
+  background-color: #ffff23;
+  border-radius: 0.83vw;
+  padding: clamp(0.5rem, 0.695vw, 1.25rem) 1.39vw;
+  font-family: var(--tra);
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* ---------- Fixed cards cluster (bottom, over the sticky frame) ------------ */
+/* Source: .hero-cards-wrap is position:fixed, bottom 2.78%. Contained in the
+   hero here for the same isolation reason as the portrait layer. */
+.hero .hero-cards-wrap {
+  z-index: 30;
+  pointer-events: none;
+  width: clamp(500px, 64.24vw, 1200px);
+  margin-left: auto;
+  margin-right: auto;
+  position: absolute;
+  inset: auto 0% 2.78%;
+}
+
+.hero .hero-cards-left {
+  grid-column-gap: 1.5vw;
+  grid-row-gap: 1.5vw;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  display: flex;
+  position: relative;
+}
+
+/* --- Card 2 · "80+ Projects" (short, wide, aspect-ratio 4) ----------------- */
+.hero .hero-card-2-wrap {
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+  font-weight: 400;
+  position: relative;
+}
+
+.hero .hero-card-2 {
+  grid-column-gap: 0.56vw;
+  grid-row-gap: 0.56vw;
+  aspect-ratio: 4;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  color: #fff;
+  text-align: center;
+  background-color: #c2b8ac4d;
+  border-radius: 0.56vw;
+  flex-flow: row;
+  grid-template-rows: auto;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-columns: 1fr;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 1.67vw;
+  font-family: var(--tra);
+  font-weight: 500;
+  line-height: 1.1;
+  display: flex;
+  position: relative;
+}
+
+.hero .hero-card-2-bg {
+  z-index: 0;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  background-color: #c2b8ac4d;
+  border: 1px solid #fff3;
+  border-radius: 0.56vw;
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+  inset: 0% 0% -0.5vw;
+}
+
+.hero .hero-webflow-icon-wrap {
+  z-index: 1;
+  aspect-ratio: 2;
+  color: var(--yellow);
+  flex: none;
+  justify-content: flex-start;
+  align-items: center;
+  width: clamp(3.5rem, 6.25vw, 7rem);
+  display: flex;
+  position: relative;
+}
+
+.hero .hero-webflow-icon {
+  z-index: 2;
+  color: var(--yellow);
+  flex: none;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+}
+
+.hero .hero-c-projects-text-wrap {
+  z-index: 1;
+  flex-flow: column;
+  display: flex;
+  position: relative;
+}
+
+.hero .hero-projects-number {
+  font-family: var(--tra);
+  font-size: clamp(2rem, 3.47vw, 4rem);
+  font-weight: 700;
+  line-height: 0.9;
+}
+
+.hero .hero-webflow-projects-text {
+  z-index: 2;
+  flex: none;
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+  position: relative;
+}
+
+/* --- Card 1 · "7 / Years of experience" (offset 3vw right) ----------------- */
+.hero .hero-card-1-wrap {
+  grid-column-gap: 0.56vw;
+  grid-row-gap: 0.56vw;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+  position: relative;
+  left: 3vw;
+}
+
+.hero .hero-card-1 {
+  grid-column-gap: 0.56vw;
+  grid-row-gap: 0.56vw;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  color: #fff;
+  text-align: center;
+  background-color: #c2b8ac4d;
+  border: 1px solid #fff3;
+  border-radius: 0.56vw;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 1.67vw;
+  font-family: var(--tra);
+  font-weight: 500;
+  line-height: 1.1;
+  display: flex;
+  position: relative;
+}
+
+.hero .experience-bg {
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0%;
+}
+
+.hero .experience-number-wrap {
+  z-index: 1;
+  position: relative;
+}
+
+.hero .experience-number {
+  aspect-ratio: 1.5;
+  color: var(--yellow);
+  width: 5.5vw;
+  font-family: var(--tra);
+  font-size: clamp(4rem, 5.69vw, 6.25rem);
+  font-weight: 700;
+  line-height: 0.9;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.hero .experience-text-wrap {
+  z-index: 10;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  position: relative;
+}
+
+/* --- Card 3 · skill chips (floated top-right of the cards wrap) ------------ */
+.hero .hero-card-3 {
+  grid-column-gap: 0.83vw;
+  grid-row-gap: 0.83vw;
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  pointer-events: auto;
+  color: #fff;
+  text-align: center;
+  background-color: #c2b8ac4d;
+  border: 1px solid #fff3;
+  border-radius: 0.56vw;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 1.67vw 2.29vw 1.67vw 1.67vw;
+  font-family: var(--tra);
+  font-weight: 500;
+  line-height: 1.1;
+  display: flex;
+  position: absolute;
+  inset: -10% 7% auto auto;
+}
+
+.hero .hero-card-3-item {
+  z-index: 2;
+  grid-column-gap: 0.69vw;
+  grid-row-gap: 0.69vw;
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.hero .hero-card-3-icon {
+  color: var(--yellow);
+  width: clamp(14px, 1.25vw, 24px);
+  flex: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ---------- Mobile-only portrait (source swaps layers <=767px) ------------- */
+.hero .mobile-hero-image-wrap {
+  display: none;
+}
+
+.hero .mobile-hero-image {
+  width: 100%;
+}
+
+/* ============================================================================
+   Source breakpoints: tablet 991px has no hero overrides; mobile at 767px.
+   ========================================================================== */
+@media screen and (max-width: 767px) {
+  .hero {
+    pointer-events: auto;
+    min-height: clamp(45.5rem, 220.7vw + 1.38rem, 105.7rem);
+    height: auto;
+    padding-bottom: clamp(2.67rem, 13.33vw, 6.39rem);
+    overflow: hidden;
+    font-size: clamp(0.91rem, 4.53vw, 2.17rem);
+  }
+
+  .hero.hero--pinned {
+    min-height: clamp(45.5rem, 220.7vw + 1.38rem, 105.7rem);
+    padding-bottom: clamp(2.67rem, 13.33vw, 6.39rem);
+  }
+
+  .hero .hero-sticky {
+    align-items: stretch;
+    height: auto;
+    min-height: clamp(45.5rem, 220.7vw + 1.38rem, 105.7rem);
+    position: relative;
+  }
+
+  .hero .nesh-logo-preload {
+    padding-top: clamp(4.17rem, 20.26vw + 0.126rem, 9.71rem);
+    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
+    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
+  }
+
+  .hero .nesh-logo-svg {
+    font-size: 23vw;
+  }
+
+  .hero .hero-links-ghost-wrapper,
+  .hero .hero-navigation-sep {
+    display: none;
+  }
+
+  .hero .hero-navigation-link {
+    font-size: clamp(0.91rem, 4.53vw, 2.17rem);
+  }
+
+  .hero .profile-img-wrap {
+    display: none;
+  }
+
+  .hero .hero-container {
+    flex-flow: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    width: 100%;
+    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
+    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
+  }
+
+  .hero .hero-content-layout {
+    bottom: clamp(12.27rem, 61.33vw, 29.43rem);
+    align-items: flex-start;
+    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
+    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
+  }
+
+  .hero .hero-heading {
+    font-size: clamp(2.25rem, 10.91vw + 0.068rem, 5.23rem);
+    text-align: left;
+  }
+
+  .hero .hero-buttons-wrap {
+    display: none;
+  }
+
+  .hero .hero-left-text,
+  .hero .hero-right-text {
+    width: 100%;
+    top: clamp(2.67rem, 13.33vw, 6.39rem);
+  }
+
+  .hero .hero-cards-wrap {
+    opacity: 1;
+    pointer-events: auto;
+    width: 100%;
+    height: clamp(23.07rem, 115.47vw, 55.42rem);
+    position: absolute;
+    inset: auto 0% clamp(6.93rem, 34.67vw, 16.63rem);
+  }
+
+  .hero .hero-cards-left {
+    height: 100%;
+    padding-top: clamp(3.2rem, 16vw, 7.67rem);
+  }
+
+  .hero .hero-card-1 {
+    grid-column-gap: clamp(0.53rem, 2.67vw, 1.28rem);
+    grid-row-gap: clamp(0.53rem, 2.67vw, 1.28rem);
+    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
+    padding: clamp(0.86rem, 4.16vw + 0.026rem, 1.99rem);
+    overflow: hidden;
+  }
+
+  .hero .experience-number {
+    width: clamp(3.2rem, 16vw, 7.67rem);
+  }
+
+  .hero .experience-text-wrap {
+    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
+  }
+
+  .hero .hero-card-2 {
+    aspect-ratio: auto;
+    grid-column-gap: clamp(0.43rem, 2.13vw, 1.02rem);
+    grid-row-gap: clamp(0.43rem, 2.13vw, 1.02rem);
+    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
+    padding: clamp(0.86rem, 4.16vw + 0.026rem, 1.99rem);
+    overflow: hidden;
+  }
+
+  .hero .hero-card-2-wrap {
+    position: absolute;
+    inset: auto auto 0% clamp(0.85rem, 4.27vw, 2.05rem);
+  }
+
+  .hero .hero-projects-number {
+    font-size: clamp(1.5rem, 7.47vw, 3.58rem);
+  }
+
+  .hero .hero-webflow-icon-wrap {
+    width: clamp(2.99rem, 14.93vw, 7.16rem);
+  }
+
+  .hero .hero-webflow-icon {
+    width: 100%;
+  }
+
+  .hero .hero-webflow-projects-text {
+    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
+  }
+
+  .hero .hero-card-2-bg {
+    pointer-events: none;
+    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
+  }
+
+  .hero .hero-card-3 {
+    grid-column-gap: clamp(0.53rem, 2.67vw, 1.28rem);
+    grid-row-gap: clamp(0.53rem, 2.67vw, 1.28rem);
+    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
+    padding: clamp(0.86rem, 4.16vw + 0.026rem, 1.99rem);
+    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
+    inset: 0% auto auto clamp(1.17rem, 5.87vw, 2.81rem);
+  }
+
+  .hero .hero-card-3-item {
+    grid-column-gap: clamp(0.53rem, 2.67vw, 1.28rem);
+    grid-row-gap: clamp(0.53rem, 2.67vw, 1.28rem);
+  }
+
+  .hero .hero-card-3-icon {
+    width: clamp(0.75rem, 3.73vw, 1.79rem);
+  }
+
+  .hero .hero-card-1-wrap {
+    align-self: flex-end;
+    margin-right: clamp(0.64rem, 3.2vw, 1.53rem);
+    left: 0;
+  }
+
+  .hero .mobile-hero-image-wrap {
+    z-index: 1;
+    pointer-events: none;
+    justify-content: center;
+    align-items: flex-end;
+    height: clamp(40.7rem, 197.4vw + 1.23rem, 94.6rem);
+    display: flex;
+    position: absolute;
+    inset: clamp(4.77rem, 23.09vw + 0.15rem, 11.07rem) 0% 0%;
+  }
+
+  .hero .mobile-hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: 50% 100%;
+  }
+}
+
+/* ---------- Small phones (source 479px overrides) -------------------------- */
+@media screen and (max-width: 479px) {
+  .hero {
+    overflow: hidden;
+  }
+
+  .hero .experience-number {
+    width: clamp(4.29rem, 20.79vw + 0.13rem, 9.96rem);
+  }
+}
+
+/* Reduced-motion safety: skip the reveal choreography entirely */
+@media (prefers-reduced-motion: reduce) {
+  .hero .hero-line-text,
+  .hero .hero-heading .line > span {
+    transform: none !important;
+  }
+}

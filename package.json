@@ -22,7 +22,6 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@tailwindcss/line-clamp": "^0.4.2",
     "@vercel/analytics": "^0.1.11",
-    "blobity": "^0.2.3",
     "eslint": "8.35.0",
     "eslint-config-next": "13.2.3",
     "framer-motion": "^10.6.1",

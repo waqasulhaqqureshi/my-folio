@@ -10,16 +10,14 @@ import { StaticImageData } from "next/image";
 // Temporary placeholder - replace with actual certificate images
 import profilePlaceholder from "../../public/profile.webp";
 
-// Certificate images - TODO: Replace these with actual certificate images
-// Once you add the images, update the imports like this:
-// import cs50Cert from "../../public/certificates/cs50-certificate.jpg";
-// import mimoSqlCert from "../../public/certificates/mimo-sql-certificate.jpg";
-// import mimoWebDevCert from "../../public/certificates/mimo-webdev-certificate.jpg";
+// Certificate scans, served from public/certificates/
+import harvardCert from "../../public/certificates/harvard_page-0001.jpg";
+import mimoSqlCertFile from "../../public/certificates/mimo-sql_page-0001.jpg";
+import mimoWebDevCertFile from "../../public/certificates/Web(Html,Css,js) by mimo_page-0001.jpg";
 
-// For now, using placeholder until images are added
-const cs50Cert = profilePlaceholder;
-const mimoSqlCert = profilePlaceholder;
-const mimoWebDevCert = profilePlaceholder;
+const cs50Cert = harvardCert;
+const mimoSqlCert = mimoSqlCertFile;
+const mimoWebDevCert = mimoWebDevCertFile;
 
 // Organization logos - TODO: Replace with actual logos
 // import harvardLogo from "../../public/certificates/harvard-logo.png";

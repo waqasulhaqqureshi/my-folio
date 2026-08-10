@@ -4,7 +4,8 @@ import { AnimatePresence, motion, PanInfo } from "framer-motion";
 import { certificateDetails } from "./certificateDetails";
 import CertificateCard from "./CertificateCard";
 
-// Featured-work-like carousel with 3-up preview: center bigger, sides smaller. Arrows have 10px gap.
+// 3-up carousel: center card larger, side cards smaller (hidden on mobile).
+// Chrome re-themed to the nm system (yellow active dot, glass arrows).
 const CertificateCarousel = () => {
   const items = useMemo(() => certificateDetails, []);
   const [index, setIndex] = useState(0);
@@ -27,14 +28,33 @@ const CertificateCarousel = () => {
 
   const at = (i: number) => items[(i + items.length) % items.length];
 
+  const renderCard = (i: number) => (
+    <CertificateCard
+      certificateImage={at(i).certificateImage}
+      detailUrl={at(i).detailUrl}
+      organizationName={at(i).organizationName}
+      organizationLogo={at(i).organizationLogo}
+      certificateDetails={at(i).certificateDetails}
+      slug={at(i).slug}
+      index={i}
+      certificateTitle={at(i).certificateTitle}
+      recipientName={at(i).recipientName}
+      achievementDescription={at(i).achievementDescription}
+      awardedBy={at(i).awardedBy}
+      signatory={at(i).signatory}
+      location={at(i).location}
+      issueDate={at(i).issueDate}
+      curriculumDetails={at(i).curriculumDetails}
+    />
+  );
+
   return (
     <div
       className="relative w-full"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* 3-up layout on desktop, single centered card on mobile with responsive padding */}
-      {/* overflow-x-hidden prevents horizontal scroll, overflow-y-visible allows scaled card to show */}
+      {/* 3-up on desktop, single centered card on mobile */}
       <div className="relative mx-auto max-w-[1345px] overflow-x-hidden overflow-y-visible px-4 py-4 md:px-16 md:py-6 lg:px-20 lg:py-8">
         <AnimatePresence mode="wait">
           <motion.div
@@ -49,73 +69,17 @@ const CertificateCarousel = () => {
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="flex w-full items-center justify-center gap-3 sm:gap-5"
           >
-            {/* prev (smaller) - hidden on mobile */}
             <div className="hidden shrink-0 sm:block sm:w-[30%]">
-              <div className="scale-[0.9] opacity-80 transition-transform">
-                <CertificateCard
-                  certificateImage={at(index - 1).certificateImage}
-                  detailUrl={at(index - 1).detailUrl}
-                  organizationName={at(index - 1).organizationName}
-                  organizationLogo={at(index - 1).organizationLogo}
-                  certificateDetails={at(index - 1).certificateDetails}
-                  slug={at(index - 1).slug}
-                  index={index - 1}
-                  certificateTitle={at(index - 1).certificateTitle}
-                  recipientName={at(index - 1).recipientName}
-                  achievementDescription={at(index - 1).achievementDescription}
-                  awardedBy={at(index - 1).awardedBy}
-                  signatory={at(index - 1).signatory}
-                  location={at(index - 1).location}
-                  issueDate={at(index - 1).issueDate}
-                  curriculumDetails={at(index - 1).curriculumDetails}
-                />
+              <div className="scale-[0.94] opacity-80 transition-transform">
+                {renderCard(index - 1)}
               </div>
             </div>
-
-            {/* current (bigger) - full width on mobile, 40% on desktop */}
-            {/* Added padding to accommodate scale effect */}
             <div className="w-full shrink-0 sm:w-[40%]">
-              <div className="scale-[1.02] py-2 sm:py-3 md:py-4">
-                <CertificateCard
-                  certificateImage={at(index).certificateImage}
-                  detailUrl={at(index).detailUrl}
-                  organizationName={at(index).organizationName}
-                  organizationLogo={at(index).organizationLogo}
-                  certificateDetails={at(index).certificateDetails}
-                  slug={at(index).slug}
-                  index={index}
-                  certificateTitle={at(index).certificateTitle}
-                  recipientName={at(index).recipientName}
-                  achievementDescription={at(index).achievementDescription}
-                  awardedBy={at(index).awardedBy}
-                  signatory={at(index).signatory}
-                  location={at(index).location}
-                  issueDate={at(index).issueDate}
-                  curriculumDetails={at(index).curriculumDetails}
-                />
-              </div>
+              <div className="py-2 sm:py-3 md:py-4">{renderCard(index)}</div>
             </div>
-
-            {/* next (smaller) - hidden on mobile */}
             <div className="hidden shrink-0 sm:block sm:w-[30%]">
-              <div className="scale-[0.9] opacity-80 transition-transform">
-                <CertificateCard
-                  certificateImage={at(index + 1).certificateImage}
-                  detailUrl={at(index + 1).detailUrl}
-                  organizationName={at(index + 1).organizationName}
-                  organizationLogo={at(index + 1).organizationLogo}
-                  certificateDetails={at(index + 1).certificateDetails}
-                  slug={at(index + 1).slug}
-                  index={index + 1}
-                  certificateTitle={at(index + 1).certificateTitle}
-                  recipientName={at(index + 1).recipientName}
-                  achievementDescription={at(index + 1).achievementDescription}
-                  awardedBy={at(index + 1).awardedBy}
-                  signatory={at(index + 1).signatory}
-                  location={at(index + 1).location}
-                  issueDate={at(index + 1).issueDate}
-                  curriculumDetails={at(index + 1).curriculumDetails}
-                />
+              <div className="scale-[0.94] opacity-80 transition-transform">
+                {renderCard(index + 1)}
               </div>
             </div>
           </motion.div>
@@ -128,41 +92,67 @@ const CertificateCarousel = () => {
             key={i}
             onClick={() => setIndex(i)}
             aria-label={`Go to certificate ${i + 1}`}
-            className={`h-2 rounded-full transition-all ${i === index ? "w-6 bg-white" : "w-2 bg-white/40 hover:bg-white/60"}`}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              i === index
+                ? "w-6 bg-accent ring-1 ring-ink/50"
+                : "w-2 bg-ink/25 hover:bg-ink/45"
+            }`}
           />
         ))}
       </div>
 
-      {/* Numeric progress, centered below dots */}
       <div className="mt-3 flex items-center justify-center gap-2">
-        <span className="text-sm font-semibold text-white/70">
+        <span className="font-display text-sm font-medium text-ink">
           {index + 1}
         </span>
-        <span className="text-sm text-white/40">/</span>
-        <span className="text-sm font-semibold text-white/70">
+        <span className="font-display text-sm text-ink/40">/</span>
+        <span className="font-display text-sm font-medium text-ink">
           {items.length}
         </span>
       </div>
 
-      {/* Navigation Arrows - hidden on mobile, visible on desktop */}
       <button
         onClick={prev}
-        className="hidden md:block absolute left-[10px] top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-3 backdrop-blur-sm transition-all hover:bg-white/20"
+        className="nm-pane absolute left-[10px] top-1/2 z-10 hidden -translate-y-1/2 rounded-full p-3 text-ink transition-all duration-300 hover:bg-accent md:block"
         aria-label="Previous certificate"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6 text-white md:h-8 md:w-8"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="h-6 w-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 19.5L8.25 12l7.5-7.5"
+          />
+        </svg>
       </button>
       <button
         onClick={next}
-        className="hidden md:block absolute right-[10px] top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-3 backdrop-blur-sm transition-all hover:bg-white/20"
+        className="nm-pane absolute right-[10px] top-1/2 z-10 hidden -translate-y-1/2 rounded-full p-3 text-ink transition-all duration-300 hover:bg-accent md:block"
         aria-label="Next certificate"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6 text-white md:h-8 md:w-8"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="h-6 w-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.25 4.5l7.5 7.5-7.5 7.5"
+          />
+        </svg>
       </button>
     </div>
   );
 };
 
 export default CertificateCarousel;
-
-

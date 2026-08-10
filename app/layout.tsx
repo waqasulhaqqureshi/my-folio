@@ -1,17 +1,10 @@
 import "./globals.css";
 import { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
-import { Syne } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 
-const syne = Syne({
-  subsets: ["latin"],
-  display: "block",
-  weight: ["400", "500", "600", "700", "800"],
-});
-
 export const viewport: Viewport = {
-  colorScheme: "dark",
+  colorScheme: "light",
 };
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
@@ -107,7 +100,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body
-        className={`${syne.className} scroll-smooth scrollbar-thin scrollbar-track-[#0E1016] scrollbar-thumb-[#212531]`}
+        className={`scroll-smooth scrollbar-thin scrollbar-track-[#d5cfbe] scrollbar-thumb-[#8b8575]`}
       >
         {children}
         <Analytics />

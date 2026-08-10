@@ -1,111 +1,133 @@
 import SongCarousel from "./SongCarousel";
-import "../animations/animate.css";
 import AnimatedBody from "../animations/AnimatedBody";
 import AnimatedTitle from "../animations/AnimatedTitle";
+import CountUp from "../animations/CountUp";
+import { songs } from "./songDetails";
+
+/*
+ * About — nm design system continuation of the hero.
+ * Layout: display statement up top; md+ two-column reading measure
+ * (narrative left / tools right), song marquee across the bottom.
+ */
+const toolGroups = [
+  {
+    title: "Frontend Tools",
+    items:
+      "JavaScript (ES6+), React, Next.js, TypeScript, Prismic CMS, Redux, Redux Toolkit, React Testing Library, Vitetest, HTML5, Git/GitHub, NextAuth, Formik.",
+  },
+  {
+    title: "UI Libraries",
+    items:
+      "CSS3/SCSS/SASS, Tailwind CSS, Material UI, Framer Motion, GSAP, Bootstrap, Chart.js.",
+  },
+  {
+    title: "Design Tools",
+    items:
+      "Figma, Framer, FigJam, Adobe XD, ProtoPie, Adobe Photoshop, UX Research, UI Design, Prototyping.",
+  },
+];
 
 const About = () => {
   return (
-    <section
-      className="relative z-10 w-full items-center justify-center overflow-hidden bg-[#0E1016] bg-cover bg-center pt-16 pb-36 md:pt-20 md:pb-44 lg:pt-20 lg:pb-56"
-      id="about"
-    >
-      <div className="mx-auto flex w-[90%] flex-col items-center justify-center lg:max-w-[1212.8px]">
+    <section className="nm-section z-10" id="about" aria-label="About me">
+      <div className="nm-container">
+        <span className="nm-eyebrow mb-6 md:mb-8">About Me</span>
+
         <AnimatedTitle
-          text={
-            "I MAKE BRANDS BEAUTIFUL, WEBSITES POWERFUL AND CONTENT CAPTIVATING."
-          }
+          text={"I MAKE BRANDS BEAUTIFUL, WEBSITES POWERFUL AND CONTENT CAPTIVATING."}
           className={
-            "mb-10 text-left text-[40px] font-bold leading-[0.9em] tracking-tighter text-[#e4ded7] sm:text-[45px] md:mb-16 md:text-[60px] lg:text-[80px]"
+            "nm-display mb-10 max-w-full text-left text-ink md:mb-16"
           }
-          wordSpace={"mr-[14px]"}
+          wordSpace={"mr-[0.18em]"}
           charSpace={"mr-[0.001em]"}
         />
 
-        <div className="mx-auto flex w-[100%] flex-col lg:max-w-[1200px] lg:flex-row lg:gap-20">
-          <div className="mb-10 flex w-[100%] flex-col gap-4 text-[18px] font-medium  leading-relaxed tracking-wide text-[#e4ded7] md:mb-16 md:gap-6 md:text-[20px] md:leading-relaxed lg:mb-16  lg:max-w-[90%] lg:text-[24px] ">
+        <div className="flex w-full flex-col gap-10 md:gap-12 lg:flex-row lg:justify-between lg:gap-20">
+          {/* Narrative column */}
+          <div className="flex w-full flex-col gap-5 md:gap-6 lg:max-w-[58%]">
             <AnimatedBody
-              text={
-                "I specialize in crafting high-converting landing pages and websites for SaaS, Web3 & AI startups. I'm passionate about building software that makes a difference."
-              }
+              className="nm-body text-ink/80"
+              text={"I specialize in crafting high-converting landing pages and websites for SaaS, Web3 & AI startups. I'm passionate about building software that makes a difference."}
             />
             <AnimatedBody
-              text={
-                "Whether I’m designing a sleek user interface or coding a complex application, I’m always striving to create something unique and innovative. I love experimenting with new technologies and staying up-to-date with the latest trends in the tech world."
-              }
-              className={"hidden"}
-            />
-            <AnimatedBody
+              className="nm-body text-ink/80"
               text={
                 "Beyond my work as a frontend developer, I'm an active leader in tech communities on campus. As a member of the Google Developer Student Clubs and Microsoft Learn Student Ambassadors, I've led workshops and mentored other students."
               }
             />
             <AnimatedBody
+              className="nm-body text-ink/80"
               text={
                 "When I'm not coding, you can find me binge-watching anime, hanging out with friends, cheering on Manchester United, or discovering new music in my favorite genres like RnB, UK Drill, and Chill Rap."
               }
             />
             <AnimatedBody
+              className="nm-body text-ink/80"
               text={
                 "I'm currently working on some exciting projects that I can't wait to share with you. But I’m always open to new opportunities and collaborations."
               }
             />
+
+            {/* Living-signal counters (hero count-up pattern, ink variant) */}
+            <div
+              className="mt-4 flex flex-wrap gap-8 md:gap-10"
+              aria-label="About stats"
+            >
+              <div className="nm-stat nm-stat--ink">
+                <CountUp
+                  className="nm-stat__num"
+                  target={toolGroups.length}
+                  pad={2}
+                />
+                <span className="nm-stat__label">Tool stacks</span>
+              </div>
+              <div className="nm-stat nm-stat--ink">
+                <CountUp
+                  className="nm-stat__num"
+                  target={songs.length}
+                  pad={2}
+                />
+                <span className="nm-stat__label">Tracks on repeat</span>
+              </div>
+              <div className="nm-stat nm-stat--ink">
+                <CountUp className="nm-stat__num" target={2} />
+                <span className="nm-stat__label">Tech communities</span>
+              </div>
+            </div>
           </div>
 
-          <div className="mb-24 flex w-[100%] flex-col gap-4 text-[18px] font-normal leading-relaxed tracking-wide text-[#e4ded7]/80 sm:mb-32 md:mb-40 md:gap-6 md:text-[16px] md:leading-normal lg:mt-0 lg:mb-16 lg:max-w-[30%] lg:text-[18px]">
-            <div className="flex flex-col gap-4 md:gap-3">
-              <AnimatedTitle
-                text={"Frontend Tools"}
-                className={
-                  "text-[24px] text-[#e4ded7] md:text-[30px] lg:text-[20px]"
-                }
-                wordSpace={"mr-[0.25em]"}
-                charSpace={"mr-[0.01em]"}
-              />
-              <AnimatedBody
-                text={
-                  "JavaScript (ES6+), React, Next.js, TypeScript, Prismic CMS, Redux, Redux Toolkit, React Testing Library, Vitetest, HTML5, Git/GitHub, NextAuth, Formik."
-                }
-              />
-            </div>
-            <div className="flex flex-col gap-3">
-              <AnimatedTitle
-                text={"UI Libraries"}
-                className={
-                  "text-[24px] text-[#e4ded7] md:text-[30px] lg:text-[20px]"
-                }
-                wordSpace={"mr-[0.25em]"}
-                charSpace={"mr-[0.01em]"}
-              />
-              <AnimatedBody
-                text={
-                  "CSS3/SCSS/SASS, Tailwind CSS, Material UI, Framer Motion, GSAP, Bootstrap, Chart.js."
-                }
-              />
-            </div>
-            <div className="flex flex-col gap-3">
-              <AnimatedTitle
-                text={"Design Tools"}
-                className={
-                  "text-[24px] text-[#e4ded7] md:text-[30px] lg:text-[20px]"
-                }
-                wordSpace={"mr-[0.25em]"}
-                charSpace={"mr-[0.01em]"}
-              />
-              <AnimatedBody
-                text={
-                  "Figma, Framer, FigJam, Adobe XD, ProtoPie, Adobe Photoshop, UX Research, UI Design, Prototyping."
-                }
-              />
-            </div>
+          {/* Tooling rail */}
+          <div className="flex w-full flex-col gap-6 md:gap-7 lg:max-w-[34%]">
+            {toolGroups.map((group) => (
+              <div key={group.title} className="nm-card nm-pad">
+                <AnimatedTitle
+                  text={group.title}
+                  className={
+                    "mb-3 font-display text-[17px] font-medium uppercase leading-none tracking-wide text-ink md:text-[19px]"
+                  }
+                  wordSpace={"mr-[0.25em]"}
+                  charSpace={"mr-[0.01em]"}
+                />
+                <AnimatedBody
+                  className="nm-small leading-relaxed text-ink/65"
+                  text={group.items}
+                />
+              </div>
+            ))}
           </div>
         </div>
-        <div className="mt-10 flex flex-col md:-mt-0 lg:mt-28">
-          <SongCarousel />
+      </div>
+
+      {/* Song rail */}
+      <div className="mt-14 md:mt-20">
+        <div className="nm-container mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <h3 className="nm-h3">On repeat</h3>
           <AnimatedBody
             text="A few songs I can recommend if you're looking for some fresh tunes :)"
-            className="absolute bottom-10 right-0 left-0 mx-auto w-[90%] text-center text-[14px] font-semibold uppercase text-[#e4ded7] sm:w-[500px] md:bottom-12 md:w-[550px] md:text-[16px] "
+            className="nm-small uppercase tracking-wide text-ink/55"
           />
         </div>
+        <SongCarousel />
       </div>
     </section>
   );

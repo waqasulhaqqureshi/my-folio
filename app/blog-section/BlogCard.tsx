@@ -4,65 +4,66 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import BlogModal from "./BlogModal";
-import "../globals.css";
 
+/*
+ * BlogCard — nm glass card: cover in a dark inlay plate, Tr 3 A title,
+ * yellow date chip; opens the themed BlogModal (contract unchanged).
+ */
 const BlogCard = ({ title, image, url, date, available, index }: blogProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleOpen = () => {
-    if (available) {
-      setIsModalOpen(true);
-    }
+    if (available) setIsModalOpen(true);
   };
 
   return (
     <>
-      <motion.div
+      <motion.article
         initial={{ opacity: 0, y: 10 }}
         whileInView={{
           opacity: 1,
           y: 0,
           transition: {
             duration: 0.7,
-            delay: 0.1 * index,
+            delay: 0.1 * Math.abs(index % 3),
             ease: [0.44, 0, 0.22, 0.99],
           },
         }}
-        viewport={{
-          amount: "some",
-          once: true,
-        }}
-        className="relative flex h-[430px] w-[100%] max-w-[400px] cursor-pointer flex-col items-center justify-start rounded-2xl bg-[#212531] transition-all hover:border-[#e4ded7] hover:bg-[#212531]/50 sm:h-[450px] lg:h-[393px] lg:max-w-[438px]"
+        viewport={{ amount: "some", once: true }}
+        className="nm-card group nm-pad flex h-full w-full flex-col gap-4"
+        aria-label={`Blog post: ${title}`}
       >
-        <div className="mt-4 h-[100%] w-[90%] lg:mt-5 lg:w-[92%]">
-          <button
-            onClick={handleOpen}
-            className="relative h-[60%] w-full overflow-hidden rounded-lg md:h-[56%]"
-            disabled={!available}
-          >
+        <button
+          onClick={handleOpen}
+          disabled={!available}
+          aria-label={available ? `Preview ${title}` : `${title} — coming soon`}
+          className={`nm-plate relative block w-full overflow-hidden rounded-[var(--radius-inner)] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+            available ? "cursor-zoom-in" : "cursor-default"
+          }`}
+        >
+          <div className="relative aspect-[16/9] w-full">
             <Image
               src={image}
               alt={title}
-              width={1600}
-              height={840}
-              className="h-full w-full bg-contain bg-center object-cover transition-transform duration-300 hover:scale-105"
+              fill
+              sizes="(max-width: 768px) 92vw, 420px"
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
             />
-          </button>
+          </div>
+          {!available && (
+            <span className="nm-eyebrow absolute left-3 top-3 bg-canvas/80 text-ink backdrop-blur-md">
+              Coming soon
+            </span>
+          )}
+        </button>
 
-          <h3 className="mt-3 break-all uppercase leading-[1em] tracking-tight line-clamp-2 text-[#e4ded7]">
+        <div className="flex flex-1 flex-col items-start justify-between gap-3 px-1 pb-1">
+          <h3 className="font-display text-[16px] font-medium uppercase leading-snug tracking-wide text-ink line-clamp-2 md:text-[18px]">
             {title}
           </h3>
+          <span className="nm-chip bg-accent">{date}</span>
         </div>
+      </motion.article>
 
-        <div className="absolute bottom-0 mb-5 flex w-[90%] items-center justify-between text-[14px] font-bold text-[#95979D]">
-          {available ? (
-            <p>{date}</p>
-          ) : (
-            <p>Coming soon</p>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Full screen modal preview */}
       {available && (
         <BlogModal
           isOpen={isModalOpen}
