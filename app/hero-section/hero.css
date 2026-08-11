@@ -20,6 +20,10 @@
   --black: black;
   --white: white;
   --tra: "Tr 3 A", Arial, sans-serif;
+  /* Portrait fill factor. 1 = source geometry (contain in a 100vh box). Nudged
+     above 1 to recover the height our contained layer loses to the sticky
+     frame's 2.78vw bottom padding. */
+  --hero-portrait-scale: 1.08;
 
   /* .hero (source) — the section shell.
      Source scroll-pin: `min-height: 300vh; padding-bottom: 180vh;` drives the
@@ -118,10 +122,24 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  /* The source SVG's glyphs bleed to the box edges. Live text carries side
+     bearings and leading that the SVG does not, so the run is optically
+     inset; clipping the overflow lets the fitted text fill the frame the
+     same way without the box growing. */
+  overflow: hidden;
 }
 
 .hero .nesh-logo-svg {
-  /* text-rendered wordmark standing in for the source inline SVG */
+  /* text-rendered wordmark standing in for the source inline SVG.
+
+     font-size is SOLVED AT RUNTIME by useFitText so the run spans .nesh-logo
+     exactly (the source SVG does this for free; live text cannot, because its
+     width depends on font metrics). The 24vw below is only a pre-hydration
+     fallback — it is overwritten on the first frame after layout.
+
+     line-height:0.72 crops the font's built-in leading, which is what makes
+     the cap height reach the top and bottom of the frame instead of sitting
+     in the middle of a taller line box. */
   transform-origin: 0 0;
   justify-content: center;
   align-items: center;
@@ -132,7 +150,7 @@
   font-family: var(--tra);
   font-weight: 700;
   font-size: 24vw;
-  line-height: 0.75;
+  line-height: 0.72;
   letter-spacing: -0.02em;
   color: var(--yellow);
   white-space: nowrap;
@@ -222,18 +240,36 @@
   justify-content: center;
   align-items: flex-end;
   width: 100vw;
-  height: 100vh;
+  /* 100dvh, not 100vh: on mobile Safari/Chrome the URL bar makes 100vh taller
+     than the visible viewport, which pushes the portrait's feet below the
+     fold. dvh tracks the actual visible height. */
+  height: 100dvh;
   display: flex;
   position: absolute;
-  inset: 0%;
+  /* Escape .hero-sticky's padding-bottom so the portrait reaches the true
+     bottom edge, matching the source's position:fixed layer. */
+  inset: 0 0 calc(-1 * 2.78vw) 0;
 }
 
 .hero .hero-profile-img {
+  /* Source: object-fit:contain in a FIXED 100vw x 100vh layer, so the portrait
+     is exactly viewport-height tall and anchored to the bottom edge.
+
+     NOT `cover`: the asset is a portrait-aspect cut-out, so on a wide desktop
+     viewport cover would scale it to the width and crop the head clean off.
+     `contain` + bottom anchor is the source behaviour and is height-bound on
+     every landscape viewport.
+
+     --hero-portrait-scale trims the letterboxing that our contained (rather
+     than fixed) layer introduces; transform-origin at the bottom keeps the
+     feet pinned to the baseline while it grows. */
   object-fit: contain;
   object-position: 50% 100%;
   width: 100%;
   height: 100%;
   margin-left: -3vw;
+  transform: scale(var(--hero-portrait-scale, 1));
+  transform-origin: 50% 100%;
 }
 
 /* ---------- Bottom band: flank paragraphs + centered heading/buttons ------- */
@@ -573,6 +609,81 @@
 }
 
 /* ============================================================================
+   RESPONSIVE TIERS
+   ----------------------------------------------------------------------------
+   The source ships hero overrides only at 767px and 479px, because every value
+   above that is vw-based and therefore already fluid. Two gaps that vw alone
+   does not cover are handled here:
+
+   (a) SHORT LANDSCAPE viewports (laptops at 1280x720, split screens). Widths
+       are fine but 100vh is not tall enough for wordmark + portrait + cards,
+       so the stack collides. Driven off max-height, not max-width.
+   (b) TABLET PORTRAIT (768-991px). Still on the desktop layout, but the
+       portrait is narrow enough that the two flank paragraphs squeeze the
+       centred heading.
+   ========================================================================== */
+
+/* (b) Tablet portrait — desktop layout, relieved flanks. */
+@media screen and (min-width: 768px) and (max-width: 991px) {
+  .hero .hero-left-text {
+    width: clamp(6.5rem, 13vw, 10rem);
+  }
+  .hero .hero-right-text {
+    width: clamp(9rem, 22vw, 16rem);
+  }
+  .hero .hero-heading {
+    font-size: clamp(2.5rem, 6.2vw, 4rem);
+  }
+  /* The skills card overhangs at -10% top on desktop; at this width that
+     lifts it off the cluster and over the portrait's face. */
+  .hero .hero-card-3 {
+    inset: -4% 2% auto auto;
+  }
+  .hero .hero-cards-wrap {
+    width: min(92vw, 780px);
+  }
+}
+
+/* (a) Short landscape — reclaim vertical space before anything overlaps. */
+@media screen and (min-width: 768px) and (max-height: 720px) {
+  .hero .nesh-logo {
+    /* A wider ratio is a SHORTER box at the same width — the wordmark gives up
+       height first because it is decoration, not content. useFitText re-solves
+       the font-size automatically when the box resizes. */
+    aspect-ratio: 4.6;
+  }
+  .hero .nesh-logo-preload {
+    padding-top: 1.5vw;
+  }
+  .hero .hero-cards-wrap {
+    width: min(72vw, 900px);
+  }
+  .hero .hero-card-1,
+  .hero .hero-card-2,
+  .hero .hero-card-3 {
+    padding: 1.1vw;
+  }
+  .hero .experience-number {
+    width: 4.2vw;
+    font-size: clamp(2.5rem, 4.2vw, 4rem);
+  }
+  .hero {
+    --hero-portrait-scale: 1;
+  }
+}
+
+/* Very short landscape (phones rotated): the cards cannot coexist with the
+   portrait at all — drop the decorative cluster rather than overlap it. */
+@media screen and (min-width: 768px) and (max-height: 520px) {
+  .hero .hero-cards-wrap {
+    display: none;
+  }
+  .hero .nesh-logo {
+    aspect-ratio: 6;
+  }
+}
+
+/* ============================================================================
    Source breakpoints: tablet 991px has no hero overrides; mobile at 767px.
    ========================================================================== */
 @media screen and (max-width: 767px) {
@@ -603,8 +714,14 @@
     padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
   }
 
+  /* useFitText solves font-size here too; a wider box ratio is what actually
+     controls the mark's height on a narrow screen. */
+  .hero .nesh-logo {
+    width: 100%;
+    aspect-ratio: 2.6;
+  }
   .hero .nesh-logo-svg {
-    font-size: 23vw;
+    font-size: 23vw; /* pre-hydration fallback only */
   }
 
   .hero .hero-links-ghost-wrapper,
@@ -745,6 +862,7 @@
     pointer-events: none;
     justify-content: center;
     align-items: flex-end;
+    max-height: 78dvh;
     height: clamp(40.7rem, 197.4vw + 1.23rem, 94.6rem);
     display: flex;
     position: absolute;

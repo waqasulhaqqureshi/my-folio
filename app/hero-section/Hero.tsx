@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import CountUp from "../animations/CountUp";
+import { useFitText } from "./useFitText";
 import "./hero.css";
 
 /* ============================================================================
@@ -130,6 +131,11 @@ const Hero = () => {
    * a 4.8s fallback guarantees the final state even if the event is missed. */
   const [settled, setSettled] = useState(false);
 
+  /* The wordmark is live text, not the source's inline SVG, so its width can
+   * only be known after layout. Solve for the font-size that spans .nesh-logo
+   * exactly — see useFitText for why a static vw value can't match the source. */
+  const { boxRef, textRef } = useFitText<HTMLDivElement, HTMLSpanElement>();
+
   useEffect(() => {
     const settle = () => setSettled(true);
     window.addEventListener("nm:intro-exit", settle);
@@ -162,10 +168,12 @@ const Hero = () => {
             layout
             transition={{ duration: 0.9, ease: EASE }}
           >
-            <div className="nesh-logo">
+            <div className="nesh-logo" ref={boxRef}>
               {/* Source ships an inline SVG wordmark; text rendering uses the
                   same "Tr 3 A" Bold face and the same 3.5/3.8 aspect frame. */}
-              <span className="nesh-logo-svg">{HERO_COPY.brandMark}</span>
+              <span className="nesh-logo-svg" ref={textRef}>
+                {HERO_COPY.brandMark}
+              </span>
               <span className="nesh-copyright-wrap" aria-hidden="true">
                 <svg
                   className="nesh-copyright-icon"

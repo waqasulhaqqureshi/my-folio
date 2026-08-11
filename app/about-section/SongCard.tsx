@@ -21,7 +21,7 @@ const SongCard = ({ title, artist, image, link }: SongProps) => {
             alt={`${title} — ${artist}`}
             fill
             sizes="(max-width: 768px) 190px, 230px"
-            className="object-cover grayscale transition duration-500 group-hover:scale-[1.04] group-hover:grayscale-0"
+            className="object-cover transition duration-500 group-hover:scale-[1.04]"
           />
         </div>
         <div className="flex items-center justify-between gap-2 px-1 pb-1">
