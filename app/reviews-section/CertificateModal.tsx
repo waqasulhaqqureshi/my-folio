@@ -1,9 +1,7 @@
 "use client";
 import Image, { StaticImageData } from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { faExternalLink } from "@fortawesome/free-solid-svg-icons";
+import { XmarkIcon, ExternalLinkIcon } from "../components/icons";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { lockScroll, unlockScroll } from "../lib/scrollLock";
@@ -123,7 +121,7 @@ const CertificateModal = ({
                 aria-label="Close certificate preview"
                 className="nm-btn-ghost h-10 w-10 shrink-0 rounded-full p-0"
               >
-                <FontAwesomeIcon icon={faXmark} />
+                <XmarkIcon />
               </button>
             </div>
 
@@ -191,10 +189,7 @@ const CertificateModal = ({
                     className="nm-btn w-full sm:w-auto"
                   >
                     Verify credential
-                    <FontAwesomeIcon
-                      icon={faExternalLink}
-                      className="text-[12px]"
-                    />
+                    <ExternalLinkIcon className="text-[12px]" />
                   </button>
                 )}
               </div>

@@ -2,8 +2,7 @@ import ReviewCard from "./ReviewCard";
 import { reviewDetails } from "./reviewDetails";
 import AnimatedBody from "../animations/AnimatedBody";
 import { motion } from "framer-motion";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { ExternalLinkIcon } from "../components/icons";
 
 /*
  * Testimonials — nm design system.
@@ -66,10 +65,7 @@ const Reviews = () => {
             className="nm-btn"
           >
             Hire me on Contra
-            <FontAwesomeIcon
-              icon={faArrowUpRightFromSquare}
-              className="text-[12px]"
-            />
+            <ExternalLinkIcon className="text-[12px]" />
           </a>
         </motion.div>
       </div>
