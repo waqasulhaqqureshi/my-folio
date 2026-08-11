@@ -1,5 +1,11 @@
 # Work Section Refactor — Architecture Notes
 
+> **Superseded in part by the second pass.** The grid/subgrid projects section and the
+> bottom-dock nav described below were both wrong about the source and have been
+> replaced — see `HEYNESH_PARITY.md` for the corrected architecture, the scroll-bug
+> root cause, and the CSS parity measurements.
+
+
 **Stack (not assumed — read from the repo):** Next.js 16.0.1 App Router, React 18, TypeScript, Tailwind 3 + hand-authored CSS, framer-motion 10. All new code is client-component React with hooks; no vanilla-JS shims.
 
 ---
