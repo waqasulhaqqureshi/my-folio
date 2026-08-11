@@ -40,52 +40,53 @@ const Work = () => {
                 text="Over seven years I've helped businesses across different industries turn their ideas into websites that look and work exactly how they imagined. Here's a look at some of that work."
                 className="work-top-text"
               />
-
-              {/* Controls live in the header so they're visible before the
-                  rail is reached, and never overlap card content. */}
-              <div className="work-nav" role="group" aria-label="Project navigation">
-                <button
-                  type="button"
-                  className="work-nav-btn"
-                  onClick={prev}
-                  disabled={!canPrev}
-                  aria-label="Previous projects"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  className="work-nav-btn"
-                  onClick={next}
-                  disabled={!canNext}
-                  aria-label="Next projects"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
             </div>
           </div>
 
-          {/*
-           * tabIndex=0 + aria-label: a scrollable region must be reachable and
-           * operable by keyboard (arrow keys scroll it natively once focused).
-           */}
-          <div
-            className="work-track-wrap"
-            ref={railRef}
-            tabIndex={0}
-            role="group"
-            aria-label="Projects, horizontally scrollable"
-          >
-            <div className="work-track">
-              {devProjects.map((project, i) => (
-                <WorkCard key={project.id} {...project} position={i} />
-              ))}
+          {/* Arrows flank the rail so the direction of travel is unmistakable
+              and neither control ever covers a card. */}
+          <div className="work-rail">
+            <button
+              type="button"
+              className="work-nav-btn"
+              onClick={prev}
+              disabled={!canPrev}
+              aria-label="Previous project"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/*
+             * tabIndex=0 + aria-label: a scrollable region must be reachable and
+             * operable by keyboard (arrow keys scroll it natively once focused).
+             */}
+            <div
+              className="work-track-wrap"
+              ref={railRef}
+              tabIndex={0}
+              role="group"
+              aria-label="Projects, horizontally scrollable"
+            >
+              <div className="work-track">
+                {devProjects.map((project, i) => (
+                  <WorkCard key={project.id} {...project} position={i} />
+                ))}
+              </div>
             </div>
+
+            <button
+              type="button"
+              className="work-nav-btn"
+              onClick={next}
+              disabled={!canNext}
+              aria-label="Next project"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>

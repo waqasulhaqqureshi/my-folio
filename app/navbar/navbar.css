@@ -60,8 +60,8 @@
 }
 
 /* ---- Traveling border ray -------------------------------------------------
-   A soft white highlight that runs continuously around the dock's border so
-   the bar stays distinguishable against any section behind it.
+   A soft accent-yellow highlight that runs continuously around the dock's
+   border so the bar stays distinguishable against any section behind it.
 
    TECHNIQUE: a conic-gradient rotated by an @property-registered angle, masked
    to a 1.5px ring. `@property` gives the angle a type, which lets the browser
@@ -86,15 +86,17 @@
   padding: 1.5px; /* ring thickness */
   /* Stops must increase monotonically or the browser clamps them into a hard
      edge — so the highlight is centred on 0deg/360deg, which is the same point
-     on the circle. That makes the head and tail meet seamlessly as it wraps. */
+     on the circle. That makes the head and tail meet seamlessly as it wraps.
+     Accent yellow (#ffff23) rather than white: it ties the dock to the CTA and
+     the work-card FAB, and reads as intentional brand rather than a glare. */
   background: conic-gradient(
     from var(--nm-ray),
-    rgba(255, 255, 255, 0.95) 0deg,
-    rgba(255, 255, 255, 0.4) 10deg,
+    rgba(255, 255, 35, 1) 0deg,
+    rgba(255, 255, 35, 0.45) 10deg,
     transparent 46deg,
     transparent 314deg,
-    rgba(255, 255, 255, 0.4) 350deg,
-    rgba(255, 255, 255, 0.95) 360deg
+    rgba(255, 255, 35, 0.45) 350deg,
+    rgba(255, 255, 35, 1) 360deg
   );
   /* Punch out the centre so only the border band paints. */
   -webkit-mask: linear-gradient(#000 0 0) content-box,
@@ -117,12 +119,12 @@
 @supports not (background: conic-gradient(from var(--nm-ray), red, blue)) {
   .nm-dock__bg::after {
     background: conic-gradient(
-      rgba(255, 255, 255, 0.95) 0deg,
-      rgba(255, 255, 255, 0.4) 10deg,
+      rgba(255, 255, 35, 1) 0deg,
+      rgba(255, 255, 35, 0.45) 10deg,
       transparent 46deg,
       transparent 314deg,
-      rgba(255, 255, 255, 0.4) 350deg,
-      rgba(255, 255, 255, 0.95) 360deg
+      rgba(255, 255, 35, 0.45) 350deg,
+      rgba(255, 255, 35, 1) 360deg
     );
     animation: nm-ray-spin 6s linear infinite;
   }
@@ -328,7 +330,7 @@
   .nm-dock__bg::after {
     animation: none;
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 35, 0.55);
   }
   .nm-dock__chip,
   .nm-dock__icon,

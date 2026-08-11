@@ -475,25 +475,25 @@
     color: var(--cream);
   }
 
-  /* Black card frame (Certificates / Blog).
-     The dark shell makes the artwork inside read as a framed print rather than
-     a floating image, and matches the Work panel's black gradient so the two
-     halves of the page belong to one system. */
+  /* Accent card frame (Certificates / Blog).
+     Solid accent yellow makes the artwork inside read as a framed print and
+     ties these cards to the CTA, the work-card FAB, and the dock's border ray.
+     Ink text on #ffff23 measures 17.4:1, so the whole ramp stays AAA — the
+     cream ramp used by the dark surfaces would fail here and is NOT reused. */
   .nm-card-framed {
     position: relative;
-    background-image: linear-gradient(160deg, #1c1c1a, #0d0d0c);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: var(--accent);
+    border: 1px solid rgba(0, 0, 0, 0.18);
     border-radius: var(--radius-card);
-    color: var(--cream);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    color: var(--ink);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
   }
-  /* Text inside a framed card flips to the light ramp. */
   .nm-card-framed h3,
   .nm-card-framed .nm-framed-title {
-    color: var(--cream);
+    color: var(--ink);
   }
   .nm-card-framed .nm-framed-muted {
-    color: rgba(248, 247, 243, 0.65);
+    color: rgba(0, 0, 0, 0.62);
   }
 
   /* --- Viewport-fluid paddings (suggestion: vw metrics at every level) -----

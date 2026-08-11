@@ -92,27 +92,33 @@
   color: var(--cream);
 }
 
-/* ---------- Rail controls --------------------------------------------------
-   Circular buttons echoing the source's .work-card-arrow-wrap FAB, but
-   ghosted on the dark panel so they read as chrome, not as a card action. */
-.work-nav {
+/* ---------- Rail: [prev] [3-up viewport] [next] -----------------------------
+   A 3-column flex row. The arrows are `flex:none` and the viewport is
+   `min-width:0` so the track — not the buttons — absorbs every resize; without
+   the min-width override a flex item refuses to shrink below its content and
+   the arrows would be pushed off the panel. */
+.work-rail {
+  --work-gap: 2.08vw;
+  --work-per-view: 3;
   display: flex;
   align-items: center;
-  gap: clamp(0.5rem, 0.83vw, 0.85rem);
-  flex: none;
+  gap: clamp(0.75rem, 1.6vw, 2rem);
+  width: 100%;
 }
 
 .work-nav-btn {
+  flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   /* 44px min target (WCAG 2.5.8) */
-  width: clamp(44px, 3.2vw, 3.5rem);
-  height: clamp(44px, 3.2vw, 3.5rem);
+  width: clamp(44px, 3.4vw, 3.75rem);
+  height: clamp(44px, 3.4vw, 3.75rem);
   border-radius: 50%;
-  background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: var(--cream);
+  /* Matches the source's .work-card-arrow-wrap yellow FAB. */
+  background-color: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--ink);
   transition: background-color 0.3s ease, color 0.3s ease,
     border-color 0.3s ease, transform 0.3s var(--ease-nm), opacity 0.3s ease;
 }
@@ -121,8 +127,8 @@
   height: 42%;
 }
 .work-nav-btn:hover:not(:disabled) {
-  background-color: var(--accent);
-  border-color: var(--accent);
+  background-color: var(--cream);
+  border-color: var(--cream);
   color: var(--ink);
   transform: translateY(-2px);
 }
@@ -136,7 +142,9 @@
 /* Disabled = one end of the rail reached. Kept visible (not hidden) so the
    control set never shifts position, but clearly inert. */
 .work-nav-btn:disabled {
-  opacity: 0.3;
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.35);
   cursor: not-allowed;
 }
 
@@ -173,7 +181,13 @@
    Arrow-driven, it starts at the first card and scrolls natively instead. */
 .work-track-wrap {
   display: flex;
-  width: 100%;
+  /* min-width:0 lets this shrink inside .work-rail; flex-basis:0 + grow makes
+     it claim exactly the space the two arrows don't. */
+  flex: 1 1 0;
+  min-width: 0;
+  /* Sizing context for the cards. .work-track is content-sized, so a % width
+     on a card would be circular; cqw resolves against THIS box instead. */
+  container-type: inline-size;
   overflow-x: auto;
   overflow-y: hidden;
   /* proximity, not mandatory: mandatory can refuse to rest at max scrollLeft
@@ -192,18 +206,33 @@
 }
 
 .work-track {
-  grid-column-gap: 2.08vw;
-  grid-row-gap: 2.08vw;
-  gap: 2.08vw;
+  grid-column-gap: var(--work-gap);
+  grid-row-gap: var(--work-gap);
+  gap: var(--work-gap);
   flex-flow: row;
   flex: none;
   display: flex;
+  /* The track must be exactly as wide as its cards; `flex:none` alone would
+     still let it shrink to the scroll container in some engines. */
+  min-width: min-content;
+}
+
+@media (max-width: 1100px) {
+  .work-rail {
+    --work-per-view: 2;
+  }
 }
 
 /* ---------- Card ----------------------------------------------------------- */
 .work-card {
   border-radius: 0.83vw;
-  width: clamp(17rem, 27vw, 30rem);
+  /* Exactly three per viewport: subtract the two inter-card gaps from the
+     rail's inline size, then split the remainder three ways. Driven off the
+     --work-gap token so gap and width can never drift apart. */
+  width: calc(
+    (100cqw - (var(--work-per-view) - 1) * var(--work-gap)) /
+      var(--work-per-view)
+  );
   /* Source derives card height at runtime; the local assets are 778×1100, so
      the box is reserved from that intrinsic ratio → zero CLS. */
   aspect-ratio: 778 / 1100;
@@ -431,15 +460,32 @@
     align-items: flex-start;
     gap: clamp(1.5rem, 6vw, 2.5rem);
   }
-  .work-track-wrap {
-    width: 100%;
+  /* Phones swipe: the rail stops flanking and the arrows drop below it, so a
+     one-up card keeps the full viewport width. order:2 on the next button
+     keeps DOM order (prev, rail, next) intact for screen readers. */
+  .work-rail {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: clamp(1.07rem, 5.33vw, 2.56rem);
     padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
+  }
+  .work-rail > .work-nav-btn:first-child {
+    order: 2;
+  }
+  .work-track-wrap {
+    order: 1;
+    flex: 1 0 100%;
+    min-width: 100%;
+    padding-left: 0;
     padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+  }
+  .work-rail > .work-nav-btn:last-child {
+    order: 3;
   }
   .work-track-wrap::-webkit-scrollbar {
     display: none;
