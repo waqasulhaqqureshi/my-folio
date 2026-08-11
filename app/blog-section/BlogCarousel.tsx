@@ -32,7 +32,7 @@ const BlogCarousel = () => {
     <BlogCard
       title={at(i).title}
       image={at(i).image}
-      url={at(i).url}
+      slug={at(i).slug}
       date={at(i).date}
       available={at(i).available}
       index={i}
