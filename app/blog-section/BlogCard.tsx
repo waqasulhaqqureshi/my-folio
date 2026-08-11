@@ -1,6 +1,6 @@
 "use client";
 import { blogProps } from "./blogDetails";
-import Image from "next/image";
+import SafeImage from "../components/SafeImage";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import BlogModal from "./BlogModal";
@@ -41,7 +41,7 @@ const BlogCard = ({ title, image, url, date, available, index }: blogProps) => {
           }`}
         >
           <div className="relative aspect-[16/9] w-full">
-            <Image
+            <SafeImage
               src={image}
               alt={title}
               fill

@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import SafeImage from "../components/SafeImage";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
@@ -87,7 +87,7 @@ const BlogModal = ({
 
             <div className="nm-plate mb-4 overflow-hidden rounded-[var(--radius-inner)] md:mb-6">
               <div className="relative aspect-[16/9] w-full">
-                <Image
+                <SafeImage
                   src={blogImage}
                   alt={blogTitle}
                   fill

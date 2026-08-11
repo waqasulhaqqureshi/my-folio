@@ -3,7 +3,7 @@ import { StaticImageData } from "next/image";
 // IMPORTANT: Add your certificate images to public/certificates/ folder with these exact names:
 // - cs50-certificate.jpg (or .png, .webp)
 // - mimo-sql-certificate.jpg (or .png, .webp)
-// - mimo-webdev-certificate.jpg (or .png, .webp)
+// - mimo-web-development_page-0001.jpg
 // - harvard-logo.png (optional - for organization logo)
 // - mimo-logo.png (optional - for organization logo)
 
@@ -13,7 +13,12 @@ import profilePlaceholder from "../../public/profile.webp";
 // Certificate scans, served from public/certificates/
 import harvardCert from "../../public/certificates/harvard_page-0001.jpg";
 import mimoSqlCertFile from "../../public/certificates/mimo-sql_page-0001.jpg";
-import mimoWebDevCertFile from "../../public/certificates/Web(Html,Css,js) by mimo_page-0001.jpg";
+// NOTE: filenames feeding next/image must stay free of spaces, commas and
+// parentheses. The optimizer round-trips the path through a URL query param,
+// and those characters survive encodeURIComponent only to be re-split on the
+// way out, so the request 400s with "The requested resource isn't a valid
+// image." This file was previously "Web(Html,Css,js) by mimo_page-0001.jpg".
+import mimoWebDevCertFile from "../../public/certificates/mimo-web-development_page-0001.jpg";
 
 const cs50Cert = harvardCert;
 const mimoSqlCert = mimoSqlCertFile;
