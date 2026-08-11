@@ -1,38 +1,41 @@
+"use client";
 import AnimatedBody from "../animations/AnimatedBody";
 import AnimatedTitle from "../animations/AnimatedTitle";
 import CountUp from "../animations/CountUp";
 import { devProjects } from "./projectDetails";
+import { mediaForIndex } from "./workMedia";
+import { useRevealGrid } from "../hooks/useRevealGrid";
 import WorkCard from "./WorkCard";
 import "./work.css";
 
 /*
- * Work — structural replication of heynesh.com's Projects section.
+ * Work — Phase 1 structural overhaul.
  *
- * Source DOM:
- *   section.work_section
- *     └── .work-sticky            (dark gradient panel #000→#222)
- *         └── .work-container
- *             ├── .work-top-layout  (grid 1fr/1fr)
- *             │     ├── .column → .label.is-secondary + h2.h2-style-white
- *             │     └── p.work-top-text
- *             └── .work-track-wrap  → .work-track → .work-card ×N
+ * DEPRECATED: the previous `.work-track-wrap` horizontal scroll-snap rail.
+ * It hid 60% of the portfolio behind a gesture desktop users rarely discover,
+ * couldn't be tabbed through predictably, and forced every card to a fixed
+ * `clamp()` height that had nothing to do with its content.
  *
- * Deviations (documented): source's 400vh pin + 21vw sidebar offset are
- * dropped — the track scrolls natively with scroll-snap instead of a GSAP
- * horizontal scrub, so no dead scroll-space is created for adjacent sections.
- * The source's pin-spacer div (.work-sticky-support) is therefore omitted.
+ * REPLACEMENT: a responsive CSS Grid (1 / 2 / 3 columns) where each card is a
+ * SUBGRID participant. The track defines four named rows — media, title, copy,
+ * meta — and each card inherits them via `grid-template-rows: subgrid`, so all
+ * titles sit on one baseline and all stack-chips on another, no matter how
+ * uneven the copy is. That cross-card alignment is heynesh.com's core layout
+ * heuristic, and it is the one thing the old flex rail structurally could not
+ * express.
+ *
+ * Entry animation is delegated to ONE container-level IntersectionObserver
+ * (see useRevealGrid) instead of N per-card framer-motion drivers.
  */
 const Work = () => {
-  // Data-driven "living signal" stats (heynesh-style animated counters)
-  const techCount = new Set(
-    devProjects.flatMap((p) => p.technologies)
-  ).size;
+  const techCount = new Set(devProjects.flatMap((p) => p.technologies)).size;
+  const gridRef = useRevealGrid<HTMLDivElement>({ stagger: 70 });
 
   return (
-    <section className="work_section z-10" id="work" aria-label="Projects">
+    <section className="work_section z-10" id="work" aria-label="Featured work">
       <div className="work-sticky">
-        <div className="work-container">
-          <div className="work-top-layout nm-container">
+        <div className="work-container nm-container">
+          <header className="work-top-layout">
             <div className="flex flex-col items-start">
               <span className="label is-secondary">Selected Work</span>
               <AnimatedTitle
@@ -42,8 +45,7 @@ const Work = () => {
                 charSpace={"mr-[0.001em]"}
               />
 
-              {/* Living signal — counters inherit the hero's count-up */}
-              <div className="work-stats" aria-label="Portfolio stats">
+              <div className="work-stats">
                 <div className="nm-stat">
                   <CountUp
                     className="nm-stat__num"
@@ -68,29 +70,35 @@ const Work = () => {
                 </div>
               </div>
             </div>
+
             <AnimatedBody
               text="A selection of client and personal projects — designed, engineered and shipped end-to-end. Every build is measured by how it performs, not just how it looks."
               className="work-top-text"
             />
-          </div>
+          </header>
 
-          <div className="work-track-wrap" aria-label="Projects rail">
-            <div className="work-track">
-              {devProjects.map((project, i) => (
-                <WorkCard
-                  key={project.id}
-                  id={project.id}
-                  position={i}
-                  name={project.name}
-                  description={project.description}
-                  technologies={project.technologies}
-                  github={project.github}
-                  demo={project.demo}
-                  image={project.image}
-                  available={project.available}
-                />
-              ))}
-            </div>
+          {/*
+           * `id` is referenced by the h2 for the section's accessible name.
+           * The grid is a plain div: the cards are <article> landmarks, so no
+           * list semantics are asserted that a screen reader would announce
+           * redundantly on top of each card's own label.
+           */}
+          <div className="work-grid" ref={gridRef}>
+            {devProjects.map((project, i) => (
+              <WorkCard
+                key={project.id}
+                id={project.id}
+                position={i}
+                name={project.name}
+                description={project.description}
+                technologies={project.technologies}
+                github={project.github}
+                demo={project.demo}
+                image={project.image}
+                available={project.available}
+                media={mediaForIndex(i)}
+              />
+            ))}
           </div>
         </div>
       </div>

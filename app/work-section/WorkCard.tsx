@@ -1,15 +1,33 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ProjectProps } from "./projectDetails";
+import { WorkMedia } from "./workMedia";
+import { useLazyVideo } from "../hooks/useLazyVideo";
+import { useMagnetic } from "../hooks/useMagnetic";
 
 /*
- * WorkCard — structural port of heynesh.com's .work-card
- * (a.work-card > img.work-image + .work-card-content[top-layout, bottom-layout]
- *  + .work-card-arrow-wrap). Content slots are filled from projectDetails.
+ * WorkCard — grid cell (Phase 1) + local video node (Phase 2).
+ *
+ * SUBGRID CONTRACT
+ * The card is itself a grid whose rows are inherited from the parent track via
+ * `grid-template-rows: subgrid`. That is what makes every card's media frame,
+ * title and meta row share a common baseline regardless of description length
+ * — the thing a plain flex/auto-rows grid cannot do.
+ *
+ * ZERO-CLS MEDIA FRAME
+ * The frame's height comes from `aspect-ratio` derived from the asset's
+ * intrinsic 778×1100, applied in CSS before any media loads. The poster
+ * <Image> and the <video> are both absolutely positioned inside that reserved
+ * box, so swapping poster → video never reflows a single pixel.
+ *
+ * The <video> carries NO src attribute in markup: useLazyVideo attaches it on
+ * approach and fully releases it (pause → drop src → load()) on exit.
  */
-type WorkCardProps = ProjectProps & { position: number };
+type WorkCardProps = ProjectProps & {
+  position: number;
+  media: WorkMedia;
+};
 
 const WorkCard = ({
   name,
@@ -19,59 +37,76 @@ const WorkCard = ({
   image,
   available,
   position,
+  media,
 }: WorkCardProps) => {
   const index = String(position + 1).padStart(2, "0");
+  const { videoRef, state } = useLazyVideo(media.src);
+  const arrowRef = useMagnetic<HTMLSpanElement>({ strength: 0.45, padding: 16 });
+
+  const href = available ? demo : "#work";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-        transition: {
-          duration: 0.6,
-          ease: [0.25, 0.46, 0.45, 0.94],
-          delay: 0.05 * (position % 3),
-        },
-      }}
-      viewport={{ once: true, amount: 0.25 }}
-      className="shrink-0"
-    >
+    <article className="work-cell" data-reveal>
       <Link
-        href={available ? demo : "#work"}
+        href={href}
         target={available ? "_blank" : undefined}
         rel={available ? "noopener noreferrer" : undefined}
         className="work-card"
-        aria-label={`${name} — project ${index}`}
+        aria-label={
+          available
+            ? `${name} — open live project in a new tab`
+            : `${name} — coming soon`
+        }
+        aria-disabled={available ? undefined : true}
+        onClick={available ? undefined : (e) => e.preventDefault()}
       >
-        {/* Cover media (source: img.work-image, object-cover) */}
-        <Image
-          src={image}
-          alt={`${name} preview`}
-          fill
-          sizes="(max-width: 768px) 83vw, 27vw"
-          className="work-image"
-        />
+        {/* Reserved media box: geometry is final on first paint. */}
+        <div
+          className="work-frame"
+          style={{ aspectRatio: `${media.width} / ${media.height}` }}
+        >
+          <Image
+            src={image}
+            alt=""
+            aria-hidden="true"
+            fill
+            sizes="(max-width: 767px) 100vw, (max-width: 1199px) 50vw, 33vw"
+            className="work-poster"
+            data-hidden={state === "active" ? "true" : "false"}
+          />
 
-        {/* Gradient content layer */}
-        <div className="work-card-content">
-          <div className="work-card-content-top-layout">
-            <span className="work-card-index">{index}</span>
-            <div className="work-label-wrap" aria-label="Stack">
-              {technologies.map((tech) => (
-                <span key={tech} className="work-label">
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </div>
+          {/*
+           * No `src` here by design — attached imperatively by useLazyVideo.
+           * `disableRemotePlayback` stops Chromium reserving a cast pipeline
+           * for a purely decorative loop.
+           */}
+          <video
+            ref={videoRef}
+            className="work-video"
+            data-state={state}
+            muted
+            loop
+            playsInline
+            preload="none"
+            aria-hidden="true"
+            tabIndex={-1}
+            width={media.width}
+            height={media.height}
+          />
 
-          <div className="work-card-content-bottom-layout">
-            <h3 className="work-card-heading">{name}</h3>
-            <p className="op80">{description}</p>
-          </div>
+          <span className="work-scrim" aria-hidden="true" />
 
-          <span className="work-card-arrow-wrap" aria-hidden="true">
+          <span className="work-card-index" aria-hidden="true">
+            {index}
+          </span>
+
+          {!available && <span className="work-flag">Coming soon</span>}
+
+          <span
+            ref={arrowRef}
+            className="work-card-arrow-wrap"
+            aria-hidden="true"
+          >
             <svg
               className="work-card-arrow"
               viewBox="0 0 24 24"
@@ -86,13 +121,19 @@ const WorkCard = ({
           </span>
         </div>
 
-        {!available && (
-          <span className="nm-eyebrow nm-decor absolute left-4 top-4 z-10 bg-canvas/85 text-ink backdrop-blur-md">
-            Coming soon
-          </span>
-        )}
+        {/* Subgrid rows: title / description / stack all align across cards. */}
+        <h3 className="work-card-heading">{name}</h3>
+        <p className="work-card-desc">{description}</p>
+
+        <ul className="work-label-wrap" aria-label={`${name} tech stack`}>
+          {technologies.map((tech) => (
+            <li key={tech} className="work-label">
+              {tech}
+            </li>
+          ))}
+        </ul>
       </Link>
-    </motion.div>
+    </article>
   );
 };
 

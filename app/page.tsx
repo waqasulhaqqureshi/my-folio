@@ -13,10 +13,12 @@ const Contact = dynamic(() => import("./contact-section/Contact"));
 const Footer = dynamic(() => import("./footer/Footer"));
 
 /*
- * Cursor refactor: the legacy blobity custom-cursor (animated DOM mouse
- * follower) is removed — the app now runs on native OS cursors only
- * (`cursor-default` / `cursor-pointer`). All CSS hover states, transitions
- * and micro-interactions on interactive elements are untouched.
+ * Cursor architecture: no custom pointer element exists. The app runs on
+ * native OS cursors only (`cursor: default` / `cursor: pointer`, set in
+ * globals.css). Pointer *physics* is not gone — it is decoupled and applied to
+ * the elements themselves via useMagnetic(), which reads the invisible native
+ * cursor coordinates in a rAF loop and drives compositor-only transforms.
+ * See app/hooks/useMagnetic.ts.
  */
 export default function Home() {
   useEffect(() => {

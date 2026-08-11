@@ -1,0 +1,160 @@
+/* ============================================================================
+   Primary nav dock — Phase 4
+   ----------------------------------------------------------------------------
+   Typographic scale and gutters mirror .hero-navigation-link (hero.css) so the
+   floating dock and the in-hero nav row are one system.
+
+   The dock uses mix-blend-difference over white text to stay legible on both
+   the beige canvas and the dark Work panel. Focus states deliberately OPT OUT
+   of the blend mode: a blended focus ring can compute to an invisible colour
+   over mid-greys, which would fail WCAG 2.4.11 (focus appearance).
+   ========================================================================== */
+
+.nm-nav {
+  position: fixed;
+  bottom: clamp(1.25rem, 2.2vw, 2rem);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin-inline: auto;
+  width: fit-content;
+  max-width: calc(100vw - 2rem);
+  display: flex;
+  align-items: center;
+  gap: clamp(0.25rem, 0.55vw, 0.6rem);
+  background: transparent;
+  mix-blend-mode: difference;
+  /* Own layer: the blend + fixed positioning would otherwise repaint the page
+     behind it on every scroll frame. */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Any focus inside the dock disables blending so the ring keeps true contrast. */
+.nm-nav:focus-within {
+  mix-blend-mode: normal;
+  background-color: rgba(0, 0, 0, 0.72);
+  border-radius: var(--radius-pill);
+  backdrop-filter: blur(10px);
+  padding-inline: 0.35rem;
+}
+
+/* ---------- Items ---------------------------------------------------------- */
+.nm-nav__list {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.1rem, 0.35vw, 0.4rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nm-nav__item {
+  display: flex;
+}
+
+.nm-nav__link,
+.nm-nav__resume {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Hit area ≥ 44px tall (WCAG 2.5.8 target size) without inflating the type. */
+  min-height: 44px;
+  padding-inline: clamp(0.6rem, 1.11vw, 1.1rem);
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: transform 0.3s var(--ease-nm), opacity 0.3s var(--ease-nm);
+}
+
+.nm-nav__label {
+  display: block;
+  transition: transform 0.3s var(--ease-nm);
+}
+
+/* Micro-interaction: 1px lift + underline sweep from the left. */
+.nm-nav__link:hover .nm-nav__label {
+  transform: translateY(-1px);
+}
+
+.nm-nav__underline {
+  position: absolute;
+  left: clamp(0.6rem, 1.11vw, 1.1rem);
+  right: clamp(0.6rem, 1.11vw, 1.1rem);
+  bottom: clamp(0.55rem, 1vw, 0.9rem);
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s var(--ease-nm);
+}
+.nm-nav__link:hover .nm-nav__underline {
+  transform: scaleX(1);
+}
+
+/* Active section — driven by aria-current, so the visual state and the
+   accessible state can never drift apart. */
+.nm-nav__link[aria-current="page"] .nm-nav__underline {
+  transform: scaleX(1);
+}
+.nm-nav__link[data-active="false"] {
+  opacity: 0.62;
+}
+.nm-nav__link[data-active="true"] {
+  opacity: 1;
+}
+
+/* ---------- Resume chip (magnetic) ----------------------------------------- */
+.nm-nav__resume {
+  transform: translate3d(var(--mag-x, 0), var(--mag-y, 0), 0)
+    scale(var(--mag-scale, 1));
+}
+.nm-nav__icon {
+  font-size: clamp(0.9rem, 1.18vw, 1.25rem);
+}
+
+.nm-nav__sep {
+  display: block;
+  width: 1px;
+  height: clamp(0.7rem, 0.8vw, 1rem);
+  background-color: rgba(255, 255, 255, 0.6);
+  flex: none;
+}
+
+/* ---------- Focus ---------------------------------------------------------- */
+.nm-nav__link:focus-visible,
+.nm-nav__resume:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-pill);
+  opacity: 1;
+}
+/* Mouse users never see the ring, but it is never suppressed for keyboards. */
+.nm-nav__link:focus:not(:focus-visible),
+.nm-nav__resume:focus:not(:focus-visible) {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nm-nav__link,
+  .nm-nav__label,
+  .nm-nav__underline,
+  .nm-nav__resume {
+    transition: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .nm-nav__link,
+  .nm-nav__resume {
+    padding-inline: clamp(0.5rem, 3vw, 0.9rem);
+    font-size: clamp(0.75rem, 3.4vw, 1rem);
+  }
+}
