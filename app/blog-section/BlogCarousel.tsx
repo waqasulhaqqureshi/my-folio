@@ -45,7 +45,7 @@ const BlogCarousel = () => {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="relative mx-auto max-w-[1345px] overflow-x-hidden overflow-y-visible px-4 py-4 md:px-16 md:py-6 lg:px-20 lg:py-8">
+      <div className="relative mx-auto max-w-[1345px] overflow-x-hidden overflow-y-visible px-4 py-1 md:px-16 md:py-2 lg:px-20">
         <AnimatePresence mode="wait">
           <motion.div
             key={index}

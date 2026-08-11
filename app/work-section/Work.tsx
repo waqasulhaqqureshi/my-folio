@@ -2,47 +2,26 @@
 import AnimatedBody from "../animations/AnimatedBody";
 import AnimatedTitle from "../animations/AnimatedTitle";
 import { devProjects } from "./projectDetails";
-import { useHorizontalPin } from "./useHorizontalPin";
+import { useTrackCarousel } from "./useTrackCarousel";
 import WorkCard from "./WorkCard";
 import "./work.css";
 
 /*
- * Work — 1:1 structural port of heynesh.com's projects section
- * ("Built in Webflow, Made to Perform").
+ * Work — heynesh.com's projects section, driven by explicit arrow controls.
  *
- * SOURCE DOM (from the live Webflow build):
- *   section.work_section            min-height:400vh
- *     └── div.work-sticky           position:sticky; bottom:0; min-height:100vh
- *         └── div.work-container
- *             ├── div.work-top-layout        grid 1fr 1fr
- *             │     ├── div.column → .label.is-secondary + h2.h2-style-white
- *             │     └── p.work-top-text
- *             └── div.work-track-wrap        padding-left:55%
- *                   └── div.work-track       flex row, gap 2.08vw
- *                         └── a.work-card ×N
+ * The source pins the section for 400vh and scrubs the track horizontally off
+ * vertical scroll. That is replaced here with prev/next arrows: the user can
+ * see how much is left, skip ahead, and operate it from the keyboard — none of
+ * which a scroll-scrub allows. The card DOM and styling stay 1:1 with source.
  *
- * The 400vh + sticky + horizontally-scrubbed track IS the section's identity —
- * the previous grid rebuild discarded it. Restored here, with the GSAP scrub
- * reimplemented natively (see useHorizontalPin: GSAP is not a dependency).
- *
- * Content is the source's own roster (1910.ai, SemiconBio, Happy Ring, PSSLTD,
- * Lilipad, Omicron, Puck, Alosant, RAY AI) with its exact label stacks.
+ * The rail remains a native scroll container, so trackpad swipe and touch drag
+ * still work; the arrows are an addition, not a replacement.
  */
 const Work = () => {
-  const { sectionRef, trackRef, pinHeight, enabled } = useHorizontalPin(
-    devProjects.length
-  );
+  const { railRef, canPrev, canNext, prev, next } = useTrackCarousel();
 
   return (
-    <section
-      className="work_section"
-      id="work"
-      aria-label="Selected work"
-      ref={sectionRef}
-      /* Scroll runway for the pin; 0 (auto) on mobile / reduced-motion. */
-      style={pinHeight ? { minHeight: `${pinHeight}px` } : undefined}
-      data-pinned={enabled ? "true" : "false"}
-    >
+    <section className="work_section" id="work" aria-label="Selected work">
       <div className="work-sticky">
         <div className="work-container">
           <div className="work-top-layout">
@@ -55,14 +34,54 @@ const Work = () => {
                 charSpace={"mr-[0.001em]"}
               />
             </div>
-            <AnimatedBody
-              text="Over seven years I've helped businesses across different industries turn their ideas into websites that look and work exactly how they imagined. Here's a look at some of that work."
-              className="work-top-text"
-            />
+
+            <div className="work-top-right">
+              <AnimatedBody
+                text="Over seven years I've helped businesses across different industries turn their ideas into websites that look and work exactly how they imagined. Here's a look at some of that work."
+                className="work-top-text"
+              />
+
+              {/* Controls live in the header so they're visible before the
+                  rail is reached, and never overlap card content. */}
+              <div className="work-nav" role="group" aria-label="Project navigation">
+                <button
+                  type="button"
+                  className="work-nav-btn"
+                  onClick={prev}
+                  disabled={!canPrev}
+                  aria-label="Previous projects"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="work-nav-btn"
+                  onClick={next}
+                  disabled={!canNext}
+                  aria-label="Next projects"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="work-track-wrap">
-            <div className="work-track" ref={trackRef}>
+          {/*
+           * tabIndex=0 + aria-label: a scrollable region must be reachable and
+           * operable by keyboard (arrow keys scroll it natively once focused).
+           */}
+          <div
+            className="work-track-wrap"
+            ref={railRef}
+            tabIndex={0}
+            role="group"
+            aria-label="Projects, horizontally scrollable"
+          >
+            <div className="work-track">
               {devProjects.map((project, i) => (
                 <WorkCard key={project.id} {...project} position={i} />
               ))}

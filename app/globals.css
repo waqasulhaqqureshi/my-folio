@@ -251,9 +251,19 @@
     padding-block: clamp(4.27rem, 10vw, 10.5rem);
     overflow: hidden;
   }
+
+  /* Compact rhythm for carousel sections (Certificates / Blog). Those two
+     already carry their own internal padding on the carousel viewport, so the
+     full section cadence stacked on top read as dead space above and below. */
+  .nm-section--tight {
+    padding-block: clamp(2.25rem, 4.5vw, 4.5rem);
+  }
   @media (max-width: 767px) {
     .nm-section {
       padding-block: clamp(4.27rem, 21.33vw, 10.23rem);
+    }
+    .nm-section--tight {
+      padding-block: clamp(2rem, 8vw, 3.5rem);
     }
   }
 
@@ -463,6 +473,27 @@
     background-image: linear-gradient(160deg, #222, #0f0f0e);
     border-radius: var(--radius-inner);
     color: var(--cream);
+  }
+
+  /* Black card frame (Certificates / Blog).
+     The dark shell makes the artwork inside read as a framed print rather than
+     a floating image, and matches the Work panel's black gradient so the two
+     halves of the page belong to one system. */
+  .nm-card-framed {
+    position: relative;
+    background-image: linear-gradient(160deg, #1c1c1a, #0d0d0c);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-card);
+    color: var(--cream);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  }
+  /* Text inside a framed card flips to the light ramp. */
+  .nm-card-framed h3,
+  .nm-card-framed .nm-framed-title {
+    color: var(--cream);
+  }
+  .nm-card-framed .nm-framed-muted {
+    color: rgba(248, 247, 243, 0.65);
   }
 
   /* --- Viewport-fluid paddings (suggestion: vw metrics at every level) -----

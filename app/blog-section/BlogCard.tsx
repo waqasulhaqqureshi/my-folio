@@ -29,7 +29,7 @@ const BlogCard = ({ title, image, url, date, available, index }: blogProps) => {
           },
         }}
         viewport={{ amount: "some", once: true }}
-        className="nm-card group nm-pad flex h-full w-full flex-col gap-4"
+        className="nm-card-framed group nm-pad flex h-full w-full flex-col gap-4"
         aria-label={`Blog post: ${title}`}
       >
         <button
@@ -57,7 +57,7 @@ const BlogCard = ({ title, image, url, date, available, index }: blogProps) => {
         </button>
 
         <div className="flex flex-1 flex-col items-start justify-between gap-3 px-1 pb-1">
-          <h3 className="font-display text-[16px] font-medium uppercase leading-snug tracking-wide text-ink line-clamp-2 md:text-[18px]">
+          <h3 className="font-display text-[16px] font-medium uppercase leading-snug tracking-wide text-cream line-clamp-2 md:text-[18px]">
             {title}
           </h3>
           <span className="nm-chip bg-accent">{date}</span>

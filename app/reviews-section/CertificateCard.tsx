@@ -43,7 +43,7 @@ const CertificateCard = ({
         },
       }}
       viewport={{ amount: "some", once: true }}
-      className="nm-card group nm-pad flex w-full cursor-pointer flex-col items-stretch justify-between gap-5 transition-transform duration-300 hover:-translate-y-1"
+      className="nm-card-framed group nm-pad flex w-full cursor-pointer flex-col items-stretch justify-between gap-5 transition-transform duration-300 hover:-translate-y-1"
     >
       <button
         onClick={handleOpen}
@@ -66,7 +66,7 @@ const CertificateCard = ({
 
       {/* Organization row */}
       <div className="flex w-full items-center gap-3 px-1 pb-1">
-        <span className="nm-pane flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/10">
           <Image
             src={organizationLogo}
             alt={organizationName}
@@ -76,12 +76,12 @@ const CertificateCard = ({
           />
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <h3 className="truncate font-display text-[15px] font-medium uppercase leading-tight tracking-wide text-ink md:text-[17px]">
+          <h3 className="truncate font-display text-[15px] font-medium uppercase leading-tight tracking-wide text-cream md:text-[17px]">
             {organizationName}
           </h3>
-          <p className="nm-small text-ink/60">Certification</p>
+          <p className="nm-small text-cream/60">Certification</p>
         </div>
-        <span className="ml-auto font-display text-[12px] font-medium uppercase tracking-wide text-ink/40">
+        <span className="ml-auto font-display text-[12px] font-medium uppercase tracking-wide text-cream/45">
           {issueDate}
         </span>
       </div>

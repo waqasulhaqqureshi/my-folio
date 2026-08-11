@@ -10,7 +10,7 @@ const Certificates = () => {
   return (
     <section
       id="certificates"
-      className="nm-section z-10"
+      className="nm-section nm-section--tight z-10"
       aria-label="Certificates"
     >
       <div className="nm-container">
@@ -25,7 +25,7 @@ const Certificates = () => {
           />
         </div>
 
-        <div className="mt-10 md:mt-14">
+        <div className="mt-6 md:mt-8">
           <CertificateCarousel />
         </div>
       </div>

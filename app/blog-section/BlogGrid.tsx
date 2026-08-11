@@ -7,7 +7,7 @@ import AnimatedBody from "../animations/AnimatedBody";
  */
 const Blog = () => {
   return (
-    <section id="blog" className="nm-section z-10" aria-label="Blog">
+    <section id="blog" className="nm-section nm-section--tight z-10" aria-label="Blog">
       <div className="nm-container">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-10">
           <div className="flex flex-col items-start gap-4 md:gap-5">
@@ -20,7 +20,7 @@ const Blog = () => {
           />
         </div>
 
-        <div className="mt-10 md:mt-14">
+        <div className="mt-6 md:mt-8">
           <BlogCarousel />
         </div>
       </div>

@@ -59,6 +59,80 @@
   pointer-events: none;
 }
 
+/* ---- Traveling border ray -------------------------------------------------
+   A soft white highlight that runs continuously around the dock's border so
+   the bar stays distinguishable against any section behind it.
+
+   TECHNIQUE: a conic-gradient rotated by an @property-registered angle, masked
+   to a 1.5px ring. `@property` gives the angle a type, which lets the browser
+   INTERPOLATE it on the compositor — a bare custom property would not animate
+   at all. The mask keeps the fill only in the border band, so the pane's own
+   translucency is untouched.
+
+   Deliberately gentle: 6s per revolution and a low-alpha highlight. It is
+   decorative, so it sits behind the content layer and is fully removed under
+   prefers-reduced-motion (a perpetual loop is a vestibular trigger). */
+@property --nm-ray {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.nm-dock__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px; /* ring thickness */
+  /* Stops must increase monotonically or the browser clamps them into a hard
+     edge — so the highlight is centred on 0deg/360deg, which is the same point
+     on the circle. That makes the head and tail meet seamlessly as it wraps. */
+  background: conic-gradient(
+    from var(--nm-ray),
+    rgba(255, 255, 255, 0.95) 0deg,
+    rgba(255, 255, 255, 0.4) 10deg,
+    transparent 46deg,
+    transparent 314deg,
+    rgba(255, 255, 255, 0.4) 350deg,
+    rgba(255, 255, 255, 0.95) 360deg
+  );
+  /* Punch out the centre so only the border band paints. */
+  -webkit-mask: linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: nm-ray-travel 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes nm-ray-travel {
+  to {
+    --nm-ray: 360deg;
+  }
+}
+
+/* Fallback: without @property the angle cannot interpolate, so rotate the
+   whole pseudo-element instead. Same effect, one extra composited layer. */
+@supports not (background: conic-gradient(from var(--nm-ray), red, blue)) {
+  .nm-dock__bg::after {
+    background: conic-gradient(
+      rgba(255, 255, 255, 0.95) 0deg,
+      rgba(255, 255, 255, 0.4) 10deg,
+      transparent 46deg,
+      transparent 314deg,
+      rgba(255, 255, 255, 0.4) 350deg,
+      rgba(255, 255, 255, 0.95) 360deg
+    );
+    animation: nm-ray-spin 6s linear infinite;
+  }
+  @keyframes nm-ray-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
 .nm-dock__list {
   position: relative;
   z-index: 1;
@@ -249,6 +323,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* A perpetual loop is a vestibular trigger — drop it entirely and leave a
+     static hairline so the dock is still delineated. */
+  .nm-dock__bg::after {
+    animation: none;
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
   .nm-dock__chip,
   .nm-dock__icon,
   .nm-dock__label,
