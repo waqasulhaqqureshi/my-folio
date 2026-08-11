@@ -1,77 +1,99 @@
 /* ============================================================================
-   Work ("Projects") — CSS Grid / Subgrid rebuild
+   heynesh.com — projects section, 1:1 structural port
    ----------------------------------------------------------------------------
-   Phase 1. The horizontal scroll-snap rail (.work-track-wrap / .work-track) is
-   deprecated and deleted. Layout heuristics kept from heynesh.com: dark
-   gradient panel, fluid vw-based type ramp, pill labels, yellow arrow FAB,
-   generous 2vw gutters.
+   Values below are transcribed from the live stylesheet
+     nesh-staging.webflow.shared.bea9f6170.min.css
+   Source rules (verbatim):
+     .work_section{pointer-events:auto;min-height:400vh;color:var(--white);
+                   position:relative}
+     .work-sticky{background-image:linear-gradient(#000,#222 44%);
+                  justify-content:flex-start;align-items:center;width:100%;
+                  height:auto;min-height:100vh;padding:3vw 1.39vw 3vw 21vw;
+                  display:flex;position:sticky;bottom:0;overflow:hidden}
+     .work-top-layout{grid-column-gap:1.11vw;grid-template-columns:1fr 1fr;
+                      margin-bottom:4.17vw;display:grid}
+     .work-track-wrap{padding-left:55%;display:flex}
+     .work-track{grid-column-gap:2.08vw;flex-flow:row;flex:none;display:flex}
+     .work-card{border-radius:.83vw;width:clamp(17rem,27vw,30rem);
+                transition:opacity .4s ease;position:relative;overflow:hidden}
+     …plus the 767px override block, transcribed at the bottom.
 
-   The structural upgrade is SUBGRID: .work-grid owns four named row tracks and
-   every .work-card opts into them, so media frames, headings, body copy and
-   stack chips share baselines across all cards in a row. Fallback for engines
-   without subgrid support is a plain auto-rows grid (progressive enhancement,
-   @supports-gated).
+   DELIBERATE DEVIATION (documented):
+   the source's `padding-left:21vw` on .work-sticky reserves space for its
+   FIXED LEFT SIDEBAR nav. This portfolio has no such sidebar (its nav is a
+   bottom dock), so that gutter collapses to the site's 1.39vw rhythm —
+   otherwise the panel would carry a 21vw hole on the left.
    ========================================================================== */
 
 .work_section {
-  position: relative;
-  width: 100%;
   pointer-events: auto;
   color: var(--cream);
+  position: relative;
+  width: 100%;
+  /* min-height is set inline by useHorizontalPin (source: 400vh). */
 }
 
 .work-sticky {
   background-image: linear-gradient(#000, #222 44%);
+  justify-content: flex-start;
+  align-items: center;
   width: 100%;
-  padding-block: clamp(4.27rem, 10vw, 10.5rem);
+  height: auto;
+  min-height: 100vh;
+  padding: 3vw 1.39vw; /* source: 3vw 1.39vw 3vw 21vw — see sidebar note */
   display: flex;
-  position: relative;
-  overflow: clip;
+  position: sticky;
+  top: 0; /* source pins to bottom:0; top:0 is correct without the 21vw rail */
+  overflow: hidden;
 }
 
-.work_section .work-container {
+.work-container {
   pointer-events: auto;
   width: 100%;
 }
 
-/* ---------- Header --------------------------------------------------------- */
+/* ---------- Header: label + h2 left, intro right (source grid 1fr 1fr) ----- */
 .work-top-layout {
   grid-column-gap: 1.11vw;
   grid-row-gap: 1.11vw;
   grid-template-rows: auto;
   grid-template-columns: 1fr 1fr;
+  grid-auto-columns: 1fr;
   margin-bottom: 4.17vw;
   display: grid;
-  align-items: end;
+  align-items: start;
+}
+
+.work_section .column {
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+  position: relative;
 }
 
 .work-top-text {
   max-width: clamp(18rem, 26.6vw, 30rem);
-  justify-self: end;
   font-family: var(--font-body);
-  font-size: clamp(0.875rem, 1.18vw, 1.5rem);
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
   line-height: 1.6;
   color: var(--cream);
-  opacity: 0.85;
+  align-self: end;
 }
 
+/* Source .label — note the source's own padding is .21vw all round */
 .work_section .label {
   text-transform: uppercase;
   white-space: nowrap;
-  border: clamp(1px, 0.14vw, 2px) solid var(--line-strong);
-  border-radius: var(--radius-pill);
+  border: 0.14vw solid rgba(255, 255, 255, 0.3);
+  border-radius: 4.86vw;
   margin-bottom: 0.83vw;
-  padding: 0.21em 0.83em;
+  padding: 0.21vw 0.83vw;
   font-family: var(--font-body-md);
   font-size: clamp(0.625rem, 0.97vw, 1.5rem);
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.04em;
-  display: inline-flex;
-  color: var(--ink);
-}
-.work_section .label.is-secondary {
-  border-color: rgba(255, 255, 255, 0.3);
+  overflow: hidden;
   color: var(--cream);
 }
 
@@ -79,309 +101,339 @@
   color: var(--cream);
   font-family: var(--font-display);
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1;
   font-size: clamp(2.24rem, 4.58vw, 5rem);
 }
+/* Source: .max-width-700{max-width:clamp(300px,32vw,800px)} */
+.work_section .max-width-700 {
+  max-width: clamp(300px, 32vw, 800px);
+}
 
-.work-stats {
+/* ---------- Track (source: padding-left:55%, scrubbed horizontally) -------- */
+.work-track-wrap {
+  padding-left: 55%;
   display: flex;
-  flex-wrap: wrap;
-  gap: clamp(1.5rem, 2.78vw, 3rem);
-  margin-top: clamp(1.25rem, 2.22vw, 2.5rem);
-  color: var(--cream);
-}
-.work-stats .nm-stat__num {
-  color: var(--accent);
-}
-.work-stats .nm-stat__label {
-  color: var(--cream);
+  width: 100%;
 }
 
-/* ---------- Grid track ----------------------------------------------------- */
-/*
-   Row names describe the shared baselines every card snaps to:
-   [media] the reserved aspect-ratio frame, [title], [copy], [meta] chips.
-   `auto-fit` is deliberately NOT used — an explicit column count per breakpoint
-   keeps the card width (and therefore the video decode size) predictable.
-*/
-.work-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(2rem, 3.4vw, 3.75rem) clamp(1.25rem, 2.08vw, 2.5rem);
+.work-track {
+  grid-column-gap: 2.08vw;
+  grid-row-gap: 2.08vw;
+  gap: 2.08vw;
+  flex-flow: row;
+  flex: none;
+  display: flex;
+  will-change: transform;
 }
 
-@media (min-width: 768px) {
-  .work-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (min-width: 1200px) {
-  .work-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* The cell spans all four row tracks so the card can subgrid into them. */
-.work-cell {
-  display: grid;
-  grid-row: span 4;
-  grid-template-rows: subgrid;
-  /* Reveal state (Phase 1) — compositor-only properties. */
-  opacity: 0;
-  transform: translate3d(0, 28px, 0);
-  transition: opacity 0.7s var(--ease-nm), transform 0.7s var(--ease-nm);
-  transition-delay: calc(var(--reveal-i, 0) * var(--reveal-step, 70ms));
-  will-change: opacity, transform;
-}
-.work-cell.is-revealed {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  /* Drop the compositor hint once settled so layers are released. */
-  will-change: auto;
-}
-
-/* Subgrid is the enhancement; without it rows simply auto-size per card. */
-@supports not (grid-template-rows: subgrid) {
-  .work-cell {
-    grid-row: auto;
-    grid-template-rows: auto auto 1fr auto;
-  }
-}
-
+/* ---------- Card ----------------------------------------------------------- */
 .work-card {
-  display: grid;
-  grid-row: span 4;
-  grid-template-rows: subgrid;
-  gap: clamp(0.5rem, 0.83vw, 1rem);
+  border-radius: 0.83vw;
+  width: clamp(17rem, 27vw, 30rem);
+  /* Source derives card height at runtime; the local assets are 778×1100, so
+     the box is reserved from that intrinsic ratio → zero CLS. */
+  aspect-ratio: 778 / 1100;
+  transition-property: opacity;
+  transition-duration: 0.4s;
+  transition-timing-function: ease;
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  display: block;
   text-decoration: none;
   color: var(--cream);
-  align-content: start;
-}
-@supports not (grid-template-rows: subgrid) {
-  .work-card {
-    grid-row: auto;
-    grid-template-rows: auto auto 1fr auto;
-  }
 }
 
 .work-card:focus-visible {
   outline: 3px solid var(--accent);
-  outline-offset: 6px;
-  border-radius: var(--radius-card);
+  outline-offset: 4px;
 }
 
-.work-card[aria-disabled="true"] {
-  cursor: not-allowed;
-}
-
-/* ---------- Media frame (zero-CLS) ----------------------------------------- */
-/*
-   `aspect-ratio` is set inline from the asset's intrinsic 778×1100, so the box
-   has final height before poster or video bytes arrive. Everything inside is
-   absolutely positioned: no child can ever change the frame's geometry.
-*/
-.work-frame {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border-radius: var(--radius-card);
-  background-color: #111;
-  isolation: isolate;
-  transform: translate3d(0, 0, 0);
-  transition: transform 0.5s var(--ease-nm);
-}
-.work-card:hover .work-frame {
-  transform: translate3d(0, -6px, 0);
-}
-
-.work-poster,
+.work-image,
 .work-video {
-  position: absolute;
-  inset: 0;
+  object-fit: cover;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  position: absolute;
+  inset: 0;
 }
 
-.work-poster {
-  z-index: 1;
-  transition: opacity 0.45s var(--ease-nm), transform 0.6s var(--ease-nm);
+.work-image {
+  z-index: 0;
+  transition: opacity 0.4s ease;
 }
-/* Cross-fade poster → video only once the video is actually playing. */
-.work-poster[data-hidden="true"] {
+.work-image[data-hidden="true"] {
   opacity: 0;
 }
 
 .work-video {
-  z-index: 2;
+  z-index: 1;
   opacity: 0;
-  transition: opacity 0.45s var(--ease-nm);
+  transition: opacity 0.4s ease;
 }
 .work-video[data-state="active"] {
   opacity: 1;
 }
 
-.work-card:hover .work-poster,
-.work-card:hover .work-video {
-  transform: scale(1.04);
-}
-
-.work-scrim {
+/* Source: .work-image-overlay{z-index:10;opacity:0;background:#0009;
+   width:101%;height:101%;transition:opacity .4s} */
+.work-image-overlay {
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  background-color: #0009;
+  width: 101%;
+  height: 101%;
+  margin-left: auto;
+  margin-right: auto;
+  transition: opacity 0.4s;
   position: absolute;
   inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background-image: linear-gradient(#0000004d, #33333308 45%, #0000008c);
+}
+.work-card:hover .work-image-overlay {
+  opacity: 1;
+}
+
+/* Source gradient scrim — exact stops */
+.work-card-content {
+  z-index: 2;
+  background-image: linear-gradient(#0000004d, #33333308 50%, #0006);
+  flex-flow: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25vw 1.25vw 1.81vw;
+  display: flex;
+  position: absolute;
+  inset: 0;
+}
+
+.work-card-content-top-layout {
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  display: flex;
 }
 
 .work-card-index {
-  position: absolute;
-  top: clamp(0.75rem, 1.25vw, 1.5rem);
-  left: clamp(0.75rem, 1.25vw, 1.5rem);
-  z-index: 4;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1rem, 1.53vw, 1.75rem);
-  line-height: 1;
-  color: var(--cream);
-  mix-blend-mode: difference;
-}
-
-.work-flag {
-  position: absolute;
-  top: clamp(0.75rem, 1.25vw, 1.5rem);
-  right: clamp(0.75rem, 1.25vw, 1.5rem);
-  z-index: 4;
-  border-radius: var(--radius-pill);
-  background-color: rgba(248, 247, 243, 0.9);
-  color: var(--ink);
-  padding: 0.3em 0.8em;
-  font-family: var(--font-body-md);
-  font-size: clamp(0.625rem, 0.83vw, 0.875rem);
-  font-weight: 600;
-  line-height: 1;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  backdrop-filter: blur(6px);
-}
-
-/* Yellow arrow FAB — carries the Phase 3 magnetic transform. */
-.work-card-arrow-wrap {
-  position: absolute;
-  right: clamp(0.75rem, 1.25vw, 1.5rem);
-  bottom: clamp(0.75rem, 1.25vw, 1.5rem);
-  z-index: 4;
-  background-color: var(--accent);
-  color: var(--ink);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: clamp(2.25rem, 2.85vw, 3rem);
-  height: clamp(2.25rem, 2.85vw, 3rem);
-  /* --mag-* are written by useMagnetic; defaults keep it inert pre-hydration. */
-  transform: translate3d(var(--mag-x, 0), var(--mag-y, 0), 0)
-    scale(var(--mag-scale, 1));
-  transition: background-color 0.3s, color 0.3s;
-}
-/* The rAF loop owns translation; only rotation is CSS-timed. */
-.work-card:hover .work-card-arrow {
-  transform: rotate(45deg);
-}
-
-.work-card-arrow {
-  flex: none;
-  width: 42%;
-  height: 42%;
-  transition: transform 0.35s var(--ease-nm);
-}
-
-/* ---------- Text rows (subgrid-aligned) ------------------------------------ */
-.work-card-heading {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 1.94vw, 2.25rem);
   font-weight: 500;
-  line-height: 1.1;
+  font-size: clamp(0.625rem, 0.97vw, 1.5rem);
+  line-height: 1;
   color: var(--cream);
 }
 
-.work-card-desc {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: clamp(0.8125rem, 1.04vw, 1.125rem);
-  line-height: 1.55;
-  color: var(--cream);
-  opacity: 0.78;
-  /* Cap the copy so the subgrid row can't be dragged out by one long entry. */
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
+/* Source: .work-label-wrap{gap:.28vw;justify-content:flex-start;
+   align-items:center;display:flex} */
 .work-label-wrap {
+  grid-column-gap: 0.28vw;
+  grid-row-gap: 0.28vw;
+  gap: 0.28vw;
+  justify-content: flex-start;
+  align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: clamp(0.25rem, 0.42vw, 0.5rem);
-  align-items: flex-start;
-  align-content: flex-start;
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
+/* Source: .work-label{background:#000;border:1px solid #ffffff4d;
+   border-radius:5.14vw;padding:.345vw .69vw;
+   font-size:clamp(.625rem,.97vw,1.5rem);line-height:1} */
 .work-label {
   background-color: #000;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-pill);
-  padding: 0.4em 0.85em;
+  border-radius: 5.14vw;
+  padding: 0.345vw 0.69vw;
   font-family: var(--font-body-md);
-  font-size: clamp(0.625rem, 0.83vw, 0.9375rem);
-  font-weight: 500;
+  font-size: clamp(0.625rem, 0.97vw, 1.5rem);
   line-height: 1;
   color: var(--cream);
   white-space: nowrap;
 }
 
-/* ---------- Motion & data preferences -------------------------------------- */
-@media (prefers-reduced-motion: reduce) {
-  .work-cell {
-    opacity: 1;
-    transform: none;
-    transition: none;
+.work-card-content-bottom-layout {
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  padding-right: clamp(2.5rem, 3.47vw, 4rem);
+  line-height: 1.3;
+  display: flex;
+  position: relative;
+}
+
+.work-card-heading {
+  margin-top: 0;
+  margin-bottom: 0.4vw;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.94vw, 3rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--cream);
+}
+
+.work_section .op80 {
+  opacity: 0.8;
+  font-family: var(--font-body);
+  font-size: clamp(0.75rem, 1.04vw, 1.25rem);
+  line-height: 1.3;
+  color: var(--cream);
+}
+
+/* Source: yellow circular FAB pinned bottom-right, with a two-arrow
+   "slide-through" hover (arrow 1 exits, arrow 2 enters). */
+.work-card-arrow-wrap {
+  background-color: var(--accent);
+  color: var(--ink);
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  width: clamp(1.75rem, 2.5vw, 2.75rem);
+  height: clamp(1.75rem, 2.5vw, 2.75rem);
+  transition-property: color, background-color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+  display: flex;
+  position: absolute;
+  inset: auto 0% 0% auto;
+  z-index: 11;
+}
+
+.work-card-arrow-icon {
+  flex-flow: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  width: 1.25vw;
+  height: 1.25vw;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.work-card-arrow {
+  flex: none;
+  width: 1.25vw;
+  height: 1.25vw;
+  transition: margin 0.25s;
+}
+.work-card-arrow-2 {
+  margin-bottom: -100%;
+  margin-left: -100%;
+  position: static;
+}
+.work-card:hover .work-card-arrow:not(.work-card-arrow-2) {
+  margin-bottom: 100%;
+  margin-left: 100%;
+}
+.work-card:hover .work-card-arrow-2 {
+  margin-bottom: 0;
+  margin-left: 0;
+}
+
+/* ---------- Mobile: source drops the pin entirely -------------------------- */
+/* Source 767px block:
+     .work_section{min-height:auto}
+     .work-sticky{min-height:auto;padding:clamp(4.27rem,21.33vw,10.23rem) 0;
+                  position:static}
+     .work-track-wrap{width:100%;padding-inline:clamp(1.07rem,5.33vw,2.56rem);
+                      overflow:scroll}
+     .work-card{width:clamp(16.53rem,82.67vw,39.59rem)}                        */
+@media screen and (max-width: 767px) {
+  .work_section {
+    min-height: auto !important; /* overrides the inline pin runway */
   }
-  .work-frame,
-  .work-poster,
-  .work-video,
+  .work-sticky {
+    min-height: auto;
+    padding: clamp(4.27rem, 21.33vw, 10.23rem) 0;
+    position: static;
+  }
+  .work-top-layout {
+    grid-column-gap: clamp(0.96rem, 4.8vw, 2.3rem);
+    grid-row-gap: clamp(0.96rem, 4.8vw, 2.3rem);
+    grid-template-columns: 1fr;
+    margin-bottom: clamp(3.73rem, 18.67vw, 8.96rem);
+    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
+    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
+  }
+  .work_section .h2-style-white.max-width-700,
+  .work-top-text {
+    max-width: 100%;
+  }
+  .work-track-wrap {
+    width: 100%;
+    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
+    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .work-track-wrap::-webkit-scrollbar {
+    display: none;
+  }
+  .work-track {
+    grid-column-gap: clamp(1.28rem, 6.4vw, 3.07rem);
+    gap: clamp(1.28rem, 6.4vw, 3.07rem);
+    transform: none !important; /* the scrub is disabled below 768px */
+  }
+  .work-card {
+    border-radius: clamp(0.64rem, 3.2vw, 1.53rem);
+    width: clamp(16.53rem, 82.67vw, 39.59rem);
+    scroll-snap-align: start;
+  }
+  .work-card-content {
+    padding: clamp(0.86rem, 4.16vw + 0.026rem, 1.99rem);
+  }
+  .work-label {
+    padding: clamp(0.27rem, 1.33vw, 0.64rem) clamp(0.53rem, 2.67vw, 1.28rem);
+    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
+  }
+  .work-label-wrap {
+    grid-column-gap: clamp(0.21rem, 1.07vw, 0.51rem);
+    gap: clamp(0.21rem, 1.07vw, 0.51rem);
+  }
+  .work-card-content-bottom-layout {
+    padding-right: clamp(2.99rem, 14.93vw, 7.16rem);
+    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
+  }
+  .work-card-heading {
+    margin-bottom: clamp(0.32rem, 1.6vw, 0.77rem);
+    font-size: clamp(1.49rem, 7.47vw, 3.58rem);
+  }
+  .work-card-index,
+  .work_section .op80 {
+    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
+  }
+  .work-card-arrow-wrap {
+    width: clamp(1.92rem, 9.6vw, 4.61rem);
+    height: clamp(1.92rem, 9.6vw, 4.61rem);
+  }
+  .work-card-arrow-icon,
   .work-card-arrow {
-    transition: none;
-  }
-  .work-card:hover .work-frame,
-  .work-card:hover .work-poster,
-  .work-card:hover .work-video {
-    transform: none;
+    width: clamp(0.85rem, 4.27vw, 2.05rem);
+    height: clamp(0.85rem, 4.27vw, 2.05rem);
   }
 }
 
-/* ---------- Mobile --------------------------------------------------------- */
-@media screen and (max-width: 767px) {
-  .work-top-layout {
-    grid-template-columns: 1fr;
-    grid-row-gap: clamp(0.96rem, 4.8vw, 2.3rem);
-    margin-bottom: clamp(2.5rem, 12vw, 4rem);
+/* Reduced motion: no scrub, native rail instead (matches the mobile fallback) */
+@media (prefers-reduced-motion: reduce) {
+  .work_section {
+    min-height: auto !important;
   }
-  .work-top-text {
-    justify-self: start;
-    max-width: 100%;
+  .work-sticky {
+    position: static;
+    min-height: auto;
+    padding-block: 10vw;
   }
-  .work-card-heading {
-    font-size: clamp(1.35rem, 6vw, 2rem);
+  .work-track-wrap {
+    padding-left: 1.39vw;
+    overflow-x: auto;
   }
-  .work-card-desc {
-    font-size: clamp(0.8125rem, 3.6vw, 1rem);
+  .work-track {
+    transform: none !important;
   }
-  .work-label {
-    font-size: clamp(0.6875rem, 3vw, 0.875rem);
+  .work-image,
+  .work-video,
+  .work-image-overlay,
+  .work-card-arrow {
+    transition: none;
   }
 }

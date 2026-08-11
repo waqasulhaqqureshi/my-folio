@@ -6,6 +6,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faExternalLink } from "@fortawesome/free-solid-svg-icons";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { lockScroll, unlockScroll } from "../lib/scrollLock";
 
 /*
  * CertificateModal — same props/behavior as before (portal, ESC close,
@@ -56,31 +57,13 @@ const CertificateModal = ({
     }
   };
 
-  const unlockBodyScroll = () => {
-    if (typeof document !== "undefined") {
-      try {
-        document.body.style.overflow = "";
-        document.body.style.overflowY = "";
-      } catch {}
-    }
-  };
 
-  const lockBodyScroll = () => {
-    if (typeof document !== "undefined") {
-      try {
-        document.body.style.overflow = "hidden";
-        document.body.style.overflowY = "hidden";
-      } catch {}
-    }
-  };
-
+  /* Ref-counted lock: acquire ONLY while open, release exactly once. A modal
+     that is merely mounted-but-closed must not touch the global scroll state. */
   useEffect(() => {
-    if (isOpen) {
-      lockBodyScroll();
-    } else {
-      unlockBodyScroll();
-    }
-    return () => unlockBodyScroll();
+    if (!isOpen) return;
+    lockScroll();
+    return () => unlockScroll();
   }, [isOpen]);
 
   useEffect(() => {

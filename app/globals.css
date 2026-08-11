@@ -95,9 +95,15 @@
     overscroll-behavior: none;
   }
 
+  /* Scroll lock is ADDITIVE and reference-counted (app/lib/scrollLock.ts).
+     Scrollable is the default so that any stray "reset to stylesheet value"
+     can never leave the page permanently unscrollable. */
+  html.is-scroll-locked,
+  html.is-scroll-locked body {
+    overflow: hidden;
+  }
+
   body {
-    /* Preloader contract — it releases scroll when the intro completes. */
-    overflow-y: hidden;
     background-color: var(--canvas);
     color: var(--ink);
     font-family: var(--font-body);
@@ -218,6 +224,24 @@
 
 @layer components {
   /* --- Layout shells ------------------------------------------------------ */
+
+  /*
+   * Sidebar gutter (heynesh.com parity).
+   * The source reserves the fixed 18.54vw left nav by giving EVERY section
+   * `padding-left: 21vw`. Applied here at the shell level so each section keeps
+   * its own internal container rules. Dropped below 768px, where the source
+   * turns the rail into a top bar.
+   */
+  .nm-shell {
+    padding-left: 21vw;
+    padding-right: 1.39vw;
+  }
+  @media (max-width: 767px) {
+    .nm-shell {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
 
   /* Source container: 93.06vw centered (matches .hero-container) */
   .nm-container {

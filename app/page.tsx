@@ -34,7 +34,8 @@ export default function Home() {
 
       <NavBar />
 
-      <main className="flex flex-col items-center justify-center">
+      {/* nm-shell reserves the fixed sidebar's 21vw gutter (heynesh parity) */}
+      <main className="nm-shell flex flex-col items-center justify-center">
         <Hero />
         <Work />
         <Certificates />

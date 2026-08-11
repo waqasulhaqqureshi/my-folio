@@ -1,160 +1,490 @@
 /* ============================================================================
-   Primary nav dock — Phase 4
+   heynesh.com — navigation sidebar, 1:1 structural port
    ----------------------------------------------------------------------------
-   Typographic scale and gutters mirror .hero-navigation-link (hero.css) so the
-   floating dock and the in-hero nav row are one system.
-
-   The dock uses mix-blend-difference over white text to stay legible on both
-   the beige canvas and the dark Work panel. Focus states deliberately OPT OUT
-   of the blend mode: a blended focus ring can compute to an invisible colour
-   over mid-greys, which would fail WCAG 2.4.11 (focus appearance).
+   Transcribed from nesh-staging.webflow.shared.bea9f6170.min.css:
+     .navigation{z-index:9;flex-flow:column;width:18.54vw;height:100vh;
+                 margin-top:auto;margin-bottom:auto;padding-top:1.25vw;
+                 display:block;position:fixed;inset:0% auto 0% 1.39vw}
+     .nav-top-layout{gap:clamp(1.25rem,2.78vw,3rem);flex-flow:column;
+                     justify-content:space-between;margin-bottom:1.11vw;
+                     padding:1.11vw;font-size:clamp(.75rem,1vw,1.5rem)}
+     .nav-top-bg / .nav-stats-bg / .nav-menu-bg
+                   {backdrop-filter:blur(15px);background:#dfdececc;
+                    border:1px solid #fff3;border-radius:.56vw;inset:0%}
+     .nav-logo{gap:.2vw;color:#ffff23;border-radius:.56vw;width:6.11vw;
+               padding:.83vw .5vw .83vw 0}
+     .social-link{background:#ebeada;border:1px solid #0000001a;
+                  border-radius:.56vw;width:2.08vw;height:2.08vw}
+     .nav-stats-wrap{gap:1.25vw;height:8vw;margin-bottom:1.11vw;
+                     padding:1vw 1.67vw}
+     .nav-stats-card{gap:.56vw;width:6.94vw;font-family:"Tr 3 A";
+                     font-size:clamp(.75rem,1.18vw,1.5rem);font-weight:500}
+     .nav-stats-sep{background:#0000001a;width:1px;height:3.47vw}
+     .nav-menu{gap:clamp(.5rem,.69vw,.75rem);flex-flow:column;
+               margin-bottom:1.11vw;padding:1.11vw}
+     .nav-menu-item{gap:.69vw;height:2.5vw;padding-inline:.69vw;
+                    font-family:Ppneuemontreal;
+                    font-size:clamp(.75rem,1.25vw,1.5rem);font-weight:500}
+     .nav-item-bg{background:#ebeada;border-radius:.56vw;padding-inline:.69vw;
+                  transition:background-color .3s ease;inset:0%}
+     .nav-item-icon{width:1.11vw;order:-9999}
+     .nav-button{background:var(--yellow);height:3.47vw;color:var(--black);
+                 border-radius:.83vw;font-family:"Tr 3 A";
+                 font-size:clamp(.75rem,1.18vw,1.5rem);font-weight:500}
+     .nav-experience-numb{color:#ffff23;width:2.78vw;font-family:"Tr 3 A";
+                          font-weight:700;line-height:.9}
+   767px block: .navigation becomes a full-width TOP bar
+     (inset:0 0 auto; width:100%; display:block), .social-wrap and
+     .nav-stats-wrap are display:none, .nav-menu becomes a horizontal row.
    ========================================================================== */
 
-.nm-nav {
+.navigation {
+  z-index: 9;
+  flex-flow: column;
+  width: 18.54vw;
+  height: 100vh;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding-top: 1.25vw;
+  display: flex;
   position: fixed;
-  bottom: clamp(1.25rem, 2.2vw, 2rem);
-  left: 0;
-  right: 0;
-  z-index: 50;
-  margin-inline: auto;
-  width: fit-content;
-  max-width: calc(100vw - 2rem);
-  display: flex;
-  align-items: center;
-  gap: clamp(0.25rem, 0.55vw, 0.6rem);
-  background: transparent;
-  mix-blend-mode: difference;
-  /* Own layer: the blend + fixed positioning would otherwise repaint the page
-     behind it on every scroll frame. */
-  will-change: transform;
-  transform: translateZ(0);
+  inset: 0% auto 0% 1.39vw;
+  overflow: visible;
+  pointer-events: auto;
 }
 
-/* Any focus inside the dock disables blending so the ring keeps true contrast. */
-.nm-nav:focus-within {
-  mix-blend-mode: normal;
-  background-color: rgba(0, 0, 0, 0.72);
-  border-radius: var(--radius-pill);
-  backdrop-filter: blur(10px);
-  padding-inline: 0.35rem;
+/* ---------- Shared glass panes ---------------------------------------------- */
+.nav-top-bg,
+.nav-stats-bg,
+.nav-menu-bg {
+  z-index: 0;
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  background-color: var(--glass-pane);
+  border: 1px solid var(--glass-line);
+  border-radius: 0.56vw;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0%;
 }
 
-/* ---------- Items ---------------------------------------------------------- */
-.nm-nav__list {
+/* ---------- Top layout: wordmark + socials ---------------------------------- */
+.nav-top-layout {
+  z-index: 7;
+  grid-column-gap: clamp(1.25rem, 2.78vw, 3rem);
+  grid-row-gap: clamp(1.25rem, 2.78vw, 3rem);
+  flex-flow: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.11vw;
+  padding: 1.11vw;
+  font-size: clamp(0.75rem, 1vw, 1.5rem);
   display: flex;
+  position: relative;
+}
+
+.nav-top-item {
+  z-index: 1;
+  justify-content: space-between;
   align-items: center;
-  gap: clamp(0.1rem, 0.35vw, 0.4rem);
+  width: 100%;
+  display: flex;
+  position: relative;
+}
+
+.nav-logo {
+  grid-column-gap: 0.2vw;
+  gap: 0.2vw;
+  color: var(--accent);
+  border-radius: 0.56vw;
+  justify-content: center;
+  align-items: flex-start;
+  height: auto;
+  padding-top: 0.83vw;
+  padding-bottom: 0.83vw;
+  padding-right: 0.5vw;
+  display: flex;
+  position: relative;
+  text-decoration: none;
+}
+
+/* Source ships an inline SVG wordmark; same display face + yellow token. */
+.nav-logo-mark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 2.36vw, 2.75rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.35);
+}
+
+.nesh-copyright-icon {
+  width: 0.6vw;
+  min-width: 7px;
+  flex: none;
+  color: var(--accent);
+  margin-top: 0.2vw;
+}
+
+.social-wrap {
+  grid-column-gap: 0.25rem;
+  gap: 0.25rem;
+  display: flex;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.nm-nav__item {
-  display: flex;
-}
-
-.nm-nav__link,
-.nm-nav__resume {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
+.social-link {
+  perspective-origin: 0%;
+  transform-origin: 0%;
+  background-color: var(--chip);
+  border: 1px solid var(--line);
+  border-radius: 0.56vw;
   justify-content: center;
-  /* Hit area ≥ 44px tall (WCAG 2.5.8 target size) without inflating the type. */
-  min-height: 44px;
-  padding-inline: clamp(0.6rem, 1.11vw, 1.1rem);
-  color: #fff;
-  text-decoration: none;
-  font-family: var(--font-display);
-  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: transform 0.3s var(--ease-nm), opacity 0.3s var(--ease-nm);
+  align-items: center;
+  width: 2.08vw;
+  height: 2.08vw;
+  min-width: 26px;
+  min-height: 26px;
+  display: flex;
+  color: var(--ink);
+  transition: background-color 0.3s ease, transform 0.3s var(--ease-nm);
 }
-
-.nm-nav__label {
-  display: block;
-  transition: transform 0.3s var(--ease-nm);
+.social-link svg {
+  width: 0.97vw;
+  height: 0.97vw;
+  min-width: 12px;
+  min-height: 12px;
 }
-
-/* Micro-interaction: 1px lift + underline sweep from the left. */
-.nm-nav__link:hover .nm-nav__label {
+.social-link:hover {
+  background-color: var(--sand);
   transform: translateY(-1px);
 }
 
-.nm-nav__underline {
-  position: absolute;
-  left: clamp(0.6rem, 1.11vw, 1.1rem);
-  right: clamp(0.6rem, 1.11vw, 1.1rem);
-  bottom: clamp(0.55rem, 1vw, 0.9rem);
-  height: 1px;
-  background-color: currentColor;
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 0.35s var(--ease-nm);
-}
-.nm-nav__link:hover .nm-nav__underline {
-  transform: scaleX(1);
-}
-
-/* Active section — driven by aria-current, so the visual state and the
-   accessible state can never drift apart. */
-.nm-nav__link[aria-current="page"] .nm-nav__underline {
-  transform: scaleX(1);
-}
-.nm-nav__link[data-active="false"] {
-  opacity: 0.62;
-}
-.nm-nav__link[data-active="true"] {
-  opacity: 1;
+/* ---------- Stats ----------------------------------------------------------- */
+.nav-stats-wrap {
+  z-index: 11;
+  grid-column-gap: 1.25vw;
+  gap: 1.25vw;
+  flex-flow: row;
+  justify-content: center;
+  align-items: center;
+  height: 8vw;
+  margin-bottom: 1.11vw;
+  padding: 1vw 1.67vw;
+  font-size: clamp(0.75rem, 1vw, 1.5rem);
+  line-height: 1.1;
+  display: flex;
+  position: relative;
 }
 
-/* ---------- Resume chip (magnetic) ----------------------------------------- */
-.nm-nav__resume {
-  transform: translate3d(var(--mag-x, 0), var(--mag-y, 0), 0)
-    scale(var(--mag-scale, 1));
-}
-.nm-nav__icon {
-  font-size: clamp(0.9rem, 1.18vw, 1.25rem);
+.nav-stats-card {
+  z-index: 1;
+  grid-row-gap: 0.56vw;
+  gap: 0.56vw;
+  text-align: center;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 6.94vw;
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+  font-weight: 500;
+  display: flex;
+  position: relative;
+  color: var(--ink);
 }
 
-.nm-nav__sep {
-  display: block;
+.nav-experience-numb {
+  color: var(--accent);
+  width: 2.78vw;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 0.9;
+  font-size: clamp(1.75rem, 2.78vw, 3.25rem);
+  -webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.4);
+}
+
+.nav-stats-label {
+  font-size: clamp(0.625rem, 0.97vw, 1.5rem);
+  line-height: 1.1;
+}
+
+.nav-stats-sep {
+  z-index: 10;
+  background-color: var(--line);
   width: 1px;
-  height: clamp(0.7rem, 0.8vw, 1rem);
-  background-color: rgba(255, 255, 255, 0.6);
+  height: 3.47vw;
+  position: relative;
   flex: none;
 }
 
-/* ---------- Focus ---------------------------------------------------------- */
-.nm-nav__link:focus-visible,
-.nm-nav__resume:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: var(--radius-pill);
+/* ---------- Menu ------------------------------------------------------------ */
+.nav-menu {
+  z-index: 8;
+  grid-column-gap: clamp(0.5rem, 0.69vw, 0.75rem);
+  grid-row-gap: clamp(0.5rem, 0.69vw, 0.75rem);
+  flex-flow: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.11vw;
+  padding: 1.11vw;
+  font-size: clamp(0.75rem, 1vw, 1.5rem);
+  display: flex;
+  position: relative;
+}
+
+.nav-menu-list {
+  z-index: 2;
+  position: relative;
+  display: flex;
+  flex-flow: column;
+  gap: clamp(0.5rem, 0.69vw, 0.75rem);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Source: typography + box metrics live on .nav-menu-item itself. */
+.nav-menu-item {
+  z-index: 2;
+  grid-column-gap: 0.69vw;
+  grid-row-gap: 0.69vw;
+  gap: 0.69vw;
+  justify-content: center;
+  align-items: center;
+  height: 2.5vw;
+  min-height: 40px;
+  padding-left: 0.69vw;
+  padding-right: 0.69vw;
+  font-family: var(--font-body-md);
+  font-size: clamp(0.75rem, 1.25vw, 1.5rem);
+  font-weight: 500;
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+
+/* Source: the chip is a sibling background layer, not the link itself. */
+.nav-item-bg {
+  z-index: 0;
+  grid-column-gap: 0.69vw;
+  grid-row-gap: 0.69vw;
+  gap: 0.69vw;
+  perspective-origin: 0%;
+  background-color: var(--chip);
+  border-radius: 0.56vw;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding-left: 0.69vw;
+  padding-right: 0.69vw;
+  font-family: var(--font-body-md);
+  font-size: clamp(0.75rem, 1.25vw, 1.5rem);
+  font-weight: 500;
+  display: flex;
+  position: absolute;
+  inset: 0%;
+  transition: background-color 0.3s ease;
+  pointer-events: none;
+}
+
+.nav-menu-link {
+  z-index: 2;
+  grid-column-gap: 0.69vw;
+  gap: 0.69vw;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  font: inherit;
+  display: flex;
+  position: relative;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: 0.56vw;
+}
+
+.nav-item-icon {
+  z-index: 1;
+  order: -9999;
+  width: 1.11vw;
+  min-width: 12px;
+  flex: none;
+  position: relative;
+  display: flex;
+  color: var(--ink);
+  opacity: 0.35;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+.nav-item-icon svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Hover + active states (source: .nav-item-bg background-color transition) */
+.nav-menu-item:hover .nav-item-bg {
+  background-color: var(--sand);
+}
+.nav-menu-link[aria-current="page"] ~ .nav-item-bg,
+.nav-menu-item:has(.nav-menu-link[aria-current="page"]) .nav-item-bg {
+  background-color: var(--accent);
+}
+.nav-menu-link[aria-current="page"] .nav-item-icon {
   opacity: 1;
 }
-/* Mouse users never see the ring, but it is never suppressed for keyboards. */
-.nm-nav__link:focus:not(:focus-visible),
-.nm-nav__resume:focus:not(:focus-visible) {
+
+/* Focus: never suppressed for keyboard users. */
+.nav-menu-link:focus-visible,
+.social-link:focus-visible,
+.nav-button:focus-visible,
+.nav-logo:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 0.56vw;
+}
+.nav-menu-link:focus:not(:focus-visible),
+.social-link:focus:not(:focus-visible),
+.nav-button:focus:not(:focus-visible) {
   outline: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .nm-nav__link,
-  .nm-nav__label,
-  .nm-nav__underline,
-  .nm-nav__resume {
-    transition: none;
+/* ---------- CTA ------------------------------------------------------------- */
+.nav-button-wrap {
+  z-index: 20;
+  height: 3.47vw;
+  min-height: 42px;
+  position: relative;
+}
+
+.nav-button {
+  z-index: 1;
+  background-color: var(--accent);
+  transform-origin: 0%;
+  text-align: center;
+  width: 100%;
+  height: 3.47vw;
+  min-height: 42px;
+  color: var(--ink);
+  border-radius: 0.83vw;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
+  font-weight: 500;
+  display: flex;
+  position: relative;
+  text-decoration: none;
+  transition: transform 0.3s var(--ease-nm), filter 0.3s ease;
+}
+.nav-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+/* ---------- Mobile: source turns the rail into a top bar -------------------- */
+@media screen and (max-width: 767px) {
+  .navigation {
+    z-index: 300;
+    width: 100%;
+    height: auto;
+    padding-top: 0;
+    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
+    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
+    display: block;
+    inset: 0% 0% auto;
+  }
+
+  .nav-top-layout {
+    z-index: 300;
+    padding: clamp(1.07rem, 5.33vw, 2.56rem) 0 0;
+  }
+  .nav-top-bg {
+    display: none; /* source: the top pane is transparent on mobile */
+  }
+  .nav-top-item {
+    align-items: stretch;
+  }
+
+  .nav-logo {
+    background-color: var(--accent);
+    color: var(--ink);
+    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
+    justify-content: center;
+    align-items: center;
+    width: clamp(4.69rem, 23.47vw, 11.27rem);
+    height: clamp(2.08rem, 10.4vw, 4.99rem);
+    padding: 0;
+  }
+  .nav-logo-mark {
+    color: var(--ink);
+    font-size: clamp(1rem, 5.6vw, 2rem);
+    -webkit-text-stroke: 0;
+  }
+  .nesh-copyright-icon {
+    width: clamp(0.43rem, 2.13vw, 1.02rem);
+    color: var(--ink);
+  }
+
+  /* Source hides both on mobile. */
+  .social-wrap,
+  .nav-stats-wrap {
+    display: none;
+  }
+
+  .nav-menu {
+    margin-bottom: clamp(0.85rem, 4.27vw, 2.05rem);
+    padding: clamp(0.85rem, 4.27vw, 2.05rem) 0 clamp(0.85rem, 4.27vw, 2.05rem)
+      clamp(0.85rem, 4.27vw, 2.05rem);
+    display: flex;
+  }
+  .nav-menu-bg {
+    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
+  }
+  .nav-menu-list {
+    flex-flow: row;
+    flex-wrap: wrap;
+    gap: clamp(0.35rem, 2vw, 0.75rem);
+    padding-right: clamp(0.85rem, 4.27vw, 2.05rem);
+  }
+  .nav-menu-item {
+    width: auto;
+  }
+  .nav-item-bg {
+    border: 1px solid var(--line);
+    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
+  }
+  .nav-menu-link {
+    grid-column-gap: clamp(0.53rem, 2.67vw, 1.28rem);
+    gap: clamp(0.53rem, 2.67vw, 1.28rem);
+    height: auto;
+    min-height: 44px;
+    padding: clamp(0.53rem, 2.67vw, 1.28rem);
+  }
+  .nav-item-icon {
+    width: clamp(0.85rem, 4.27vw, 2.05rem);
+  }
+
+  .nav-button-wrap {
+    height: clamp(2.67rem, 13.33vw, 6.39rem);
+    margin-bottom: clamp(0.85rem, 4.27vw, 2.05rem);
+  }
+  .nav-button {
+    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
+    font-size: clamp(0.875rem, 4vw, 1.25rem);
   }
 }
 
-@media (max-width: 767px) {
-  .nm-nav__link,
-  .nm-nav__resume {
-    padding-inline: clamp(0.5rem, 3vw, 0.9rem);
-    font-size: clamp(0.75rem, 3.4vw, 1rem);
+@media (prefers-reduced-motion: reduce) {
+  .nav-item-bg,
+  .social-link,
+  .nav-button,
+  .nav-item-icon {
+    transition: none;
   }
 }

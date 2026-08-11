@@ -1,33 +1,24 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import { ProjectProps } from "./projectDetails";
-import { WorkMedia } from "./workMedia";
 import { useLazyVideo } from "../hooks/useLazyVideo";
-import { useMagnetic } from "../hooks/useMagnetic";
 
 /*
- * WorkCard — grid cell (Phase 1) + local video node (Phase 2).
+ * WorkCard — port of the source's `a.work-card`:
  *
- * SUBGRID CONTRACT
- * The card is itself a grid whose rows are inherited from the parent track via
- * `grid-template-rows: subgrid`. That is what makes every card's media frame,
- * title and meta row share a common baseline regardless of description length
- * — the thing a plain flex/auto-rows grid cannot do.
+ *   a.work-card
+ *     ├── img.work-image                 (object-fit:cover, absolute fill)
+ *     ├── div.work-image-overlay         (#0009, opacity 0 → 1 on hover)
+ *     └── div.work-card-content          (gradient scrim, flex column)
+ *           ├── .work-card-content-top-layout   → index + .work-label-wrap
+ *           ├── .work-card-content-bottom-layout→ h3 + description
+ *           └── .work-card-arrow-wrap           → yellow circular FAB
  *
- * ZERO-CLS MEDIA FRAME
- * The frame's height comes from `aspect-ratio` derived from the asset's
- * intrinsic 778×1100, applied in CSS before any media loads. The poster
- * <Image> and the <video> are both absolutely positioned inside that reserved
- * box, so swapping poster → video never reflows a single pixel.
- *
- * The <video> carries NO src attribute in markup: useLazyVideo attaches it on
- * approach and fully releases it (pause → drop src → load()) on exit.
+ * Media: the source uses a static <img>; here the same reserved box also hosts
+ * a LOCAL lazy <video> (public/videos) that fades in over the poster once it
+ * plays, and is fully released when scrolled away.
  */
-type WorkCardProps = ProjectProps & {
-  position: number;
-  media: WorkMedia;
-};
+type WorkCardProps = ProjectProps & { position: number };
 
 const WorkCard = ({
   name,
@@ -35,105 +26,90 @@ const WorkCard = ({
   technologies,
   demo,
   image,
-  available,
+  video,
   position,
-  media,
 }: WorkCardProps) => {
   const index = String(position + 1).padStart(2, "0");
-  const { videoRef, state } = useLazyVideo(media.src);
-  const arrowRef = useMagnetic<HTMLSpanElement>({ strength: 0.45, padding: 16 });
-
-  const href = available ? demo : "#work";
+  const { videoRef, state } = useLazyVideo(video);
 
   return (
-    <article className="work-cell" data-reveal>
-      <Link
-        href={href}
-        target={available ? "_blank" : undefined}
-        rel={available ? "noopener noreferrer" : undefined}
-        className="work-card"
-        aria-label={
-          available
-            ? `${name} — open live project in a new tab`
-            : `${name} — coming soon`
-        }
-        aria-disabled={available ? undefined : true}
-        onClick={available ? undefined : (e) => e.preventDefault()}
-      >
-        {/* Reserved media box: geometry is final on first paint. */}
-        <div
-          className="work-frame"
-          style={{ aspectRatio: `${media.width} / ${media.height}` }}
-        >
-          <Image
-            src={image}
-            alt=""
-            aria-hidden="true"
-            fill
-            sizes="(max-width: 767px) 100vw, (max-width: 1199px) 50vw, 33vw"
-            className="work-poster"
-            data-hidden={state === "active" ? "true" : "false"}
-          />
+    <a
+      href={demo}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="work-card"
+      aria-label={`${name} — open project in a new tab`}
+    >
+      <Image
+        src={image}
+        alt=""
+        aria-hidden="true"
+        fill
+        sizes="(max-width: 767px) 83vw, 27vw"
+        className="work-image"
+        data-hidden={state === "active" ? "true" : "false"}
+      />
 
-          {/*
-           * No `src` here by design — attached imperatively by useLazyVideo.
-           * `disableRemotePlayback` stops Chromium reserving a cast pipeline
-           * for a purely decorative loop.
-           */}
-          <video
-            ref={videoRef}
-            className="work-video"
-            data-state={state}
-            muted
-            loop
-            playsInline
-            preload="none"
-            aria-hidden="true"
-            tabIndex={-1}
-            width={media.width}
-            height={media.height}
-          />
+      <video
+        ref={videoRef}
+        className="work-video"
+        data-state={state}
+        muted
+        loop
+        playsInline
+        preload="none"
+        aria-hidden="true"
+        tabIndex={-1}
+      />
 
-          <span className="work-scrim" aria-hidden="true" />
+      {/* Source: .work-image-overlay — #0009 wash revealed on hover */}
+      <span className="work-image-overlay" aria-hidden="true" />
 
-          <span className="work-card-index" aria-hidden="true">
-            {index}
-          </span>
+      <div className="work-card-content">
+        <div className="work-card-content-top-layout">
+          <div className="work-card-index">{index}</div>
+          <div className="work-label-wrap">
+            {technologies.map((tech) => (
+              <div key={tech} className="work-label">
+                {tech}
+              </div>
+            ))}
+          </div>
+        </div>
 
-          {!available && <span className="work-flag">Coming soon</span>}
+        <div className="work-card-content-bottom-layout">
+          <h3 className="work-card-heading">{name}</h3>
+          <p className="op80">{description}</p>
+        </div>
 
-          <span
-            ref={arrowRef}
-            className="work-card-arrow-wrap"
-            aria-hidden="true"
-          >
+        <div className="work-card-arrow-wrap" aria-hidden="true">
+          <div className="work-card-arrow-icon">
             <svg
               className="work-card-arrow"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth={2.4}
+              strokeWidth={2.2}
               strokeLinecap="round"
               strokeLinejoin="round"
             >
               <path d="M7 17L17 7M17 7H8M17 7v9" />
             </svg>
-          </span>
+            <svg
+              className="work-card-arrow work-card-arrow-2"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M7 17L17 7M17 7H8M17 7v9" />
+            </svg>
+          </div>
         </div>
-
-        {/* Subgrid rows: title / description / stack all align across cards. */}
-        <h3 className="work-card-heading">{name}</h3>
-        <p className="work-card-desc">{description}</p>
-
-        <ul className="work-label-wrap" aria-label={`${name} tech stack`}>
-          {technologies.map((tech) => (
-            <li key={tech} className="work-label">
-              {tech}
-            </li>
-          ))}
-        </ul>
-      </Link>
-    </article>
+      </div>
+    </a>
   );
 };
 

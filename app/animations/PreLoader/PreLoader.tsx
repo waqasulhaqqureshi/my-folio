@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import "./preloader.css";
+import { lockScroll, unlockScroll, forceUnlockScroll } from "../../lib/scrollLock";
 
 /*
  * PreLoader — lifecycle-orchestrated intro overlay.
@@ -38,8 +39,13 @@ const PreLoader = () => {
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // Ref-counted: the preloader owns exactly one lock for its lifetime.
+    let holdsLock = true;
+    lockScroll();
     const releaseScroll = () => {
-      document.body.style.overflowY = "auto";
+      if (!holdsLock) return;
+      holdsLock = false;
+      unlockScroll();
     };
 
     // Broadcast the lifecycle moment to orchestrated components (Hero FLIP):
@@ -104,7 +110,7 @@ const PreLoader = () => {
       }}
       onClick={() => {
         if (phase === "run") {
-          document.body.style.overflowY = "auto";
+          forceUnlockScroll();
           window.dispatchEvent(new CustomEvent("nm:intro-exit"));
           setPhase("exit");
         }

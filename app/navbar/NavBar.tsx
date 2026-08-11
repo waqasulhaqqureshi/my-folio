@@ -1,44 +1,35 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { faFilePdf } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useMagnetic } from "../hooks/useMagnetic";
 import "./navbar.css";
 
 /*
- * Primary navigation — Phase 4.
+ * Navigation — 1:1 structural port of heynesh.com's nav.
  *
- * TYPOGRAPHY / LAYOUT (heynesh.com heuristics)
- *   - uppercase, font-weight 500, line-height 1, letter-spacing 0.04em
- *   - fluid ramp clamp(0.75rem, 1.18vw, 1.5rem) — identical to the in-hero
- *     .hero-navigation-link scale already in hero.css, so the dock and the
- *     hero row read as one system
- *   - 1px hairline separators, 1.11vw flex gutters
+ * The previous bottom-dock was the wrong object entirely. The source's nav is a
+ * FIXED LEFT SIDEBAR, which is why every section on that site carries
+ * `padding-left: 21vw`. Source DOM:
  *
- * ARIA / KEYBOARD
- *   - <nav aria-label="Primary"> → <ul role="list"> → <li> → <a>: a real list,
- *     so screen readers announce "list, 4 items" and support list navigation.
- *   - The active section carries aria-current="page", kept in sync by a
- *     scroll-spy IntersectionObserver (not a scroll handler — no main-thread
- *     work per scroll event).
- *   - Left/Right/Home/End arrow keys move focus between links (composite
- *     widget pattern), Tab still enters and leaves the nav in one stop-per-link
- *     since these are ordinary links, not a roving-tabindex toolbar.
- *   - :focus-visible draws a 3px accent ring that is NEVER removed on mouse
- *     use; `mix-blend-difference` is disabled while focused so the ring keeps
- *     its true contrast against any backdrop.
- *   - Smooth scrolling is skipped for prefers-reduced-motion, and focus is
- *     moved to the target section so keyboard context follows the viewport.
+ *   div.navigation                  fixed; left:1.39vw; top:0; bottom:0;
+ *                                   width:18.54vw; height:100vh
+ *     ├── div.nav-top-layout        (+ .nav-top-bg glass pane)
+ *     │     └── .nav-top-item → .nav-logo (yellow wordmark) + .social-wrap
+ *     ├── div.nav-stats-wrap        (+ .nav-stats-bg) → .nav-stats-card ×2
+ *     ├── nav.nav-menu              (+ .nav-menu-bg) → .nav-menu-item ×N
+ *     │     └── each: .nav-item-bg (chip) + .nav-item-icon + label + a.nav-link
+ *     └── div.nav-button-wrap       → a.nav-button (yellow CTA)
+ *
+ * Menu items are this portfolio's own IA (Home / Work / About / Contact) in the
+ * source's chrome — the source's own labels (what you get, faq…) map to
+ * sections that don't exist here.
+ *
+ * A11Y (additive — the source itself is a div soup with `cursor:none`):
+ *   - real <nav> → <ul> → <li> → <a>, aria-current on the active section
+ *   - IntersectionObserver scroll-spy (no scroll handler)
+ *   - Arrow/Home/End roving focus, visible :focus-visible ring
+ *   - the source's decorative overlay <a.nav-link> is NOT reproduced as a second
+ *     focusable node; the label anchor is the single tab stop.
  */
-
-/*
- * Resume asset is not in the repo yet. Rendering a link to a 404 is worse than
- * rendering nothing (screen readers announce a real, broken destination), so
- * the chip is conditional: drop `resume.pdf` into /public — or set
- * NEXT_PUBLIC_RESUME_URL — and it mounts itself.
- */
-const RESUME_URL = process.env.NEXT_PUBLIC_RESUME_URL ?? "";
 
 const NAV_ITEMS = [
   { href: "#home", id: "home", label: "Home" },
@@ -47,30 +38,49 @@ const NAV_ITEMS = [
   { href: "#contact", id: "contact", label: "Contact" },
 ] as const;
 
+const SOCIALS = [
+  {
+    label: "GitHub",
+    href: "https://github.com/waqasulhaqqureshi",
+    path: "M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.8c.85 0 1.71.11 2.51.34 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85 0 1.34-.01 2.42-.01 2.75 0 .27.18.58.69.48A10 10 0 0 0 22 12c0-5.52-4.48-10-10-10z",
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/",
+    path: "M6.94 5a1.94 1.94 0 1 1-3.88 0 1.94 1.94 0 0 1 3.88 0zM3.1 8.42h3.7V21H3.1V8.42zM9.2 8.42h3.54v1.72h.05c.49-.93 1.7-1.91 3.5-1.91 3.74 0 4.43 2.46 4.43 5.66V21h-3.7v-6.4c0-1.53-.03-3.5-2.13-3.5-2.13 0-2.46 1.66-2.46 3.38V21H9.2V8.42z",
+  },
+  {
+    label: "X",
+    href: "https://x.com/",
+    path: "M18.9 2H22l-6.77 7.73L23.2 22h-6.24l-4.89-6.39L6.47 22H3.35l7.24-8.27L2.8 2h6.4l4.42 5.84L18.9 2zm-1.1 18.1h1.73L7.3 3.8H5.45L17.8 20.1z",
+  },
+];
+
 const NavBar = () => {
   const [active, setActive] = useState<string>("home");
   const listRef = useRef<HTMLUListElement>(null);
-  const resumeRef = useMagnetic<HTMLAnchorElement>({ strength: 0.5, padding: 12 });
 
-  /* ---- Scroll-spy: one observer, no scroll listener ---------------------- */
+  /* Scroll-spy: one observer, no scroll listener. */
   useEffect(() => {
     const sections = NAV_ITEMS.map((i) => document.getElementById(i.id)).filter(
       (el): el is HTMLElement => Boolean(el)
     );
     if (!sections.length) return;
 
-    // Track ratios in a map and pick the most-visible section per callback.
     const ratios = new Map<string, number>();
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          ratios.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0);
+          ratios.set(
+            entry.target.id,
+            entry.isIntersecting ? entry.intersectionRatio : 0
+          );
         }
         let bestId = "";
         let best = 0;
-        ratios.forEach((ratio, id) => {
-          if (ratio > best) {
-            best = ratio;
+        ratios.forEach((r, id) => {
+          if (r > best) {
+            best = r;
             bestId = id;
           }
         });
@@ -83,23 +93,18 @@ const NavBar = () => {
     return () => observer.disconnect();
   }, []);
 
-  /* ---- Smooth scroll + focus transfer ------------------------------------ */
   const handleScroll = (
     e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
     id: string
   ) => {
     const target = document.getElementById(id);
-    if (!target) return; // let the browser handle a missing anchor
+    if (!target) return;
     e.preventDefault();
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    target.scrollIntoView({
-      behavior: reduced ? "auto" : "smooth",
-      block: "start",
-    });
+    target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
     setActive(id);
 
-    // Move the a11y focus ring with the viewport without stealing it visually.
     const hadTabIndex = target.hasAttribute("tabindex");
     if (!hadTabIndex) target.setAttribute("tabindex", "-1");
     target.focus({ preventScroll: true });
@@ -110,78 +115,114 @@ const NavBar = () => {
     }
   };
 
-  /* ---- Arrow-key navigation within the list ------------------------------ */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLUListElement>) => {
-    const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
+    const keys = ["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"];
     if (!keys.includes(e.key)) return;
-
     const links = Array.from(
       listRef.current?.querySelectorAll<HTMLAnchorElement>("a[data-nav-link]") ?? []
     );
-    if (!links.length) return;
-
-    const currentIndex = links.findIndex((l) => l === document.activeElement);
-    if (currentIndex === -1) return;
+    const i = links.findIndex((l) => l === document.activeElement);
+    if (i === -1) return;
     e.preventDefault();
-
-    const nextIndex =
-      e.key === "ArrowRight"
-        ? (currentIndex + 1) % links.length
-        : e.key === "ArrowLeft"
-        ? (currentIndex - 1 + links.length) % links.length
+    const next =
+      e.key === "ArrowDown" || e.key === "ArrowRight"
+        ? (i + 1) % links.length
+        : e.key === "ArrowUp" || e.key === "ArrowLeft"
+        ? (i - 1 + links.length) % links.length
         : e.key === "Home"
         ? 0
         : links.length - 1;
-
-    links[nextIndex].focus();
+    links[next].focus();
   };
 
   return (
-    <nav aria-label="Primary" className="nm-nav">
-      {RESUME_URL && (
-        <>
-          <Link
-            ref={resumeRef}
-            href={RESUME_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nm-nav__resume"
-          >
-            <FontAwesomeIcon
-              icon={faFilePdf}
-              className="nm-nav__icon"
-              aria-hidden="true"
-            />
-            <span className="sr-only">
-              Open my resume (PDF, opens in a new tab)
-            </span>
+    <div className="navigation">
+      {/* ---- .nav-top-layout: wordmark + socials ---------------------------- */}
+      <div className="nav-top-layout">
+        <div className="nav-top-bg" aria-hidden="true" />
+        <div className="nav-top-item">
+          <Link href="#home" className="nav-logo" aria-label="Home">
+            <span className="nav-logo-mark">WQ</span>
+            <svg className="nesh-copyright-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.4" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M10.3 6.3a3 3 0 1 0 0 3.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
           </Link>
 
-          <span className="nm-nav__sep" aria-hidden="true" />
-        </>
-      )}
+          <ul className="social-wrap" role="list">
+            {SOCIALS.map((s) => (
+              <li key={s.label}>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                  aria-label={`${s.label} (opens in a new tab)`}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d={s.path} />
+                  </svg>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
-      <ul className="nm-nav__list" role="list" ref={listRef} onKeyDown={handleKeyDown}>
-        {NAV_ITEMS.map((item) => {
-          const isActive = active === item.id;
-          return (
-            <li key={item.id} className="nm-nav__item">
-              <Link
-                href={item.href}
-                data-nav-link
-                onClick={(e) => handleScroll(e, item.id)}
-                aria-current={isActive ? "page" : undefined}
-                className="nm-nav__link"
-                data-active={isActive ? "true" : "false"}
-              >
-                <span className="nm-nav__label">{item.label}</span>
-                <span className="nm-nav__underline" aria-hidden="true" />
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+      {/* ---- .nav-stats-wrap ------------------------------------------------ */}
+      <div className="nav-stats-wrap">
+        <div className="nav-stats-bg" aria-hidden="true" />
+        <div className="nav-stats-card">
+          <span className="nav-experience-numb">9</span>
+          <span className="nav-stats-label">Projects</span>
+        </div>
+        <span className="nav-stats-sep" aria-hidden="true" />
+        <div className="nav-stats-card">
+          <span className="nav-experience-numb">3</span>
+          <span className="nav-stats-label">
+            Years of
+            <br />
+            experience
+          </span>
+        </div>
+      </div>
+
+      {/* ---- .nav-menu ------------------------------------------------------ */}
+      <nav className="nav-menu" aria-label="Primary">
+        <div className="nav-menu-bg" aria-hidden="true" />
+        <ul className="nav-menu-list" role="list" ref={listRef} onKeyDown={handleKeyDown}>
+          {NAV_ITEMS.map((item) => {
+            const isActive = active === item.id;
+            return (
+              <li key={item.id} className="nav-menu-item">
+                <span className="nav-item-bg" aria-hidden="true" />
+                <a
+                  href={item.href}
+                  data-nav-link
+                  onClick={(e) => handleScroll(e, item.id)}
+                  aria-current={isActive ? "page" : undefined}
+                  className="nav-menu-link"
+                >
+                  <span className="nav-item-icon" aria-hidden="true">
+                    <svg viewBox="0 0 12 12" fill="none">
+                      <circle cx="6" cy="6" r="4" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                  </span>
+                  {item.label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* ---- .nav-button-wrap ---------------------------------------------- */}
+      <div className="nav-button-wrap">
+        <a href="#contact" onClick={(e) => handleScroll(e, "contact")} className="nav-button">
+          Book a Call
+        </a>
+      </div>
+    </div>
   );
 };
 
