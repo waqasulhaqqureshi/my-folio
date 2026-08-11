@@ -40,7 +40,9 @@
   width: 100%;
   height: auto;
   min-height: 100vh;
-  padding: 3vw 1.39vw; /* source: 3vw 1.39vw 3vw 21vw — see sidebar note */
+  /* source: 3vw 1.39vw 3vw 21vw — see sidebar note. Extra bottom padding
+     clears the fixed bottom dock so it never covers card content. */
+  padding: 3vw 1.39vw calc(3vw + 4.5rem);
   display: flex;
   position: sticky;
   top: 0; /* source pins to bottom:0; top:0 is correct without the 21vw rail */

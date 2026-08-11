@@ -11,7 +11,8 @@ const Footer = () => {
 
   return (
     <motion.footer
-      className="w-full border-t border-ink/10 bg-canvas py-8 text-ink md:py-10"
+      /* pb clears the fixed bottom nav dock so it never overlaps footer content */
+      className="w-full border-t border-ink/10 bg-canvas pb-28 pt-8 text-ink md:pb-32 md:pt-10"
       initial="initial"
       animate="animate"
       aria-label="Footer"

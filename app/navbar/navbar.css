@@ -1,490 +1,264 @@
 /* ============================================================================
-   heynesh.com — navigation sidebar, 1:1 structural port
+   Primary nav — bottom-center dock, heynesh.com chrome
    ----------------------------------------------------------------------------
-   Transcribed from nesh-staging.webflow.shared.bea9f6170.min.css:
-     .navigation{z-index:9;flex-flow:column;width:18.54vw;height:100vh;
-                 margin-top:auto;margin-bottom:auto;padding-top:1.25vw;
-                 display:block;position:fixed;inset:0% auto 0% 1.39vw}
-     .nav-top-layout{gap:clamp(1.25rem,2.78vw,3rem);flex-flow:column;
-                     justify-content:space-between;margin-bottom:1.11vw;
-                     padding:1.11vw;font-size:clamp(.75rem,1vw,1.5rem)}
-     .nav-top-bg / .nav-stats-bg / .nav-menu-bg
-                   {backdrop-filter:blur(15px);background:#dfdececc;
-                    border:1px solid #fff3;border-radius:.56vw;inset:0%}
-     .nav-logo{gap:.2vw;color:#ffff23;border-radius:.56vw;width:6.11vw;
-               padding:.83vw .5vw .83vw 0}
-     .social-link{background:#ebeada;border:1px solid #0000001a;
-                  border-radius:.56vw;width:2.08vw;height:2.08vw}
-     .nav-stats-wrap{gap:1.25vw;height:8vw;margin-bottom:1.11vw;
-                     padding:1vw 1.67vw}
-     .nav-stats-card{gap:.56vw;width:6.94vw;font-family:"Tr 3 A";
-                     font-size:clamp(.75rem,1.18vw,1.5rem);font-weight:500}
-     .nav-stats-sep{background:#0000001a;width:1px;height:3.47vw}
-     .nav-menu{gap:clamp(.5rem,.69vw,.75rem);flex-flow:column;
-               margin-bottom:1.11vw;padding:1.11vw}
-     .nav-menu-item{gap:.69vw;height:2.5vw;padding-inline:.69vw;
-                    font-family:Ppneuemontreal;
-                    font-size:clamp(.75rem,1.25vw,1.5rem);font-weight:500}
-     .nav-item-bg{background:#ebeada;border-radius:.56vw;padding-inline:.69vw;
-                  transition:background-color .3s ease;inset:0%}
-     .nav-item-icon{width:1.11vw;order:-9999}
-     .nav-button{background:var(--yellow);height:3.47vw;color:var(--black);
-                 border-radius:.83vw;font-family:"Tr 3 A";
-                 font-size:clamp(.75rem,1.18vw,1.5rem);font-weight:500}
-     .nav-experience-numb{color:#ffff23;width:2.78vw;font-family:"Tr 3 A";
-                          font-weight:700;line-height:.9}
-   767px block: .navigation becomes a full-width TOP bar
-     (inset:0 0 auto; width:100%; display:block), .social-wrap and
-     .nav-stats-wrap are display:none, .nav-menu becomes a horizontal row.
+   Placement is the ORIGINAL dock (fixed, bottom-center). Only the surface
+   treatment and interaction model are ported from heynesh.com:
+
+     .nav-menu-bg  → backdrop-filter:blur(15px); background:#dfdececc;
+                     border:1px solid #fff3; border-radius:.56vw
+     .nav-item-bg  → background:#ebeada; border-radius:.56vw;
+                     padding-inline:.69vw; transition:background-color .3s ease
+     .nav-menu-item→ gap:.69vw; height:2.5vw; font-family:Ppneuemontreal;
+                     font-size:clamp(.75rem,1.25vw,1.5rem); font-weight:500
+     .nav-item-icon→ width:1.11vw; order:-9999
+     .nav-button   → background:var(--yellow); height:3.47vw;
+                     border-radius:.83vw; font-family:"Tr 3 A"
+     hover states  → .nav-email-item:hover{background:#c9c8ba}
+                     .about-card-button:hover{background:var(--yellow)}
+
+   Surface hierarchy (all lighter than the page canvas #d5cfbe, as requested):
+     canvas  #d5cfbe   ← page
+     pane    #dfdece   ← the dock card              (+8 lightness)
+     chip    #ebeada   ← each nav item              (+12)
+     sand    #c9c8ba   ← chip hover
+     accent  #ffff23   ← active item + CTA
    ========================================================================== */
 
-.navigation {
-  z-index: 9;
-  flex-flow: column;
-  width: 18.54vw;
-  height: 100vh;
-  margin-top: auto;
-  margin-bottom: auto;
-  padding-top: 1.25vw;
-  display: flex;
+.nm-dock {
   position: fixed;
-  inset: 0% auto 0% 1.39vw;
-  overflow: visible;
-  pointer-events: auto;
+  bottom: clamp(1rem, 2vw, 2rem);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin-inline: auto;
+  width: fit-content;
+  max-width: calc(100vw - 1.5rem);
+  display: flex;
+  align-items: center;
+  gap: clamp(0.3rem, 0.55vw, 0.6rem);
+  /* Source .nav-menu padding: 1.11vw — trimmed to dock proportions */
+  padding: clamp(0.35rem, 0.55vw, 0.6rem);
+  border-radius: clamp(10px, 0.83vw, 16px);
+  isolation: isolate;
+  /* Own compositor layer: a fixed, blurred element would otherwise force a
+     repaint of everything beneath it on every scroll frame. */
+  transform: translateZ(0);
 }
 
-/* ---------- Shared glass panes ---------------------------------------------- */
-.nav-top-bg,
-.nav-stats-bg,
-.nav-menu-bg {
+/* ---- Source .nav-menu-bg: the pane, brighter than the canvas -------------- */
+.nm-dock__bg {
+  position: absolute;
+  inset: 0;
   z-index: 0;
+  border-radius: inherit;
+  background-color: var(--glass-pane); /* #dfdece @ 80% — lighter than canvas */
+  border: 1px solid var(--glass-line); /* #fff3 hairline, as in source */
   -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
-  background-color: var(--glass-pane);
-  border: 1px solid var(--glass-line);
-  border-radius: 0.56vw;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0%;
-}
-
-/* ---------- Top layout: wordmark + socials ---------------------------------- */
-.nav-top-layout {
-  z-index: 7;
-  grid-column-gap: clamp(1.25rem, 2.78vw, 3rem);
-  grid-row-gap: clamp(1.25rem, 2.78vw, 3rem);
-  flex-flow: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.11vw;
-  padding: 1.11vw;
-  font-size: clamp(0.75rem, 1vw, 1.5rem);
-  display: flex;
-  position: relative;
-}
-
-.nav-top-item {
-  z-index: 1;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  display: flex;
-  position: relative;
-}
-
-.nav-logo {
-  grid-column-gap: 0.2vw;
-  gap: 0.2vw;
-  color: var(--accent);
-  border-radius: 0.56vw;
-  justify-content: center;
-  align-items: flex-start;
-  height: auto;
-  padding-top: 0.83vw;
-  padding-bottom: 0.83vw;
-  padding-right: 0.5vw;
-  display: flex;
-  position: relative;
-  text-decoration: none;
-}
-
-/* Source ships an inline SVG wordmark; same display face + yellow token. */
-.nav-logo-mark {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.25rem, 2.36vw, 2.75rem);
-  line-height: 0.9;
-  letter-spacing: -0.02em;
-  color: var(--accent);
-  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.35);
-}
-
-.nesh-copyright-icon {
-  width: 0.6vw;
-  min-width: 7px;
-  flex: none;
-  color: var(--accent);
-  margin-top: 0.2vw;
-}
-
-.social-wrap {
-  grid-column-gap: 0.25rem;
-  gap: 0.25rem;
-  display: flex;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.social-link {
-  perspective-origin: 0%;
-  transform-origin: 0%;
-  background-color: var(--chip);
-  border: 1px solid var(--line);
-  border-radius: 0.56vw;
-  justify-content: center;
-  align-items: center;
-  width: 2.08vw;
-  height: 2.08vw;
-  min-width: 26px;
-  min-height: 26px;
-  display: flex;
-  color: var(--ink);
-  transition: background-color 0.3s ease, transform 0.3s var(--ease-nm);
-}
-.social-link svg {
-  width: 0.97vw;
-  height: 0.97vw;
-  min-width: 12px;
-  min-height: 12px;
-}
-.social-link:hover {
-  background-color: var(--sand);
-  transform: translateY(-1px);
-}
-
-/* ---------- Stats ----------------------------------------------------------- */
-.nav-stats-wrap {
-  z-index: 11;
-  grid-column-gap: 1.25vw;
-  gap: 1.25vw;
-  flex-flow: row;
-  justify-content: center;
-  align-items: center;
-  height: 8vw;
-  margin-bottom: 1.11vw;
-  padding: 1vw 1.67vw;
-  font-size: clamp(0.75rem, 1vw, 1.5rem);
-  line-height: 1.1;
-  display: flex;
-  position: relative;
-}
-
-.nav-stats-card {
-  z-index: 1;
-  grid-row-gap: 0.56vw;
-  gap: 0.56vw;
-  text-align: center;
-  flex-flow: column;
-  justify-content: flex-start;
-  align-items: center;
-  width: 6.94vw;
-  font-family: var(--font-display);
-  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
-  font-weight: 500;
-  display: flex;
-  position: relative;
-  color: var(--ink);
-}
-
-.nav-experience-numb {
-  color: var(--accent);
-  width: 2.78vw;
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 0.9;
-  font-size: clamp(1.75rem, 2.78vw, 3.25rem);
-  -webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.4);
-}
-
-.nav-stats-label {
-  font-size: clamp(0.625rem, 0.97vw, 1.5rem);
-  line-height: 1.1;
-}
-
-.nav-stats-sep {
-  z-index: 10;
-  background-color: var(--line);
-  width: 1px;
-  height: 3.47vw;
-  position: relative;
-  flex: none;
-}
-
-/* ---------- Menu ------------------------------------------------------------ */
-.nav-menu {
-  z-index: 8;
-  grid-column-gap: clamp(0.5rem, 0.69vw, 0.75rem);
-  grid-row-gap: clamp(0.5rem, 0.69vw, 0.75rem);
-  flex-flow: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.11vw;
-  padding: 1.11vw;
-  font-size: clamp(0.75rem, 1vw, 1.5rem);
-  display: flex;
-  position: relative;
-}
-
-.nav-menu-list {
-  z-index: 2;
-  position: relative;
-  display: flex;
-  flex-flow: column;
-  gap: clamp(0.5rem, 0.69vw, 0.75rem);
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Source: typography + box metrics live on .nav-menu-item itself. */
-.nav-menu-item {
-  z-index: 2;
-  grid-column-gap: 0.69vw;
-  grid-row-gap: 0.69vw;
-  gap: 0.69vw;
-  justify-content: center;
-  align-items: center;
-  height: 2.5vw;
-  min-height: 40px;
-  padding-left: 0.69vw;
-  padding-right: 0.69vw;
-  font-family: var(--font-body-md);
-  font-size: clamp(0.75rem, 1.25vw, 1.5rem);
-  font-weight: 500;
-  display: flex;
-  position: relative;
-  width: 100%;
-}
-
-/* Source: the chip is a sibling background layer, not the link itself. */
-.nav-item-bg {
-  z-index: 0;
-  grid-column-gap: 0.69vw;
-  grid-row-gap: 0.69vw;
-  gap: 0.69vw;
-  perspective-origin: 0%;
-  background-color: var(--chip);
-  border-radius: 0.56vw;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  padding-left: 0.69vw;
-  padding-right: 0.69vw;
-  font-family: var(--font-body-md);
-  font-size: clamp(0.75rem, 1.25vw, 1.5rem);
-  font-weight: 500;
-  display: flex;
-  position: absolute;
-  inset: 0%;
-  transition: background-color 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
   pointer-events: none;
 }
 
-.nav-menu-link {
-  z-index: 2;
-  grid-column-gap: 0.69vw;
-  gap: 0.69vw;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  font: inherit;
-  display: flex;
+.nm-dock__list {
   position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: clamp(0.15rem, 0.35vw, 0.35rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Source .nav-menu-item — typography + metrics live on the item */
+.nm-dock__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-body-md);
+  font-size: clamp(0.75rem, 1.05vw, 1.125rem);
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* ---- Source .nav-item-bg: the chip is what animates, not the label -------- */
+.nm-dock__chip {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: clamp(7px, 0.56vw, 11px);
+  background-color: var(--chip); /* #ebeada — brighter again than the pane */
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: background-color 0.3s ease, transform 0.3s var(--ease-nm);
+  pointer-events: none;
+}
+
+.nm-dock__link {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.3rem, 0.5vw, 0.55rem);
+  /* 44px min target (WCAG 2.5.8) without inflating the type scale */
+  min-height: 44px;
+  padding-inline: clamp(0.6rem, 0.9vw, 1rem);
   color: var(--ink);
   text-decoration: none;
-  border-radius: 0.56vw;
+  font: inherit;
+  white-space: nowrap;
+  border-radius: clamp(7px, 0.56vw, 11px);
 }
 
-.nav-item-icon {
-  z-index: 1;
+/* Source .nav-item-icon — leading icon, order:-9999 */
+.nm-dock__icon {
   order: -9999;
-  width: 1.11vw;
-  min-width: 12px;
   flex: none;
-  position: relative;
-  display: flex;
-  color: var(--ink);
-  opacity: 0.35;
-  transition: opacity 0.3s ease, color 0.3s ease;
+  width: clamp(13px, 1.11vw, 18px);
+  height: clamp(13px, 1.11vw, 18px);
+  display: inline-flex;
+  opacity: 0.55;
+  transition: opacity 0.3s ease, transform 0.3s var(--ease-nm);
 }
-.nav-item-icon svg {
+.nm-dock__icon svg {
   width: 100%;
-  height: auto;
+  height: 100%;
 }
 
-/* Hover + active states (source: .nav-item-bg background-color transition) */
-.nav-menu-item:hover .nav-item-bg {
-  background-color: var(--sand);
+.nm-dock__label {
+  display: block;
 }
-.nav-menu-link[aria-current="page"] ~ .nav-item-bg,
-.nav-menu-item:has(.nav-menu-link[aria-current="page"]) .nav-item-bg {
+
+/* ---- Behaviour: hover lifts + brightens the CHIP -------------------------- */
+/* The source's chip hover (--sand #c9c8ba) is DARKER than the chip, which
+   reads as "pressed" on a raised dock. Kept the source's lift but brightened
+   the fill instead, preserving the canvas < pane < chip < hover ramp. */
+.nm-dock__item:hover .nm-dock__chip {
+  background-color: #f5f4e8;
+  border-color: rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+.nm-dock__item:hover .nm-dock__icon {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+.nm-dock__item:hover .nm-dock__label {
+  transform: translateY(-2px);
+}
+.nm-dock__label {
+  transition: transform 0.3s var(--ease-nm);
+}
+
+/* Active section — keyed off aria-current so visual and a11y state cannot
+   drift apart. Source active treatment = the yellow accent fill. */
+.nm-dock__item:has(.nm-dock__link[aria-current="page"]) .nm-dock__chip {
   background-color: var(--accent);
+  border-color: rgba(0, 0, 0, 0.12);
 }
-.nav-menu-link[aria-current="page"] .nav-item-icon {
+.nm-dock__link[aria-current="page"] .nm-dock__icon {
   opacity: 1;
 }
 
-/* Focus: never suppressed for keyboard users. */
-.nav-menu-link:focus-visible,
-.social-link:focus-visible,
-.nav-button:focus-visible,
-.nav-logo:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 2px;
-  border-radius: 0.56vw;
-}
-.nav-menu-link:focus:not(:focus-visible),
-.social-link:focus:not(:focus-visible),
-.nav-button:focus:not(:focus-visible) {
-  outline: none;
+/* Fallback for engines without :has() — the chip stays chip-coloured but the
+   icon + weight still mark the active item. */
+@supports not selector(:has(*)) {
+  .nm-dock__link[aria-current="page"] {
+    font-weight: 700;
+  }
 }
 
-/* ---------- CTA ------------------------------------------------------------- */
-.nav-button-wrap {
-  z-index: 20;
-  height: 3.47vw;
-  min-height: 42px;
+/* ---- Separator + CTA (source .nav-button) --------------------------------- */
+.nm-dock__sep {
   position: relative;
-}
-
-.nav-button {
   z-index: 1;
-  background-color: var(--accent);
-  transform-origin: 0%;
-  text-align: center;
-  width: 100%;
-  height: 3.47vw;
-  min-height: 42px;
-  color: var(--ink);
-  border-radius: 0.83vw;
-  justify-content: center;
-  align-items: center;
-  font-family: var(--font-display);
-  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
-  font-weight: 500;
-  display: flex;
+  display: block;
+  flex: none;
+  width: 1px;
+  height: clamp(0.9rem, 1.4vw, 1.4rem);
+  background-color: rgba(0, 0, 0, 0.12);
+  margin-inline: clamp(0.1rem, 0.25vw, 0.3rem);
+}
+
+.nm-dock__cta {
   position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding-inline: clamp(0.85rem, 1.25vw, 1.5rem);
+  background-color: var(--accent);
+  color: var(--ink);
+  border-radius: clamp(9px, 0.83vw, 14px);
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 1.05vw, 1.125rem);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
   text-decoration: none;
   transition: transform 0.3s var(--ease-nm), filter 0.3s ease;
 }
-.nav-button:hover {
+.nm-dock__cta:hover {
   transform: translateY(-2px);
-  filter: brightness(1.05);
+  filter: brightness(1.06);
+}
+.nm-dock__cta:active {
+  transform: translateY(0);
 }
 
-/* ---------- Mobile: source turns the rail into a top bar -------------------- */
-@media screen and (max-width: 767px) {
-  .navigation {
-    z-index: 300;
-    width: 100%;
-    height: auto;
-    padding-top: 0;
-    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
-    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
-    display: block;
-    inset: 0% 0% auto;
-  }
+/* ---- Focus: never suppressed for keyboard users --------------------------- */
+.nm-dock__link:focus-visible,
+.nm-dock__cta:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+.nm-dock__link:focus:not(:focus-visible),
+.nm-dock__cta:focus:not(:focus-visible) {
+  outline: none;
+}
 
-  .nav-top-layout {
-    z-index: 300;
-    padding: clamp(1.07rem, 5.33vw, 2.56rem) 0 0;
+/* ---- Mobile: labels collapse, icons carry the dock ------------------------ */
+@media (max-width: 639px) {
+  .nm-dock {
+    gap: 0.2rem;
+    padding: 0.3rem;
+    max-width: calc(100vw - 1rem);
   }
-  .nav-top-bg {
-    display: none; /* source: the top pane is transparent on mobile */
-  }
-  .nav-top-item {
-    align-items: stretch;
-  }
-
-  .nav-logo {
-    background-color: var(--accent);
-    color: var(--ink);
-    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
-    justify-content: center;
-    align-items: center;
-    width: clamp(4.69rem, 23.47vw, 11.27rem);
-    height: clamp(2.08rem, 10.4vw, 4.99rem);
+  .nm-dock__label {
+    /* visually-hidden, still announced */
+    position: absolute;
+    width: 1px;
+    height: 1px;
     padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
   }
-  .nav-logo-mark {
-    color: var(--ink);
-    font-size: clamp(1rem, 5.6vw, 2rem);
-    -webkit-text-stroke: 0;
+  .nm-dock__link {
+    padding-inline: 0.7rem;
   }
-  .nesh-copyright-icon {
-    width: clamp(0.43rem, 2.13vw, 1.02rem);
-    color: var(--ink);
+  .nm-dock__icon {
+    width: 18px;
+    height: 18px;
   }
-
-  /* Source hides both on mobile. */
-  .social-wrap,
-  .nav-stats-wrap {
-    display: none;
-  }
-
-  .nav-menu {
-    margin-bottom: clamp(0.85rem, 4.27vw, 2.05rem);
-    padding: clamp(0.85rem, 4.27vw, 2.05rem) 0 clamp(0.85rem, 4.27vw, 2.05rem)
-      clamp(0.85rem, 4.27vw, 2.05rem);
-    display: flex;
-  }
-  .nav-menu-bg {
-    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
-  }
-  .nav-menu-list {
-    flex-flow: row;
-    flex-wrap: wrap;
-    gap: clamp(0.35rem, 2vw, 0.75rem);
-    padding-right: clamp(0.85rem, 4.27vw, 2.05rem);
-  }
-  .nav-menu-item {
-    width: auto;
-  }
-  .nav-item-bg {
-    border: 1px solid var(--line);
-    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
-  }
-  .nav-menu-link {
-    grid-column-gap: clamp(0.53rem, 2.67vw, 1.28rem);
-    gap: clamp(0.53rem, 2.67vw, 1.28rem);
-    height: auto;
-    min-height: 44px;
-    padding: clamp(0.53rem, 2.67vw, 1.28rem);
-  }
-  .nav-item-icon {
-    width: clamp(0.85rem, 4.27vw, 2.05rem);
-  }
-
-  .nav-button-wrap {
-    height: clamp(2.67rem, 13.33vw, 6.39rem);
-    margin-bottom: clamp(0.85rem, 4.27vw, 2.05rem);
-  }
-  .nav-button {
-    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
-    font-size: clamp(0.875rem, 4vw, 1.25rem);
+  .nm-dock__cta {
+    padding-inline: 0.85rem;
+    font-size: 0.8125rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-item-bg,
-  .social-link,
-  .nav-button,
-  .nav-item-icon {
+  .nm-dock__chip,
+  .nm-dock__icon,
+  .nm-dock__label,
+  .nm-dock__cta {
     transition: none;
+  }
+  .nm-dock__item:hover .nm-dock__chip,
+  .nm-dock__item:hover .nm-dock__icon,
+  .nm-dock__item:hover .nm-dock__label,
+  .nm-dock__cta:hover {
+    transform: none;
   }
 }

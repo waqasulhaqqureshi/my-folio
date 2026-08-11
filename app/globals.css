@@ -225,24 +225,6 @@
 @layer components {
   /* --- Layout shells ------------------------------------------------------ */
 
-  /*
-   * Sidebar gutter (heynesh.com parity).
-   * The source reserves the fixed 18.54vw left nav by giving EVERY section
-   * `padding-left: 21vw`. Applied here at the shell level so each section keeps
-   * its own internal container rules. Dropped below 768px, where the source
-   * turns the rail into a top bar.
-   */
-  .nm-shell {
-    padding-left: 21vw;
-    padding-right: 1.39vw;
-  }
-  @media (max-width: 767px) {
-    .nm-shell {
-      padding-left: 0;
-      padding-right: 0;
-    }
-  }
-
   /* Source container: 93.06vw centered (matches .hero-container) */
   .nm-container {
     width: 93.06vw;
