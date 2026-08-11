@@ -1,0 +1,225 @@
+/*
+ * Article typography.
+ *
+ * The body is server-rendered HTML injected via dangerouslySetInnerHTML, so it
+ * carries no classes we control — every rule here is a descendant selector off
+ * .post-body. Scoping this way (rather than Tailwind's typography plugin) keeps
+ * the article on the same design tokens as the rest of the site.
+ */
+
+.post-body {
+  font-family: var(--font-body);
+  font-size: clamp(0.95rem, 1.11vw, 1.35rem);
+  line-height: 1.75;
+  color: var(--ink-70);
+}
+
+.post-body > * + * {
+  margin-top: 1.15em;
+}
+
+.post-body h2,
+.post-body h3,
+.post-body h4 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  /* scroll-margin keeps a targeted heading clear of the fixed dock nav
+     when arriving from a #contents link */
+  scroll-margin-top: 6rem;
+}
+
+.post-body h2 {
+  margin-top: 2.1em;
+  font-size: clamp(1.5rem, 2.5vw, 2.6rem);
+  font-weight: 700;
+}
+
+.post-body h3 {
+  margin-top: 1.8em;
+  font-size: clamp(1.2rem, 1.7vw, 1.8rem);
+  font-weight: 500;
+}
+
+.post-body h4 {
+  margin-top: 1.5em;
+  font-size: clamp(1.05rem, 1.35vw, 1.4rem);
+  font-weight: 500;
+}
+
+.post-body strong {
+  color: var(--ink);
+  font-family: var(--font-body-md);
+  font-weight: 700;
+}
+
+.post-body a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--line-strong);
+  transition: background-color 0.25s var(--ease-nm), text-decoration-color 0.25s var(--ease-nm);
+}
+
+.post-body a:hover {
+  background-color: var(--accent);
+  text-decoration-color: var(--ink);
+}
+
+.post-body ul,
+.post-body ol {
+  padding-left: 1.35em;
+}
+
+.post-body ul { list-style: disc; }
+.post-body ol { list-style: decimal; }
+.post-body li::marker { color: var(--ink-50); }
+.post-body li + li { margin-top: 0.5em; }
+.post-body li > ul,
+.post-body li > ol { margin-top: 0.5em; }
+
+.post-body blockquote {
+  border-left: 3px solid var(--accent);
+  background-color: var(--glass);
+  border-radius: 0 var(--radius-inner) var(--radius-inner) 0;
+  padding: 1em 1.25em;
+  color: var(--ink);
+  font-size: 1.02em;
+}
+
+.post-body blockquote > * + * { margin-top: 0.5em; }
+
+.post-body hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin-block: 2.5em;
+}
+
+/* --- Code ---------------------------------------------------------------- */
+
+.post-body :not(pre) > code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  background-color: var(--chip);
+  border: 1px solid var(--line);
+  border-radius: 0.35em;
+  padding: 0.15em 0.4em;
+  color: var(--ink);
+  /* long identifiers in prose must not force a horizontal page scrollbar */
+  overflow-wrap: anywhere;
+}
+
+.post-body pre {
+  background-color: #17160f;
+  color: #f2f1e6;
+  border-radius: var(--radius-card);
+  padding: clamp(1rem, 1.4vw, 1.6rem);
+  overflow-x: auto;
+  font-size: clamp(0.78rem, 0.9vw, 1rem);
+  line-height: 1.6;
+  /* the scrollport must be reachable by keyboard, hence tabindex in the JSX */
+  scrollbar-width: thin;
+  scrollbar-color: #ffffff40 transparent;
+}
+
+.post-body pre code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  white-space: pre;
+}
+
+/* The block is focusable (tabindex=0) so keyboard users can scroll it —
+   that focus must be visible. */
+.post-body pre:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.post-body pre::-webkit-scrollbar { height: 8px; }
+.post-body pre::-webkit-scrollbar-track { background: transparent; }
+.post-body pre::-webkit-scrollbar-thumb {
+  background: #ffffff33;
+  border-radius: 4px;
+}
+
+/* --- Figures -------------------------------------------------------------- */
+
+/* The sanitizer strips class attributes from figures (class is only
+   allowlisted on <code> for language hints), so style the bare element. */
+.post-body figure {
+  margin-block: 2em;
+}
+
+.post-body figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background-color: var(--raised);
+}
+
+.post-body figcaption {
+  margin-top: 0.7em;
+  font-size: clamp(0.72rem, 0.9vw, 0.95rem);
+  line-height: 1.45;
+  color: var(--ink-50);
+  text-align: center;
+}
+
+/* --- Tables --------------------------------------------------------------- */
+
+.post-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+  display: block;
+  overflow-x: auto;
+}
+
+.post-body th,
+.post-body td {
+  border: 1px solid var(--line);
+  padding: 0.55em 0.8em;
+  text-align: left;
+}
+
+.post-body th {
+  background-color: var(--chip);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* --- Contents rail -------------------------------------------------------- */
+
+.post-toc a {
+  display: block;
+  padding: 0.3em 0 0.3em 0.75em;
+  border-left: 2px solid var(--line);
+  color: var(--ink-50);
+  font-size: clamp(0.72rem, 0.85vw, 0.95rem);
+  line-height: 1.4;
+  transition: color 0.2s var(--ease-nm), border-color 0.2s var(--ease-nm);
+}
+
+.post-toc a:hover,
+.post-toc a[data-active="true"] {
+  color: var(--ink);
+  border-left-color: var(--accent);
+}
+
+.post-toc a[data-level="3"] {
+  padding-left: 1.6em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-body a,
+  .post-toc a {
+    transition: none;
+  }
+}

@@ -2,7 +2,12 @@ export type blogProps = {
   title: string;
   image: string;
   date: string;
+  /* Original Hashnode permalink. Kept for attribution/canonical only — cards
+     now route to the in-app article at /blog/<slug>, not out to this URL. */
   url: string;
+  /* Filename (minus .md) in /content/blog. Must stay in sync: a slug with no
+     matching file yields a 404, since the route sets dynamicParams=false. */
+  slug: string;
   available: boolean;
   index: number;
 };
@@ -31,6 +36,7 @@ export const blogDetails = [
       "https://cdn.hashnode.com/res/hashnode/image/upload/v1715345723909/c71d9691-fe4c-4302-b1cb-d9dca77a99b5.png?w=1600&h=840&fit=crop&crop=entropy&auto=compress,format&format=webp",
     date: "MAY 2024",
     url: "https://blog.victorwilliams.me/how-to-create-exit-animations-with-framer-motion",
+    slug: "how-to-create-exit-animations-with-framer-motion",
     available: true,
   },
   {
@@ -39,6 +45,7 @@ export const blogDetails = [
       "https://github.com/victorcodess/folio-v1/assets/84178696/05656547-3206-42af-b081-83247f9a1063",
     date: "MAY 2024",
     url: "https://blog.victorwilliams.me/importance-of-collaboration-in-design",
+    slug: "importance-of-collaboration-in-design",
     available: true,
   },
   {
@@ -48,6 +55,7 @@ export const blogDetails = [
       "https://github.com/victorcodess/folio-v1/assets/84178696/c2693469-e5c6-43ad-a857-693bbbfe7b9a",
     date: "APR 2024",
     url: "https://blog.victorwilliams.me/how-to-add-google-maps-to-react-app-visgl",
+    slug: "how-to-add-google-maps-to-react-app-visgl",
     available: true,
   },
   // {
