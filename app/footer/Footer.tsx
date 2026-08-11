@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import AnimatedBody from "../animations/AnimatedBody";
+import AdminTrigger from "./AdminTrigger";
 
 /*
  * Footer — nm design system. Canvas background, hairline ink rule,
@@ -18,10 +19,13 @@ const Footer = () => {
       aria-label="Footer"
     >
       <div className="nm-container flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-        <AnimatedBody
-          text={`Copyright ${year}`}
-          className="font-display text-[12px] font-medium uppercase tracking-wide md:text-[13px]"
-        />
+        {/* Double-tap this line to open the admin panel. */}
+        <AdminTrigger className="select-none">
+          <AnimatedBody
+            text={`Copyright ${year}`}
+            className="font-display text-[12px] font-medium uppercase tracking-wide md:text-[13px]"
+          />
+        </AdminTrigger>
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
           <AnimatedBody
             text={"Design & Development by"}

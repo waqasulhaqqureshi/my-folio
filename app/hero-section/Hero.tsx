@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import CountUp from "../animations/CountUp";
+import { DEFAULT_HERO, type HeroContent } from "../lib/heroTypes";
 import "./hero.css";
 
 /* ============================================================================
@@ -19,29 +20,13 @@ import "./hero.css";
  *  your About/Work sections keep their natural document flow. */
 const ENABLE_HERO_PIN = false;
 
-/** The exact primary asset of the source hero ("Nesh" portrait). */
-const HERO_ASSETS = {
-  profileImg:
-    "https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/69708b99545c57d03ebb5cd9_Frame%202147258154.avif",
-  profileImgAlt: "Nenad Popadic",
-};
 
-/** Verbatim source copy (edit freely — markup references these values). */
-const HERO_COPY = {
-  brandMark: "NESH",
+/* Nav labels stay hard-coded: they map to section anchors below, so they are
+   structural rather than editorial content. Everything the admin panel can
+   change now arrives via the `content` prop. */
+const HERO_NAV = {
   navLeft: ["home", "about me", "projects"],
   navRight: ["what you get", "services", "clients", "faq"],
-  leftText: "The Webflow Expert. That’s Nenad.",
-  headingLines: ["Webflow,", "Applied", "Differently."],
-  ctaPrimary: "Book a Call",
-  ctaSecondary: "About Me",
-  rightText:
-    "Working closely with your team to deliver Webflow builds that merge creativity, technical excellence, and long-term value.",
-  projectsStat: "80+",
-  projectsLabel: "Projects",
-  yearsStat: 7,
-  yearsLabelLines: ["Years of", "experience"],
-  skills: ["Creative", "Reliable", "Strategist", "Builder", "Efficient"],
 };
 
 /** Map the source hero's nav labels onto this site's section anchors. */
@@ -123,7 +108,14 @@ const WebflowIcon = () => (
   </span>
 );
 
-const Hero = () => {
+const Hero = ({ content }: { content?: HeroContent }) => {
+  /* Fall back to defaults so the component still renders standalone (e.g. in
+     isolation or before any admin save has happened). */
+  const HERO_COPY = content ?? DEFAULT_HERO;
+  const HERO_ASSETS = {
+    profileImg: HERO_COPY.profileImg,
+    profileImgAlt: HERO_COPY.profileImgAlt,
+  };
   /* Ghost-target FLIP (heynesh.com technique): the wordmark mounts in an
    * mid-viewport "intro" slot and morphs into its measured resting position
    * the moment the PreLoader's exit wipe starts. `nm:intro-exit` drives it;
@@ -206,7 +198,7 @@ const Hero = () => {
             transition={{ duration: 0.5, ease: EASE, delay: settled ? 0.25 : 0 }}
           >
             <div className="hero-links-ghost-wrapper">
-              {HERO_COPY.navLeft.map((item, i) => (
+              {HERO_NAV.navLeft.map((item, i) => (
                 <span key={item} style={{ display: "contents" }}>
                   {i > 0 && <span className="hero-navigation-sep" />}
                   <Link
@@ -219,7 +211,7 @@ const Hero = () => {
               ))}
             </div>
             <div className="hero-links-ghost-wrapper is-hero-right-nav-item">
-              {HERO_COPY.navRight.map((item, i) => (
+              {HERO_NAV.navRight.map((item, i) => (
                 <span key={item} style={{ display: "contents" }}>
                   {i > 0 && <span className="hero-navigation-sep" />}
                   <Link

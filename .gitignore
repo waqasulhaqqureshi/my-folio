@@ -45,3 +45,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# admin panel: uploaded hero images and the editable content document are
+# runtime state, not source. Keep them out of git so a deploy never clobbers
+# what was edited in production.
+/public/uploads/
+/data/

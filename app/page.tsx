@@ -1,48 +1,13 @@
-"use client";
-import Hero from "./hero-section/Hero";
-import { useEffect } from "react";
-import PreLoader from "./animations/PreLoader/PreLoader";
-import NavBar from "./navbar/NavBar";
-
-import dynamic from "next/dynamic";
-import Certificates from "./reviews-section/CertificateGrid";
-const Work = dynamic(() => import("./work-section/Work"));
-const About = dynamic(() => import("./about-section/About"));
-const Blog = dynamic(() => import("./blog-section/BlogGrid"));
-const Contact = dynamic(() => import("./contact-section/Contact"));
-const Footer = dynamic(() => import("./footer/Footer"));
+import { getHeroContent } from "./lib/heroContent";
+import HomeClient from "./HomeClient";
 
 /*
- * Cursor architecture: no custom pointer element exists. The app runs on
- * native OS cursors only (`cursor: default` / `cursor: pointer`, set in
- * globals.css). Pointer *physics* is not gone — it is decoupled and applied to
- * the elements themselves via useMagnetic(), which reads the invisible native
- * cursor coordinates in a rAF loop and drives compositor-only transforms.
- * See app/hooks/useMagnetic.ts.
+ * Server shell: reads the hero content from disk and hands it to the client
+ * tree. Kept as a server component so the JSON is read at request time — the
+ * admin panel's revalidatePath("/") then makes a save visible immediately.
  */
-export default function Home() {
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-    });
-  }, []);
+export const dynamic = "force-dynamic";
 
-  return (
-    <>
-      <PreLoader />
-
-      <NavBar />
-
-      <main className="flex flex-col items-center justify-center">
-        <Hero />
-        <Work />
-        <Certificates />
-        <About />
-        <Blog />
-        <Contact />
-        <Footer />
-      </main>
-    </>
-  );
+export default async function Home() {
+  return <HomeClient hero={await getHeroContent()} />;
 }
