@@ -3,27 +3,60 @@
 import Image from "next/image";
 import { ProjectProps } from "./projectDetails";
 import { useLazyVideo } from "../hooks/useLazyVideo";
+import type { DeviceKind } from "./DeviceFrame";
 
 /*
- * WorkSlide — the media that sits inside the device screen.
+ * WorkSlide — the media inside the device screen.
  *
- * Only the ACTIVE project renders this component, so exactly one <video> is
- * ever mounted. That is the whole reason the one-at-a-time layout is cheaper
- * than the 3-up rail: previously every card in the track held its own decoder
- * (useLazyVideo evicted off-screen ones, but three were live at any moment).
- * Here it is always one, and useLazyVideo's unmount teardown runs the full
- * WHATWG media reset on every slide change.
+ * Only the ACTIVE project renders this, so exactly one <video> is ever mounted.
+ * That is what makes the one-at-a-time layout cheaper than the old 3-up rail,
+ * where three decoders were live at once.
  *
- * The poster <Image> stays beneath the video and is only hidden once playback
- * actually starts, so a slow-loading clip shows the still rather than a black
- * rectangle.
+ * The mobile view is a still image, so it mounts no <video> at all — switching
+ * to the Mobile tab unmounts this component (see the key in Work.tsx), which
+ * fires useLazyVideo's cleanup and runs the full WHATWG
+ * pause/removeAttribute/load() reset. The decoder is released on tab switch
+ * rather than left buffering behind a hidden panel.
  */
-export default function WorkSlide({ project }: { project: ProjectProps }) {
+export default function WorkSlide({
+  project,
+  kind,
+}: {
+  project: ProjectProps;
+  kind: DeviceKind;
+}) {
+  if (kind === "mobile") {
+    return (
+      <div className="work-slide">
+        <div className="work-slide-media">
+          <Image
+            src={project.mobile}
+            alt={`${project.name} — mobile view`}
+            fill
+            sizes="(max-width: 767px) 46vw, 15vw"
+            className="object-cover"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return <WebSlide project={project} />;
+}
+
+/*
+ * Split into its own component so the video hook is only ever called on the
+ * web branch. Calling useLazyVideo above the `kind` check would violate the
+ * rules of hooks the moment the early return fires.
+ */
+function WebSlide({ project }: { project: ProjectProps }) {
   const { videoRef, state } = useLazyVideo(project.video);
 
   return (
     <div className="work-slide">
       <div className="work-slide-media">
+        {/* Poster stays beneath until playback actually starts, so a slow
+            clip shows the still rather than a black rectangle. */}
         <Image
           src={project.image}
           alt={`${project.name} — site preview`}

@@ -55,7 +55,21 @@
   border: 1px solid var(--glass-line); /* #fff3 hairline, as in source */
   -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  /* Layered elevation. A single large blur reads flat and muddy; real depth
+     comes from stacking contact / mid / ambient shadows at increasing blur and
+     decreasing alpha, plus two inset hairlines for the glass lip:
+       inset top    — light catching the top edge
+       inset bottom — the shaded underside
+     The warm-tinted ambient layer (not pure black) stops the dock looking
+     like a grey cut-out over the sand canvas. */
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 6px 12px rgba(28, 22, 12, 0.08),
+    0 14px 28px rgba(28, 22, 12, 0.10),
+    0 28px 56px rgba(28, 22, 12, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
   pointer-events: none;
 }
 
@@ -69,8 +83,8 @@
    at all. The mask keeps the fill only in the border band, so the pane's own
    translucency is untouched.
 
-   Deliberately gentle: 6s per revolution and a low-alpha highlight. It is
-   decorative, so it sits behind the content layer and is fully removed under
+   Speed: 2.6s per revolution. Fast enough to read as a live sweep rather than
+   a slow drift, still well short of a strobe. Fully removed under
    prefers-reduced-motion (a perpetual loop is a vestibular trigger). */
 @property --nm-ray {
   syntax: "<angle>";
@@ -89,14 +103,22 @@
      on the circle. That makes the head and tail meet seamlessly as it wraps.
      Accent yellow (#ffff23) rather than white: it ties the dock to the CTA and
      the work-card FAB, and reads as intentional brand rather than a glare. */
+  /* Comet profile: a hot white-yellow head at 0deg/360deg with a graded tail
+     running back ~70deg. Stops must increase monotonically or the browser
+     clamps them to a hard edge — centring the head on the 0/360 seam is what
+     makes head and tail meet seamlessly as it wraps. */
   background: conic-gradient(
     from var(--nm-ray),
-    rgba(255, 255, 35, 1) 0deg,
-    rgba(255, 255, 35, 0.45) 10deg,
-    transparent 46deg,
-    transparent 314deg,
-    rgba(255, 255, 35, 0.45) 350deg,
-    rgba(255, 255, 35, 1) 360deg
+    rgba(255, 255, 220, 1) 0deg,
+    rgba(255, 255, 35, 0.95) 6deg,
+    rgba(255, 255, 35, 0.5) 22deg,
+    rgba(255, 255, 35, 0.16) 48deg,
+    transparent 72deg,
+    transparent 288deg,
+    rgba(255, 255, 35, 0.16) 312deg,
+    rgba(255, 255, 35, 0.5) 338deg,
+    rgba(255, 255, 35, 0.95) 354deg,
+    rgba(255, 255, 220, 1) 360deg
   );
   /* Punch out the centre so only the border band paints. */
   -webkit-mask: linear-gradient(#000 0 0) content-box,
@@ -104,8 +126,14 @@
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: nm-ray-travel 6s linear infinite;
+  animation: nm-ray-travel 2.6s linear infinite;
   pointer-events: none;
+  /* Bloom. The ring itself is only 1.5px, which paints as a hard hairline;
+     a small drop-shadow spreads the same yellow just past the border so it
+     reads as emitted light. drop-shadow (not box-shadow) follows the masked
+     comet shape rather than the element's rectangle. */
+  filter: drop-shadow(0 0 3px rgba(255, 255, 35, 0.55))
+    drop-shadow(0 0 8px rgba(255, 255, 35, 0.28));
 }
 
 @keyframes nm-ray-travel {
@@ -126,7 +154,7 @@
       rgba(255, 255, 35, 0.45) 350deg,
       rgba(255, 255, 35, 1) 360deg
     );
-    animation: nm-ray-spin 6s linear infinite;
+    animation: nm-ray-spin 2.6s linear infinite;
   }
   @keyframes nm-ray-spin {
     to {
@@ -330,6 +358,9 @@
   .nm-dock__bg::after {
     animation: none;
     background: none;
+    /* Clear the comet bloom too — with no gradient left to light up it would
+       otherwise smear the static border into a halo. */
+    filter: none;
     border: 1px solid rgba(255, 255, 35, 0.55);
   }
   .nm-dock__chip,

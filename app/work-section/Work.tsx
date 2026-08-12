@@ -1,30 +1,23 @@
 "use client";
-import AnimatedBody from "../animations/AnimatedBody";
+import { useState } from "react";
 import AnimatedTitle from "../animations/AnimatedTitle";
 import { devProjects } from "./projectDetails";
 import { useProjectStepper } from "./useProjectStepper";
-import DeviceFrame from "./DeviceFrame";
+import DeviceFrame, { DeviceKind } from "./DeviceFrame";
 import WorkSlide from "./WorkSlide";
 import "./work.css";
 
 /*
- * Work — heynesh.com's projects section, presented one project at a time
- * inside a tablet frame.
+ * Work — projects shown one at a time inside a device frame, with a
+ * Web / Mobile switch.
  *
- * WHY A TABLET AND NOT A PHONE
- * Every clip in public/videos is 778x1100 (ratio 0.707) — a tablet-portrait
- * capture. A phone bezel is ~0.46, so the same footage would have to be
- * cropped by roughly a third of its width or pillarboxed inside the notch.
- * The frame matches the media instead of the media being mangled to fit the
- * frame.
- *
- * WHY ONE AT A TIME
- * A device frame is large; three abreast would shrink each to a thumbnail and
- * defeat the point of framing them at all. Arrows step through the roster and
- * disable at the ends, so the length of the list stays legible — the same
- * reason the original scroll-scrub was replaced.
+ * The two views are genuinely different media, not the same asset re-cropped:
+ *   web    → the 778x1100 .webm captures, in a tablet bezel
+ *   mobile → 704x1520 portrait phone screens, in a phone bezel
+ * Each frame declares its media's exact ratio, so nothing is ever cropped.
  */
 const Work = () => {
+  const [kind, setKind] = useState<DeviceKind>("web");
   const { index, prev, next, canPrev, canNext, go, onKeyDown } =
     useProjectStepper(devProjects.length);
   const project = devProjects[index];
@@ -32,30 +25,53 @@ const Work = () => {
   if (!project) return null;
 
   return (
-    <section className="work_section" id="work" aria-label="Selected work">
+    <section className="work_section" id="work" aria-label="Projects">
       <div className="work-sticky">
         <div className="work-container">
-          <div className="work-top-layout">
-            <div className="column">
-              <div className="label is-secondary">Selected Work</div>
-              <AnimatedTitle
-                text={"Built in Webflow, Made to Perform"}
-                className="h2-style-white max-width-700"
-                wordSpace={"mr-[0.18em]"}
-                charSpace={"mr-[0.001em]"}
-              />
-            </div>
+          <header className="work-head">
+            <div className="label is-secondary">Projects</div>
+            <AnimatedTitle
+              text={"Things I've Built"}
+              className="h2-style-white"
+              wordSpace={"mr-[0.18em]"}
+              charSpace={"mr-[0.001em]"}
+            />
 
-            <div className="work-top-right">
-              <AnimatedBody
-                text="Over seven years I've helped businesses across different industries turn their ideas into websites that look and work exactly how they imagined. Here's a look at some of that work."
-                className="work-top-text"
-              />
+            {/*
+             * Tablist semantics: the two buttons control one shared panel, so
+             * roving aria-selected + aria-controls is what tells a screen
+             * reader these are alternative views of the same content rather
+             * than two independent toggles.
+             */}
+            <div className="work-switch" role="tablist" aria-label="Choose a preview device">
+              {(["web", "mobile"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  role="tab"
+                  className="work-switch__btn"
+                  aria-selected={kind === k}
+                  aria-controls="work-stage-panel"
+                  data-active={kind === k}
+                  onClick={() => setKind(k)}
+                >
+                  {k === "web" ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+                      <rect x="2.5" y="4" width="19" height="13" rx="1.6" />
+                      <path d="M8 20.5h8M12 17.5v3" strokeLinecap="round" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+                      <rect x="7" y="2.5" width="10" height="19" rx="2.2" />
+                      <path d="M10.8 18.8h2.4" strokeLinecap="round" />
+                    </svg>
+                  )}
+                  {k === "web" ? "Web" : "Mobile"}
+                </button>
+              ))}
             </div>
-          </div>
+          </header>
 
-          {/* Arrows flank the device so the direction of travel is
-              unmistakable and neither control ever covers the screen. */}
           <div className="work-stage">
             <button
               type="button"
@@ -69,27 +85,25 @@ const Work = () => {
               </svg>
             </button>
 
-            {/*
-             * tabIndex=0 + onKeyDown: focusing the stage lets Left/Right step
-             * the carousel. Bound here rather than on window so arrow keys are
-             * not stolen from the rest of the page.
-             */}
+            {/* tabIndex=0 + onKeyDown: Left/Right step the carousel once the
+                stage has focus. Bound here, not on window, so the rest of the
+                page keeps its arrow keys. */}
             <div
+              id="work-stage-panel"
               className="work-stage-viewport"
               tabIndex={0}
               role="group"
               aria-roledescription="carousel"
-              aria-label={`Project ${index + 1} of ${devProjects.length}: ${project.name}`}
+              aria-label={`Project ${index + 1} of ${devProjects.length}: ${project.name}, ${kind} view`}
               onKeyDown={onKeyDown}
             >
-              <DeviceFrame>
+              <DeviceFrame kind={kind}>
                 {/*
-                 * key={project.id} deliberately remounts WorkSlide on every
-                 * step. That is what triggers useLazyVideo's cleanup, which
-                 * runs the full pause/removeAttribute/load() reset and frees
-                 * the previous decoder instead of leaking one per project.
+                 * key includes BOTH the project and the device: changing either
+                 * remounts WorkSlide, which fires useLazyVideo's cleanup and
+                 * releases the decoder instead of accumulating one per step.
                  */}
-                <WorkSlide key={project.id} project={project} />
+                <WorkSlide key={`${project.id}-${kind}`} project={project} kind={kind} />
               </DeviceFrame>
             </div>
 
@@ -106,11 +120,6 @@ const Work = () => {
             </button>
           </div>
 
-          {/*
-           * aria-live=polite announces the project change to screen readers.
-           * The visible caption IS the live region — a separate visually-hidden
-           * announcement would duplicate what sighted users already see.
-           */}
           <div className="work-stage-caption" aria-live="polite" aria-atomic="true">
             <div className="work-stage-index">
               {String(index + 1).padStart(2, "0")} / {String(devProjects.length).padStart(2, "0")}
