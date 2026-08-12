@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { HERO_PORTRAIT, type HeroContent } from "../lib/heroTypes";
+import { type HeroContent } from "../lib/heroTypes";
+import PortraitPicker from "./PortraitPicker";
 
 /*
- * Hero editor. Everything the hero renders is editable here EXCEPT the
- * portrait, which is locked to the bundled asset and shown read-only.
- * The section is scaffolded so future sections drop in as sibling panels.
+ * Hero editor. Everything the hero renders is editable here, the portrait
+ * included — it is picked from public/uploaded/ via PortraitPicker, which
+ * writes into this same form object so one Save commits image and text
+ * together. The section is scaffolded so future sections drop in as siblings.
  */
 
 type Status = { kind: "idle" | "ok" | "err"; msg?: string };
@@ -99,38 +101,23 @@ export default function HeroEditor({ initial }: { initial: HeroContent }) {
         )}
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          {/* ---------------- Image panel (read-only) ----------------
-              The portrait is locked to the bundled asset, so this panel is a
-              preview and nothing more: no file input, no replace button, no alt
-              field. The controls are REMOVED rather than disabled — a disabled
-              button invites clicking and implies the capability still exists
-              somewhere, whereas the endpoint behind it now returns 410. */}
-          <section className="nm-card-solid h-fit rounded-[var(--radius-card)] p-5">
-            <h2 className="nm-h3 mb-4 text-[18px]">Portrait</h2>
-
-            <div className="nm-plate mb-4 overflow-hidden rounded-[var(--radius-inner)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={HERO_PORTRAIT.src}
-                alt={HERO_PORTRAIT.alt}
-                className="block max-h-64 w-full object-contain"
-              />
-            </div>
-
-            <div className="flex items-start gap-2 rounded-[var(--radius-inner)] bg-ink/5 px-3 py-2.5">
-              <svg
-                viewBox="0 0 16 16"
-                className="mt-[2px] h-3.5 w-3.5 shrink-0 fill-current text-ink/50"
-                aria-hidden="true"
-              >
-                <path d="M4.5 7V5a3.5 3.5 0 1 1 7 0v2H12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h.5Zm1.5 0h4V5a2 2 0 1 0-4 0v2Z" />
-              </svg>
-              <p className="nm-small text-ink/50">
-                This image is fixed as part of the site design and can&rsquo;t be
-                changed here.
-              </p>
-            </div>
-          </section>
+          {/* ---------------- Portrait panel ----------------
+              Was a locked read-only preview. The portrait is user-replaceable
+              again, so this is now a full picker: upload, or choose anything
+              sitting in public/uploaded/. It edits three fields of the same
+              form object as the text panel, so one Save commits both. */}
+          <PortraitPicker
+            value={{
+              portraitSrc: form.portraitSrc,
+              portraitRatio: form.portraitRatio,
+              portraitAlt: form.portraitAlt,
+            }}
+            onChange={(v) => {
+              setForm((f) => ({ ...f, ...v }));
+              setDirty(true);
+              setStatus({ kind: "idle" });
+            }}
+          />
 
           {/* ---------------- Text panel ---------------- */}
           <section className="nm-card-solid rounded-[var(--radius-card)] p-5">

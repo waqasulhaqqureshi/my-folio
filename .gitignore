@@ -51,3 +51,12 @@ next-env.d.ts
 # what was edited in production.
 /public/uploads/
 /data/
+
+# public/uploaded/ is the hero portrait library: the folder is part of the repo
+# (its README documents what to drop in, and the app reads it at runtime), but
+# the images inside it are content, not source. Ignore everything, then
+# un-ignore the README so the directory still exists in a fresh clone —
+# git tracks files, not folders, so without that exception the folder would be
+# missing on deploy and the listing route would 404 its own library.
+/public/uploaded/*
+!/public/uploaded/README.md

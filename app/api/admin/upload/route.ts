@@ -1,38 +1,21 @@
 import { NextResponse } from "next/server";
 
 /*
- * Hero image upload — RETIRED.
+ * Legacy hero upload path — SUPERSEDED, not restored.
  *
- * This route existed solely to replace the hero portrait. The portrait is now
- * locked to the bundled asset (see HERO_PORTRAIT in lib/heroTypes.ts), so there
- * is nothing for an upload to repoint.
+ * Portrait upload works again, but it lives at /api/admin/portrait, which also
+ * lists the library folder. This path is kept as a 308 so any client still
+ * holding an old admin bundle is redirected to the working endpoint instead of
+ * being told the feature is gone (which it no longer is).
  *
- * The route is kept as an explicit 410 rather than deleted for two reasons:
- *
- *  - Deleting it would make the path fall through to the catch-all route, which
- *    answers 404 with an HTML page. A client still holding the old admin bundle
- *    would then show "Unexpected token '<'" instead of a real reason.
- *  - 410 Gone is the honest status: the endpoint is not missing or temporarily
- *    unavailable, it has been withdrawn permanently.
- *
- * The previous implementation wrote sniffed, size-capped images into
- * public/uploads/ and called saveHeroContent({ profileImg }). Both halves of
- * that are gone: nothing writes to public/uploads/ any more, and profileImg is
- * no longer a persisted field, so a replayed request from an old tab or a saved
- * curl cannot resurrect an override.
+ * 308 rather than 307/302 because it is permanent AND method-preserving: a
+ * POST must stay a POST through the redirect, or the multipart body is dropped
+ * and the upload silently becomes an empty GET.
  */
-
-const GONE = {
-  error:
-    "The hero portrait is locked to the bundled image and can no longer be replaced by upload.",
-};
-
-export async function POST() {
-  return NextResponse.json(GONE, { status: 410 });
+export function POST(req: Request) {
+  return NextResponse.redirect(new URL("/api/admin/portrait", req.url), 308);
 }
 
-/* Same answer for any other verb, so probing the path can never 405-hint that
-   some other method still works. */
 export const GET = POST;
 export const PUT = POST;
 export const PATCH = POST;

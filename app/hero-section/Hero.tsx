@@ -2,7 +2,11 @@ import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import CountUp from "../animations/CountUp";
-import { DEFAULT_HERO, HERO_PORTRAIT, type HeroContent } from "../lib/heroTypes";
+import {
+  DEFAULT_HERO,
+  resolveHeroPortrait,
+  type HeroContent,
+} from "../lib/heroTypes";
 import "./hero.css";
 
 /* ============================================================================
@@ -123,6 +127,8 @@ const Hero = ({ content }: { content?: HeroContent }) => {
      isolation or before any admin save has happened). */
   const HERO_COPY = content ?? DEFAULT_HERO;
   const markChars = Math.max(HERO_COPY.brandMark.trim().length, 1);
+  /* Bundled asset unless the admin picked one from the uploaded library. */
+  const portrait = resolveHeroPortrait(HERO_COPY);
   /* The portrait comes from the locked constant, never from `content`. It is
      always the bundled asset, so the two emitted widths can be advertised
      unconditionally — the earlier "is this the bundled image?" check existed
@@ -150,12 +156,14 @@ const Hero = ({ content }: { content?: HeroContent }) => {
       initial="initial"
       animate="animate"
       aria-label="Hero — heynesh.com port"
-      /* The portrait is locked, so its ratio is known at build time and can be
-         asserted unconditionally — no uploaded image of unknown shape exists. */
+      /* The ratio is published to CSS because the layout reserves the
+         portrait's box before the bitmap decodes. With a user-supplied image
+         this is no longer a build-time constant, so it is read from the
+         resolved portrait — an uploaded 3:4 photo and the bundled 0.88 cutout
+         must each reserve their own shape or the hero reflows on first paint. */
       style={
         {
-          /* One asset, one ratio, every breakpoint. */
-          "--portrait-ratio": HERO_PORTRAIT.ratio,
+          "--portrait-ratio": portrait.ratio,
         } as CSSProperties
       }
     >
@@ -316,10 +324,10 @@ const Hero = ({ content }: { content?: HeroContent }) => {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HERO_PORTRAIT.src}
-            srcSet={HERO_PORTRAIT.srcSet}
-            sizes={HERO_PORTRAIT.sizes}
-            alt={HERO_PORTRAIT.alt}
+            src={portrait.src}
+            srcSet={portrait.srcSet}
+            sizes={portrait.sizes}
+            alt={portrait.alt}
             className="hero-profile-img"
             loading="eager"
             decoding="async"
@@ -367,10 +375,10 @@ const Hero = ({ content }: { content?: HeroContent }) => {
         <div className="mobile-hero-image-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HERO_PORTRAIT.src}
-            srcSet={HERO_PORTRAIT.srcSet}
-            sizes={HERO_PORTRAIT.sizes}
-            alt={HERO_PORTRAIT.alt}
+            src={portrait.src}
+            srcSet={portrait.srcSet}
+            sizes={portrait.sizes}
+            alt={portrait.alt}
             className="mobile-hero-image"
             loading="lazy"
             decoding="async"

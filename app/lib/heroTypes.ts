@@ -49,6 +49,17 @@ export const HERO_PORTRAIT = {
 
 export type HeroContent = {
   brandMark: string;
+  /* Portrait override. Empty string = use the bundled HERO_PORTRAIT.
+
+     Stored as a plain public-relative path ("/uploaded/foo.png") plus the
+     measured intrinsic ratio. The ratio is persisted rather than re-measured
+     at render time because the hero needs it to reserve the layout box during
+     SSR, and reading a bitmap header per request to obtain a number that
+     cannot change is wasteful. It is written once, by the endpoint that
+     accepts the image. */
+  portraitSrc: string;
+  portraitRatio: number;
+  portraitAlt: string;
   leftText: string;
   headingLines: string[];
   ctaPrimary: string;
@@ -63,6 +74,9 @@ export type HeroContent = {
 
 export const DEFAULT_HERO: HeroContent = {
   brandMark: "WAQAS",
+  portraitSrc: "",
+  portraitRatio: 0,
+  portraitAlt: "",
   leftText: "The Webflow Expert. That's Nenad.",
   /* The headline remains OPTIONAL (clearing it in the admin panel still hides
      the <h1> entirely), but it ships populated: an empty default meant the hero
@@ -79,3 +93,39 @@ export const DEFAULT_HERO: HeroContent = {
   yearsLabelLines: ["Years of", "experience"],
   skills: ["Creative", "Reliable", "Strategist", "Builder", "Efficient"],
 };
+
+/**
+ * Resolve which portrait the hero should render.
+ *
+ * The bundled asset ships three widths and a srcSet, so the browser can pick
+ * per-DPR. An uploaded file is a single unknown bitmap: emitting a srcSet for
+ * it would be a lie, and `sizes` without a srcSet does nothing, so both are
+ * omitted and the one file is used at every width.
+ *
+ * `ratio` matters beyond aesthetics — it feeds `--portrait-ratio`, which
+ * reserves the layout box before the bitmap decodes. A wrong value here is a
+ * visible reflow on first paint, so an override is only trusted when it
+ * carries a finite, positive ratio; otherwise it degrades to the bundled
+ * asset rather than shipping a broken box.
+ */
+export function resolveHeroPortrait(c: {
+  portraitSrc?: string;
+  portraitRatio?: number;
+  portraitAlt?: string;
+}) {
+  const src = (c.portraitSrc ?? "").trim();
+  const ratio = c.portraitRatio ?? 0;
+  const usable =
+    src.startsWith("/") && Number.isFinite(ratio) && ratio > 0;
+
+  if (!usable) return { ...HERO_PORTRAIT, isCustom: false as const };
+
+  return {
+    src,
+    srcSet: undefined,
+    sizes: undefined,
+    alt: (c.portraitAlt ?? "").trim() || HERO_PORTRAIT.alt,
+    ratio,
+    isCustom: true as const,
+  };
+}
