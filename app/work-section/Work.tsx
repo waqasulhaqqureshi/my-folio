@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useEnterToken } from "../hooks/useEnterToken";
 import AnimatedTitle from "../animations/AnimatedTitle";
 import type { Project } from "../lib/projectTypes";
 import { useProjectStepper } from "./useProjectStepper";
@@ -21,8 +22,12 @@ import "./work.css";
 
 /* The idle tab pulses twice, then stops. An indefinite loop reads as a broken
    element after a few seconds; two passes is enough to be noticed and short
-   enough not to nag. It replays on every toggle, so whichever tab just became
-   inactive advertises itself — not only on first load. */
+   enough not to nag.
+
+   It replays on two triggers: switching device (the newly-idle tab advertises
+   itself) and scrolling back into the section from elsewhere on the page. The
+   second matters because the hint is the only thing telling a returning
+   visitor the other device view exists. */
 const ATTRACTOR_CYCLES = 2;
 const CYCLE_MS = 2400;
 
@@ -35,19 +40,24 @@ const Work = ({ projects }: { projects: Project[] }) => {
   /*
    * Attractor lifecycle.
    *
-   * `run` is a monotonically increasing token rather than a boolean, because
-   * the animation must RESTART on a toggle even though the target element is
-   * the same DOM node. Re-setting a boolean that is already true is a no-op to
-   * React, and CSS would keep the old (finished) animation. Feeding the token
-   * into the key of the animated layer forces a fresh element, so the two
-   * passes genuinely replay every time.
+   * Both triggers are monotonically increasing tokens rather than booleans:
+   * the animation must RESTART even though the target is the same DOM node,
+   * and re-setting a boolean that is already true is a no-op to React. CSS
+   * will not replay an animation that has spent its iteration count either, so
+   * the combined token is fed into the animated layer's `key` to force a fresh
+   * element.
    *
-   * The timer is cleared and re-armed on every switch, so rapid toggling can
-   * never leave a stale timeout that cuts the new run short.
+   * `enters` counts arrivals at the section; `toggles` counts device switches.
+   * Summing them means either event re-arms the hint.
    */
-  const [run, setRun] = useState(0);
+  const enters = useEnterToken("work");
+  const [toggles, setToggles] = useState(0);
+  const run = enters + toggles;
   const [hint, setHint] = useState(true);
 
+  /* The timer is cleared and re-armed whenever `run` changes, so a toggle
+     immediately after an entry cannot leave a stale timeout that cuts the new
+     run short. */
   useEffect(() => {
     setHint(true);
     const t = setTimeout(() => setHint(false), ATTRACTOR_CYCLES * CYCLE_MS);
@@ -57,9 +67,8 @@ const Work = ({ projects }: { projects: Project[] }) => {
   function choose(k: DeviceKind) {
     if (k === kind) return;
     setKind(k);
-    // Bump the token AFTER the kind change so the newly-idle tab is the one
-    // that animates.
-    setRun((n) => n + 1);
+    // Bump AFTER the kind change so the newly-idle tab is the one that animates.
+    setToggles((n) => n + 1);
   }
 
   if (!project) return null;

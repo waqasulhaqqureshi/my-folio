@@ -392,10 +392,17 @@
 
    GEOMETRY
    The dock is NOT translated off-screen. It stays put and its CONTENT scales
-   away toward the bottom-centre, with the handle fading in over the same
-   point. Sliding the container down instead would either take the handle with
-   it, or require animating `bottom`, which is a layout property. The dock's
-   box therefore never moves; only what is painted inside it changes.
+   away, with the handle fading in. Sliding the container down instead would
+   either take the handle with it, or require animating `bottom`, which is a
+   layout property. The dock's box therefore never moves; only what is painted
+   inside it changes.
+
+   The capsule sits toward the RIGHT rather than dead centre: the projects
+   section puts its device frame and caption on the horizontal midline, and a
+   pill parked there is exactly what the collapse was meant to avoid. It is
+   offset by a percentage of the dock's own width (not the viewport) so it
+   tracks the dock at every breakpoint, and clamped so it can never leave the
+   dock's footprint on a narrow screen.
    ========================================================================== */
 
 /* The wrapper is display:contents so the flex layout is unchanged while
@@ -422,7 +429,9 @@
 .nm-dock__item,
 .nm-dock__sep,
 .nm-dock__cta {
-  transform-origin: 50% 100%;
+  /* Fold toward the right, where the capsule appears — the genie should
+     converge on its destination, not on the middle of the dock. */
+  transform-origin: 88% 100%;
   transition: transform 0.38s var(--ease-nm), opacity 0.26s ease;
 }
 
@@ -453,8 +462,8 @@
    width/height keeps it on the compositor; the pane is a plain filled box, so
    the scale distortion is invisible. */
 .nm-dock__bg {
-  transition: transform 0.42s var(--ease-nm);
-  transform-origin: 50% 100%;
+  transition: transform 0.42s var(--ease-nm), opacity 0.3s ease;
+  transform-origin: 88% 100%;
 }
 .nm-dock[data-collapsed="true"] .nm-dock__bg {
   transform: scale(0.34, 0.62);
@@ -465,10 +474,13 @@
 
 .nm-dock__handle {
   position: absolute;
-  /* Anchored to the dock's own centre. The dock never moves, so neither does
-     this — the handle is always exactly where the dock was. */
+  /* Offset right of centre so the capsule clears the middle of the screen,
+     where the projects device and its caption sit. The shift is a share of the
+     dock's own width, capped in rem so it stays inside the dock on narrow
+     viewports. */
   left: 50%;
   top: 50%;
+  margin-left: min(32%, 7.5rem);
   z-index: 3;
   display: inline-flex;
   align-items: center;
@@ -515,6 +527,15 @@
   border-radius: 50%;
   background-color: currentColor;
   opacity: 0.6;
+}
+
+/* Narrow viewports: the dock is nearly full-width and the capsule is
+   proportionally larger, so a 32% shift would push it past the right edge.
+   Ease the offset back and let the pill sit just right of centre. */
+@media (max-width: 640px) {
+  .nm-dock__handle {
+    margin-left: min(24%, 4.5rem);
+  }
 }
 
 .nm-dock__handle:hover {
