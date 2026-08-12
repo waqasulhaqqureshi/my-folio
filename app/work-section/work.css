@@ -357,8 +357,13 @@
   height: 100%;
 }
 
+/* No media at all for this device — a neutral plate beats a black hole. */
+.work-slide-empty {
+  background: linear-gradient(160deg, #1b1b1b, #2a2a2a);
+}
+
 .work-slide-media,
-.work-slide-media > img,
+.work-slide-media img,
 .work-slide-media video {
   position: absolute;
   inset: 0;
@@ -573,14 +578,24 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: clamp(0.7rem, 1.1vw, 1.2rem);
-  margin-bottom: clamp(1.6rem, 2.8vw, 3rem);
+  /* Generous gap between the heading and the switch, and again before the
+     stage: the section previously ran heading-into-controls with no room to
+     breathe. */
+  gap: clamp(1.5rem, 2.6vw, 2.6rem);
+  margin-bottom: clamp(2.75rem, 5vw, 5rem);
+  padding-top: clamp(1rem, 2.5vw, 2.5rem);
 }
 
-/* Centred heading: with the device stage centred below it, a left-aligned
-   two-column header (the old layout) left the composition lopsided. */
-.work-head .h2-style-white {
-  max-width: 18ch;
+/* Plain section heading. The per-character AnimatedTitle and its eyebrow were
+   removed — one word does not need a staggered reveal, and the animation
+   delayed the only label the section has. */
+.work-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-size: clamp(2.25rem, 5.2vw, 4.5rem);
+  color: var(--cream);
 }
 
 .work-switch {
@@ -648,13 +663,12 @@
   }
   /* Kill every looping attractor and the strip pan. The strip then shows its
      first screen as a plain still, which is a valid poster. */
-  .phone-scroll img,
   .work-info,
-  .work-switch__btn[data-idle="true"],
-  .work-switch__btn[data-idle="true"]::before {
+  .work-switch__btn[data-hint="true"],
+  .work-switch__btn[data-hint="true"]::before {
     animation: none;
   }
-  .work-switch__btn[data-idle="true"]::before {
+  .work-switch__btn[data-hint="true"]::before {
     opacity: 0;
   }
 }
@@ -676,60 +690,25 @@
   }
 }
 
-/* ---------- Mobile preview: one scrolling strip ---------------------------
-   public/projects/mobile-strip.webp stacks 6 app screens plus a repeat of the
-   first (7 x 950px at 440 wide). Translating it by -6/7 of its own height
-   therefore lands on a pixel-identical copy of frame one, so `infinite` loops
-   with no seam and no JS.
-
-   Only `transform` animates, so this stays on the compositor: no per-frame
-   image decode, unlike the animated WebP/APNG this replaced.
-   -------------------------------------------------------------------------- */
-
-.phone-scroll {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.phone-scroll img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: auto;
-  /* Not `fill`/`cover`: the strip must overflow the frame vertically at its
-     natural ratio, otherwise the pan would squash it. */
-  object-fit: fill;
-  will-change: transform;
-  animation: phone-scroll 26s linear infinite;
-}
-
-@keyframes phone-scroll {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(0, -85.7143%, 0);
-  }
-}
-
 /* ---------- Idle tab: travelling yellow glow ------------------------------
    When Mobile is showing, the Web tab advertises itself. Two layers:
    a sweeping highlight that crosses the pill, and a soft pulsing yellow
-   shadow. Both run on the inactive tab only, via [data-idle="true"].
+   shadow. Both run on the inactive tab only, via [data-hint="true"].
    -------------------------------------------------------------------------- */
 
-.work-switch__btn[data-idle="true"] {
+/* Runs exactly ATTRACTOR_CYCLES (Work.tsx) passes, then React drops the
+   attribute — so the animation is removed from the compositor entirely rather
+   than left paused on the last frame. `forwards` holds the resting state for
+   the final frame before the attribute goes. */
+.work-switch__btn[data-hint="true"] {
   position: relative;
-  /* Clip the sweep to the pill. */
   overflow: hidden;
-  animation: work-tab-pulse 2.4s ease-in-out infinite;
+  animation: work-tab-pulse 2.4s ease-in-out 2 forwards;
 }
 
 /* The sweep. A narrow yellow band pushed across the button on a loop with a
    long tail of dead time, so it reads as an occasional glint, not a strobe. */
-.work-switch__btn[data-idle="true"]::before {
+.work-switch__btn[data-hint="true"]::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -745,13 +724,13 @@
     transparent 100%
   );
   background-size: 260% 100%;
-  animation: work-tab-sweep 2.4s ease-in-out infinite;
+  animation: work-tab-sweep 2.4s ease-in-out 2 forwards;
   pointer-events: none;
 }
 
 /* A thin yellow rim that brightens with the pulse, so the target edge is
    readable even when the sweep is off-screen. */
-.work-switch__btn[data-idle="true"]::after {
+.work-switch__btn[data-hint="true"]::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -761,13 +740,13 @@
 }
 
 /* Hovering means the user already found it — drop the attractor. */
-.work-switch__btn[data-idle="true"]:hover,
-.work-switch__btn[data-idle="true"]:focus-visible {
+.work-switch__btn[data-hint="true"]:hover,
+.work-switch__btn[data-hint="true"]:focus-visible {
   animation: none;
   color: var(--cream);
 }
-.work-switch__btn[data-idle="true"]:hover::before,
-.work-switch__btn[data-idle="true"]:focus-visible::before {
+.work-switch__btn[data-hint="true"]:hover::before,
+.work-switch__btn[data-hint="true"]:focus-visible::before {
   animation: none;
   opacity: 0;
 }

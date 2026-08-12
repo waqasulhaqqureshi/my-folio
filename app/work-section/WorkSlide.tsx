@@ -1,85 +1,103 @@
 "use client";
 
 import Image from "next/image";
-import { ProjectProps } from "./projectDetails";
+import type { Project } from "../lib/projectTypes";
 import { useLazyVideo } from "../hooks/useLazyVideo";
 import type { DeviceKind } from "./DeviceFrame";
 
 /*
  * WorkSlide — the media inside the device screen.
  *
- * WEB: the per-project .webm capture, lazily attached and fully released when
- * it leaves the viewport or the slide unmounts.
+ * Each project owns its own media per device: `video`/`image` fill the tablet,
+ * `mobileVideo`/`mobileImage` fill the phone. One shared clip across all
+ * projects was tried and rejected — the frame would show a recording of a
+ * different product than the title beside it, which breaks the whole premise
+ * of a project carousel.
  *
- * MOBILE: one shared vertical strip (public/projects/mobile-strip.webp) of six
- * app screens, translated upward by a CSS keyframe. This replaced a set of
- * nine separate stills and an attempted animated WebP/APNG:
- *   - Pillow's WebP and GIF writers silently collapsed runs of similar frames
- *     (110 frames in, 25 out) and wrote a zero duration, so the animation
- *     never advanced.
- *   - The APNG that did encode correctly was 1.6MB for 9 seconds.
- *   - The strip is 217KB total, animates on the compositor (transform only,
- *     no per-frame decode), and needs no decoder at all.
- * The strip repeats its first screen at the end, so a linear 0 -> -85.7143%
- * loop wraps with no visible jump.
+ * A project with no phone recording falls back to its portrait still rather
+ * than an empty frame, so a project can be added without a phone capture.
  */
 export default function WorkSlide({
   project,
   kind,
 }: {
-  project: ProjectProps;
+  project: Project;
   kind: DeviceKind;
 }) {
-  if (kind === "mobile") {
+  const src = kind === "mobile" ? project.mobileVideo : project.video;
+  const poster = kind === "mobile" ? project.mobileImage : project.image;
+
+  // No clip for this device: render the still alone. Mounting <video> with an
+  // empty src would make the browser request the page URL as a media file.
+  if (!src) return <StillSlide poster={poster} name={project.name} kind={kind} />;
+
+  return <VideoSlide src={src} poster={poster} name={project.name} kind={kind} />;
+}
+
+function StillSlide({
+  poster,
+  name,
+  kind,
+}: {
+  poster: string;
+  name: string;
+  kind: DeviceKind;
+}) {
+  if (!poster) {
     return (
       <div className="work-slide">
-        <div className="work-slide-media">
-          <div className="phone-scroll" aria-hidden="true">
-            {/*
-             * Plain <img>: next/image wants to fill its parent box, but this
-             * element is deliberately ~15x taller than the frame so it can be
-             * translated through it. Sizing is handled entirely in CSS.
-             */}
-            <img
-              src="/projects/mobile-strip.webp"
-              alt=""
-              decoding="async"
-              loading="lazy"
-            />
-          </div>
-          <span className="sr-only">
-            {project.name} — mobile app preview
-          </span>
-        </div>
+        <div className="work-slide-media work-slide-empty" aria-hidden="true" />
+        <span className="sr-only">{name} — no preview available</span>
       </div>
     );
   }
-
-  return <WebSlide project={project} />;
+  return (
+    <div className="work-slide">
+      <div className="work-slide-media">
+        <Image
+          src={poster}
+          alt={`${name} — ${kind} preview`}
+          fill
+          sizes={kind === "mobile" ? "(max-width: 767px) 62vw, 22vw" : "(max-width: 767px) 62vw, 27vw"}
+          className="object-cover"
+        />
+      </div>
+    </div>
+  );
 }
 
 /*
- * Split out so the video hook is only called on the web branch — calling it
- * above the `kind` check would break the rules of hooks the moment the mobile
- * early return fires.
+ * Split from the branch above so the video hook is only called when there IS a
+ * video — calling it before the early return would break the rules of hooks.
  */
-function WebSlide({ project }: { project: ProjectProps }) {
-  const { videoRef, state } = useLazyVideo(project.video);
+function VideoSlide({
+  src,
+  poster,
+  name,
+  kind,
+}: {
+  src: string;
+  poster: string;
+  name: string;
+  kind: DeviceKind;
+}) {
+  const { videoRef, state } = useLazyVideo(src);
 
   return (
     <div className="work-slide">
       <div className="work-slide-media">
-        {/* Poster stays beneath until playback starts, so a slow clip shows
-            the still rather than a black rectangle. */}
-        <Image
-          src={project.image}
-          alt={`${project.name} — site preview`}
-          fill
-          sizes="(max-width: 767px) 62vw, 27vw"
-          className="object-cover"
-          data-hidden={state === "active" ? "true" : "false"}
-          priority={project.id === 0}
-        />
+        {/* Poster stays beneath until playback starts, so a slow clip shows the
+            still rather than a black rectangle. */}
+        {poster && (
+          <Image
+            src={poster}
+            alt={`${name} — ${kind} preview`}
+            fill
+            sizes={kind === "mobile" ? "(max-width: 767px) 62vw, 22vw" : "(max-width: 767px) 62vw, 27vw"}
+            className="object-cover"
+            data-hidden={state === "active" ? "true" : "false"}
+          />
+        )}
         <video
           ref={videoRef}
           data-state={state}

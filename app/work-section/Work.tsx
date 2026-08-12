@@ -1,7 +1,6 @@
 "use client";
-import { useState } from "react";
-import AnimatedTitle from "../animations/AnimatedTitle";
-import { devProjects } from "./projectDetails";
+import { useEffect, useRef, useState } from "react";
+import type { Project } from "../lib/projectTypes";
 import { useProjectStepper } from "./useProjectStepper";
 import DeviceFrame, { DeviceKind } from "./DeviceFrame";
 import WorkSlide from "./WorkSlide";
@@ -10,21 +9,51 @@ import "./work.css";
 /*
  * Work — projects one at a time in a device frame, with a Mobile / Web switch.
  *
- * LAYOUT
- * On desktop the stage is a three-column grid: title + CTA on the left, the
- * device in the middle, description + stack on the right. Everything about a
- * project is therefore visible in one viewport — previously the caption sat
- * below the device and required a scroll to read. Below 1024px it collapses
- * to a single centred column in DOM order.
+ * Content comes from the admin store (data/projects.json) via the server
+ * component, so the roster, its order and all its media are editable at
+ * /admin without a deploy.
  *
- * Mobile is the default tab: the app previews are the more distinctive work,
- * so they lead.
+ * On desktop the stage is a five-column grid: title + CTA left, device centre,
+ * description + stack right — everything about a project readable in one
+ * viewport, no scrolling. Below 1024px it collapses to a stacked column.
  */
-const Work = () => {
+
+/* The idle-tab attractor runs twice and then stops for good. An indefinite
+   loop reads as a broken element after the first few seconds; two passes is
+   enough to be noticed and short enough not to nag. */
+const ATTRACTOR_CYCLES = 2;
+const CYCLE_MS = 2400;
+
+const Work = ({ projects }: { projects: Project[] }) => {
   const [kind, setKind] = useState<DeviceKind>("mobile");
   const { index, prev, next, canPrev, canNext, go, onKeyDown } =
-    useProjectStepper(devProjects.length);
-  const project = devProjects[index];
+    useProjectStepper(projects.length);
+  const project = projects[index];
+
+  /*
+   * Attractor lifecycle.
+   *
+   * `hint` gates the animation. It restarts on every switch (the newly-idle
+   * tab is a different button and deserves its own two passes) and is cancelled
+   * the moment the user actually interacts with the switch — at that point they
+   * have found the control and the animation is pure noise.
+   */
+  const [hint, setHint] = useState(true);
+  const engaged = useRef(false);
+
+  useEffect(() => {
+    if (engaged.current) return;
+    setHint(true);
+    const t = setTimeout(() => setHint(false), ATTRACTOR_CYCLES * CYCLE_MS);
+    return () => clearTimeout(t);
+  }, [kind]);
+
+  function choose(k: DeviceKind) {
+    // Any click on the switch permanently retires the attractor.
+    engaged.current = true;
+    setHint(false);
+    setKind(k);
+  }
 
   if (!project) return null;
 
@@ -33,21 +62,16 @@ const Work = () => {
       <div className="work-sticky">
         <div className="work-container">
           <header className="work-head">
-            <div className="label is-secondary">Projects</div>
-            <AnimatedTitle
-              text={"Things I've Built"}
-              className="h2-style-white"
-              wordSpace={"mr-[0.18em]"}
-              charSpace={"mr-[0.001em]"}
-            />
+            <h2 className="work-title">Projects</h2>
 
             {/*
              * Tablist: both buttons share aria-controls pointing at the single
              * stage panel, so it announces as two views of one thing rather
              * than two unrelated toggles.
              *
-             * data-idle marks the tab that is NOT active — it carries the
-             * travelling yellow glow that invites a click on the other view.
+             * data-hint marks the inactive tab while the attractor is live.
+             * It goes false after two cycles, which also removes the animation
+             * from the compositor rather than leaving it paused.
              */}
             <div className="work-switch" role="tablist" aria-label="Choose a preview device">
               {(["mobile", "web"] as const).map((k) => (
@@ -59,8 +83,8 @@ const Work = () => {
                   aria-selected={kind === k}
                   aria-controls="work-stage-panel"
                   data-active={kind === k}
-                  data-idle={kind !== k}
-                  onClick={() => setKind(k)}
+                  data-hint={kind !== k && hint}
+                  onClick={() => choose(k)}
                 >
                   <span className="work-switch__inner">
                     {k === "mobile" ? (
@@ -94,29 +118,32 @@ const Work = () => {
               </svg>
             </button>
 
-            {/*
-             * key={index} on the two text columns restarts their entry
-             * animation on every step, so the copy visibly refreshes rather
-             * than silently swapping under the reader.
-             */}
+            {/* key={index} on the text columns restarts their entry animation
+                on every step, so the copy visibly refreshes rather than
+                silently swapping under the reader. */}
             <div className="work-info work-info--left" key={`l-${index}`}>
               <div className="work-stage-index">
                 {String(index + 1).padStart(2, "0")}
-                <span className="work-stage-total"> / {String(devProjects.length).padStart(2, "0")}</span>
+                <span className="work-stage-total">
+                  {" "}
+                  / {String(projects.length).padStart(2, "0")}
+                </span>
               </div>
               <h3 className="work-stage-title">{project.name}</h3>
-              <a
-                href={project.demo}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="work-stage-link"
-                aria-label={`${project.name} — open project in a new tab`}
-              >
-                Visit site
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M7 17L17 7M17 7H8M17 7v9" />
-                </svg>
-              </a>
+              {project.demo && (
+                <a
+                  href={project.demo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="work-stage-link"
+                  aria-label={`${project.name} — open project in a new tab`}
+                >
+                  Visit site
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M7 17L17 7M17 7H8M17 7v9" />
+                  </svg>
+                </a>
+              )}
             </div>
 
             <div
@@ -125,15 +152,13 @@ const Work = () => {
               tabIndex={0}
               role="group"
               aria-roledescription="carousel"
-              aria-label={`Project ${index + 1} of ${devProjects.length}: ${project.name}, ${kind} view`}
+              aria-label={`Project ${index + 1} of ${projects.length}: ${project.name}, ${kind} view`}
               onKeyDown={onKeyDown}
             >
               <DeviceFrame kind={kind}>
-                {/*
-                 * key includes the device kind: switching tabs remounts the
-                 * slide, firing useLazyVideo's teardown so the decoder is
-                 * released rather than left buffering behind a hidden panel.
-                 */}
+                {/* key includes the device kind: switching tabs remounts the
+                    slide, firing useLazyVideo's teardown so the decoder is
+                    released rather than left buffering behind a hidden panel. */}
                 <WorkSlide key={`${project.id}-${kind}`} project={project} kind={kind} />
               </DeviceFrame>
             </div>
@@ -166,11 +191,11 @@ const Work = () => {
               two columns and reordered by CSS, which would make a live region
               announce in the wrong order. */}
           <p className="sr-only" aria-live="polite" aria-atomic="true">
-            {`Project ${index + 1} of ${devProjects.length}: ${project.name}. ${project.description}`}
+            {`Project ${index + 1} of ${projects.length}: ${project.name}. ${project.description}`}
           </p>
 
           <div className="work-dots" role="tablist" aria-label="Choose a project">
-            {devProjects.map((p, i) => (
+            {projects.map((p, i) => (
               <button
                 key={p.id}
                 type="button"

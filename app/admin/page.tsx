@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { isAuthed } from "../lib/adminAuth";
 import { getHeroContent } from "../lib/heroContent";
+import { getProjects } from "../lib/projectContent";
 import AdminGate from "./AdminGate";
-import HeroEditor from "./HeroEditor";
+import AdminShell from "./AdminShell";
 
 /*
  * /admin — server component.
@@ -25,6 +26,6 @@ export default async function AdminPage({
   const { next } = await searchParams;
   if (next && !next.startsWith("/")) redirect("/admin"); // open-redirect guard
 
-  const content = await getHeroContent();
-  return <HeroEditor initial={content} />;
+  const [hero, projects] = await Promise.all([getHeroContent(), getProjects()]);
+  return <AdminShell hero={hero} projects={projects} />;
 }
