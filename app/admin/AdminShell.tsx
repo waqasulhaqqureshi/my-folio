@@ -3,8 +3,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { HeroContent } from "../lib/heroTypes";
 import type { Project } from "../lib/projectTypes";
+import type { SiteSettings } from "../lib/settingsTypes";
 import HeroEditor from "./HeroEditor";
 import ProjectsEditor from "./ProjectsEditor";
+import SettingsEditor from "./SettingsEditor";
 
 /*
  * Admin shell — section tabs over the editors.
@@ -15,19 +17,22 @@ import ProjectsEditor from "./ProjectsEditor";
  * lose work. The cost is both trees rendering at once, which is trivial here.
  */
 
-type Tab = "hero" | "projects";
+type Tab = "hero" | "projects" | "settings";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "hero", label: "Hero" },
   { id: "projects", label: "Projects" },
+  { id: "settings", label: "Layout" },
 ];
 
 export default function AdminShell({
   hero,
   projects,
+  settings,
 }: {
   hero: HeroContent;
   projects: Project[];
+  settings: SiteSettings;
 }) {
   const [tab, setTab] = useState<Tab>("hero");
   const router = useRouter();
@@ -96,6 +101,14 @@ export default function AdminShell({
           hidden={tab !== "projects"}
         >
           <ProjectsEditor initial={projects} />
+        </div>
+        <div
+          id="admin-panel-settings"
+          role="tabpanel"
+          aria-labelledby="admin-tab-settings"
+          hidden={tab !== "settings"}
+        >
+          <SettingsEditor initial={settings} />
         </div>
       </div>
     </main>

@@ -216,11 +216,19 @@ export default function HeroEditor({ initial }: { initial: HeroContent }) {
               </Field>
 
               <div className="sm:col-span-2">
-                <Field label="Headline" hint="One line per row — each becomes its own animated line.">
+                <Field
+                  label="Headline (optional)"
+                  hint={
+                    form.headingLines.length
+                      ? "One line per row — each becomes its own animated line. Clear the box to remove the headline entirely."
+                      : "Empty — the hero renders with no headline. Type a line to bring it back."
+                  }
+                >
                   <textarea
                     className={`${inputCls} min-h-[92px] resize-y`}
                     value={toLines(form.headingLines)}
                     onChange={(e) => set("headingLines", fromLines(e.target.value))}
+                    placeholder="Leave empty for no headline"
                   />
                 </Field>
               </div>

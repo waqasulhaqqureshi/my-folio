@@ -42,10 +42,19 @@ function coerce(raw: unknown): HC {
       ? (v as string[])
       : fb;
 
+  /* Like `list`, but an EMPTY array is a legitimate saved value rather than a
+     reason to fall back. Used for optional blocks: clearing the headline must
+     actually clear it, whereas `list` would silently restore the default and
+     make the save look broken. */
+  const optionalList = (v: unknown, fb: string[]) =>
+    Array.isArray(v) && v.every((i) => typeof i === "string")
+      ? (v as string[]).filter((s) => s.trim())
+      : fb;
+
   return {
     brandMark: str(o.brandMark, DEFAULTS.brandMark),
     leftText: str(o.leftText, DEFAULTS.leftText),
-    headingLines: list(o.headingLines, DEFAULTS.headingLines),
+    headingLines: optionalList(o.headingLines, DEFAULTS.headingLines),
     ctaPrimary: str(o.ctaPrimary, DEFAULTS.ctaPrimary),
     ctaSecondary: str(o.ctaSecondary, DEFAULTS.ctaSecondary),
     rightText: str(o.rightText, DEFAULTS.rightText),

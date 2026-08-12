@@ -397,12 +397,16 @@
    layout property. The dock's box therefore never moves; only what is painted
    inside it changes.
 
-   The capsule sits toward the RIGHT rather than dead centre: the projects
+   The capsule sits well to the RIGHT rather than dead centre: the projects
    section puts its device frame and caption on the horizontal midline, and a
-   pill parked there is exactly what the collapse was meant to avoid. It is
-   offset by a percentage of the dock's own width (not the viewport) so it
-   tracks the dock at every breakpoint, and clamped so it can never leave the
-   dock's footprint on a narrow screen.
+   pill parked there is exactly what the collapse was meant to avoid.
+
+   The shift is driven by --nm-capsule-shift / --nm-capsule-max, both written
+   by the admin panel (Settings tab). A percentage of the DOCK's width, not the
+   viewport, so it tracks the dock at every breakpoint; the rem cap stops a
+   large value pushing the pill off a narrow screen. Defaults live in
+   settingsTypes.ts and are duplicated here only as a fallback for when the
+   custom property is absent (e.g. the nav rendered outside the page shell).
    ========================================================================== */
 
 /* The wrapper is display:contents so the flex layout is unchanged while
@@ -431,7 +435,7 @@
 .nm-dock__cta {
   /* Fold toward the right, where the capsule appears — the genie should
      converge on its destination, not on the middle of the dock. */
-  transform-origin: 88% 100%;
+  transform-origin: 96% 100%;
   transition: transform 0.38s var(--ease-nm), opacity 0.26s ease;
 }
 
@@ -463,7 +467,7 @@
    the scale distortion is invisible. */
 .nm-dock__bg {
   transition: transform 0.42s var(--ease-nm), opacity 0.3s ease;
-  transform-origin: 88% 100%;
+  transform-origin: 96% 100%;
 }
 .nm-dock[data-collapsed="true"] .nm-dock__bg {
   transform: scale(0.34, 0.62);
@@ -475,12 +479,10 @@
 .nm-dock__handle {
   position: absolute;
   /* Offset right of centre so the capsule clears the middle of the screen,
-     where the projects device and its caption sit. The shift is a share of the
-     dock's own width, capped in rem so it stays inside the dock on narrow
-     viewports. */
+     where the projects device and its caption sit. Admin-controlled. */
   left: 50%;
   top: 50%;
-  margin-left: min(32%, 7.5rem);
+  margin-left: min(var(--nm-capsule-shift, 62%), var(--nm-capsule-max, 16rem));
   z-index: 3;
   display: inline-flex;
   align-items: center;
@@ -529,12 +531,15 @@
   opacity: 0.6;
 }
 
-/* Narrow viewports: the dock is nearly full-width and the capsule is
-   proportionally larger, so a 32% shift would push it past the right edge.
-   Ease the offset back and let the pill sit just right of centre. */
+/* Narrow viewports: the dock is nearly full-width, so the authored shift can
+   exceed the space available. Halve the rem cap — the percentage still applies,
+   it simply cannot run past the dock's edge. */
 @media (max-width: 640px) {
   .nm-dock__handle {
-    margin-left: min(24%, 4.5rem);
+    margin-left: min(
+      var(--nm-capsule-shift, 62%),
+      calc(var(--nm-capsule-max, 16rem) * 0.4)
+    );
   }
 }
 
