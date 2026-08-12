@@ -666,6 +666,25 @@
        sideways guard changes per band. A portrait tablet is narrow relative to
        its height, so the figure would otherwise span most of the width. */
     max-width: 88vw;
+
+    /* Same bottom fade as mobile, and for the same reason: from 768 to 1199 the
+       flank paragraphs still overlap the portrait, so its hard lower edge would
+       sit behind the copy. Only true desktop escapes this, because there the
+       figure is narrow enough that the flanks clear it entirely. */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 62%,
+      rgba(0, 0, 0, 0.55) 81%,
+      transparent 98%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 62%,
+      rgba(0, 0, 0, 0.55) 81%,
+      transparent 98%
+    );
   }
 }
 
@@ -687,6 +706,23 @@
     /* Short and wide: the stage is only ~600px tall, so a full-height figure is
        small anyway; the tight cap stops it spreading sideways. */
     max-width: 52vw;
+
+    /* A short stage crushes the portrait and the copy together, so the fade
+       starts earlier here than in any other band. */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 54%,
+      rgba(0, 0, 0, 0.5) 76%,
+      transparent 96%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 54%,
+      rgba(0, 0, 0, 0.5) 76%,
+      transparent 96%
+    );
   }
   /* Cards are decoration over the portrait, not content — they yield first. */
   .hero .hero-cards-wrap {
@@ -917,6 +953,36 @@
     height: auto;
     aspect-ratio: auto;
     align-self: flex-end;
+
+    /* Fade the bottom of the photo into the page.
+
+       Below desktop the copy sits OVER the lower part of the portrait, and a
+       hard-edged photo behind dark text is unreadable — that hard horizontal
+       line where the t-shirt stops is exactly what the screenshot shows.
+
+       heynesh solves this in the ASSET: their mobile portrait has the fade
+       painted in. The user's InShot export has one too, but it fades to a grey
+       (#bfb3a7) rather than to the page colour (#d5cfbe), so baking it in
+       leaves a visible seam and breaks the moment the background changes.
+
+       Masking ALPHA instead composites against whatever is actually behind the
+       image, so there is no seam and no colour to keep in sync. The fade spans
+       the bottom third, which is where the flank copy lands at every width
+       below 768px. -webkit- prefix included: iOS Safari still needs it. */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 58%,
+      rgba(0, 0, 0, 0.55) 78%,
+      transparent 97%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 58%,
+      rgba(0, 0, 0, 0.55) 78%,
+      transparent 97%
+    );
   }
 }
 
