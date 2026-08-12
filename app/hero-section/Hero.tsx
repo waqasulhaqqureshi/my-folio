@@ -154,7 +154,14 @@ const Hero = ({ content }: { content?: HeroContent }) => {
             layout
             transition={{ duration: 0.9, ease: EASE }}
           >
-            <div className="nesh-logo">
+            <div
+              className="nesh-logo"
+              style={
+                {
+                  "--mark-chars": Math.max(HERO_COPY.brandMark.length, 1),
+                } as React.CSSProperties
+              }
+            >
               {/*
                * The source ships an INLINE SVG wordmark, which scales to its
                * container for free. Rendering live text instead means the
@@ -168,18 +175,31 @@ const Hero = ({ content }: { content?: HeroContent }) => {
                * available width no matter how many characters there are. This
                * matches how the source behaves rather than how it is authored.
                */}
+              {/*
+               * Fixed viewBox + textLength: the renderer fits the glyphs to
+               * exactly 1000 units whatever the name is.
+               *
+               * Two earlier attempts failed here. Live text at font-size:24vw
+               * overflowed once the name grew past 4 characters. Deriving the
+               * viewBox from the character count then used an ESTIMATED glyph
+               * advance that was ~20% low, so the text painted at 126% of the
+               * box and spilled past both edges. Letting the browser do the
+               * measuring removes the guess entirely.
+               */}
               <svg
                 className="nesh-logo-svg"
-                viewBox={`0 0 ${Math.max(HERO_COPY.brandMark.length, 1) * 62} 100`}
+                viewBox="0 0 1000 100"
                 preserveAspectRatio="xMidYMid meet"
                 role="img"
                 aria-label={HERO_COPY.brandMark}
               >
                 <text
-                  x="50%"
-                  y="78"
+                  x="500"
+                  y="76"
                   textAnchor="middle"
                   className="nesh-logo-text"
+                  textLength="1000"
+                  lengthAdjust="spacingAndGlyphs"
                 >
                   {HERO_COPY.brandMark}
                 </text>
