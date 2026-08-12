@@ -19,40 +19,32 @@
  * can be reserved before the bitmap decodes.
  */
 /*
- * TWO portrait assets, cut from one master — this is what heynesh does.
+ * ONE portrait for every breakpoint.
  *
- * Their desktop figure renders full-height at ~33vw wide, which under
- * `object-fit: contain` means the ASSET's own ratio is ~0.716. Their mobile
- * wrap clamps imply ~0.494. Those cannot be the same file: the desktop asset is
- * a head-and-torso crop, the mobile one keeps the long faded tail.
+ * The previous two-asset arrangement (a 0.4949 full-length figure for phones,
+ * a 0.7161 crop for desktop) existed only to reconcile two incompatible
+ * demands: desktop wanted a wide head-and-torso shape, mobile wanted a tall
+ * figure with room for copy underneath. `hero_waqas.png` removes the conflict
+ * at the source -- it is already a tight head-and-shoulders cutout at 0.8805,
+ * which is close enough to square that the SAME file composes correctly in a
+ * 100vh desktop stage and in a phone column.
  *
- * Serving one file to both is what forced the earlier compromises — either the
- * desktop figure was a thin sliver (fitting a 0.49 asset into a 100vh stage) or
- * mobile lost its rhythm (cropping the asset to suit desktop). Two crops from
- * one master removes the conflict entirely, and `cover`/hand-tuned masks are no
- * longer needed to hide the mismatch.
+ * Properties that matter to the layout, measured off the bitmap:
+ *   - true alpha cutout (46% fully opaque / 51% fully transparent), so it needs
+ *     no bottom fade mask at any breakpoint -- nothing to dissolve;
+ *   - the torso runs OPAQUE to the final row (row 1916 is 99.6% covered), so
+ *     the image bottom IS the figure bottom and can sit flush on the hero's
+ *     bottom edge with no gap and no visible cut;
+ *   - head top 1.7%, neck 57.9%, shoulders flare from 59.4% of the height.
  */
 export const HERO_PORTRAIT = {
-  /* 1009x1409, ratio 0.7161 — top 69% of the master, bottom cropped away.
-     Matches heynesh's measured desktop ratio (~0.716). */
-  desktop: {
-    src: "/hero-portrait-desktop-1050.webp",
-    srcSet:
-      "/hero-portrait-desktop-700.webp 700w, /hero-portrait-desktop-1050.webp 1050w",
-    sizes: "46vw",
-    ratio: 1009 / 1409,
-  },
-  /* 1009x2039, ratio 0.4949 — the full InShot export, only its transparent
-     margins trimmed. The long bottom is the fade heynesh paints into their own
-     mobile portrait; it is within 0.002 of the 0.4940 implied by their mobile
-     wrap clamps, which is why the mobile rhythm only works with this shape. */
-  mobile: {
-    src: "/hero-portrait-1140.webp",
-    srcSet: "/hero-portrait-760.webp 760w, /hero-portrait-1140.webp 1140w",
-    sizes: "100vw",
-    ratio: 1009 / 2039,
-  },
+  src: "/hero-waqas-1140.webp",
+  srcSet:
+    "/hero-waqas-760.webp 760w, /hero-waqas-1140.webp 1140w, /hero-waqas-1690.webp 1690w",
+  sizes: "(max-width: 767px) 100vw, 46vw",
   alt: "Waqas ul Haq Qureshi",
+  /* 1688x1917 */
+  ratio: 1688 / 1917,
 } as const;
 
 export type HeroContent = {

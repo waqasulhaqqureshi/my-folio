@@ -154,11 +154,8 @@ const Hero = ({ content }: { content?: HeroContent }) => {
          asserted unconditionally — no uploaded image of unknown shape exists. */
       style={
         {
-          /* Two ratios: the desktop crop reserves its own box, mobile keeps the
-             tall faded master. Publishing both means no breakpoint has to fake
-             the other's shape with object-fit. */
-          "--portrait-ratio": HERO_PORTRAIT.desktop.ratio,
-          "--portrait-ratio-mobile": HERO_PORTRAIT.mobile.ratio,
+          /* One asset, one ratio, every breakpoint. */
+          "--portrait-ratio": HERO_PORTRAIT.ratio,
         } as CSSProperties
       }
     >
@@ -319,9 +316,9 @@ const Hero = ({ content }: { content?: HeroContent }) => {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HERO_PORTRAIT.desktop.src}
-            srcSet={HERO_PORTRAIT.desktop.srcSet}
-            sizes={HERO_PORTRAIT.desktop.sizes}
+            src={HERO_PORTRAIT.src}
+            srcSet={HERO_PORTRAIT.srcSet}
+            sizes={HERO_PORTRAIT.sizes}
             alt={HERO_PORTRAIT.alt}
             className="hero-profile-img"
             loading="eager"
@@ -370,9 +367,9 @@ const Hero = ({ content }: { content?: HeroContent }) => {
         <div className="mobile-hero-image-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HERO_PORTRAIT.mobile.src}
-            srcSet={HERO_PORTRAIT.mobile.srcSet}
-            sizes={HERO_PORTRAIT.mobile.sizes}
+            src={HERO_PORTRAIT.src}
+            srcSet={HERO_PORTRAIT.srcSet}
+            sizes={HERO_PORTRAIT.sizes}
             alt={HERO_PORTRAIT.alt}
             className="mobile-hero-image"
             loading="lazy"

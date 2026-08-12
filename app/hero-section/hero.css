@@ -21,13 +21,10 @@
   --white: white;
   --tra: "Tr 3 A", Arial, sans-serif;
 
-  /* Intrinsic ratios of the TWO portrait cutouts. Desktop is the bottom-cropped
-     head-and-torso crop (1009x1409); mobile is the full master with the painted
-     fade tail (1009x2039). Both are set inline by Hero.tsx from the locked
-     assets; these are the fallbacks, and they exist so each layer can reserve
-     its box at the correct shape before the bitmap decodes. */
-  --portrait-ratio: 0.7161;
-  --portrait-ratio-mobile: 0.4949;
+  /* Intrinsic ratio of the portrait cutout (1688/1917). ONE asset now serves
+     every breakpoint, so there is a single value again. Set inline by Hero.tsx
+     from the locked asset; this is the fallback. */
+  --portrait-ratio: 0.8805;
 
   /* .hero (source) — the section shell.
      Source scroll-pin: `min-height: 300vh; padding-bottom: 180vh;` drives the
@@ -281,18 +278,15 @@
    The vw guard remains as `max-width`, not as a height term: on a short, wide
    viewport a pure 100vh figure would grow wider than the copy beneath it. */
 .hero .hero-profile-img {
-  /* CONTAIN, matching heynesh exactly — now that desktop has its OWN asset.
+  /* `contain`, bottom-seated. The asset is 0.8805 -- nearly square -- so in a
+     100vh stage it fits on HEIGHT and lands around 88vh wide before the vw cap
+     bites, which is the wide head-and-torso presence the design wants without
+     any runtime cropping.
 
-     The previous pass had to use `cover` + `object-position:50% 0%` to crop the
-     tall 0.4949 mobile asset down at runtime, because fitting that whole shape
-     into a 100vh stage produced a ~28vw sliver. That was a workaround for
-     serving one file to two very different boxes.
-
-     The desktop asset is now pre-cropped to 0.7161 — heynesh's own measured
-     desktop ratio — so `contain` fills the stage honestly: full height, ~72vh
-     worth of width, nothing cropped at render time and no resolution wasted
-     decoding pixels that get clipped. `object-position: 50% 100%` seats the
-     figure on the fold like theirs. */
+     No mask at any breakpoint: this is a true alpha cutout whose torso is
+     opaque to its final row, so there is no hard cut and no painted fade tail
+     to hide. `object-position: 50% 100%` puts that final row on the box's
+     bottom edge -- the image is attached to the end of the hero. */
   object-fit: contain;
   object-position: 50% 100%;
   height: 100%;
@@ -676,34 +670,13 @@
      so height alone would let the figure grow wider than the card cluster.
      Raised in step with desktop now that the head may cross the wordmark. */
   .hero .hero-profile-img {
-    /* Wider cap than desktop: a tablet stage is squarer, so cover would
-       otherwise crop away most of the torso to fill the height. */
+    /* Wider cap than desktop: a tablet stage is squarer, so the figure has
+       room to grow before it competes with the card cluster. */
     max-width: 62vw;
-
-    /* Bottom fade, still required from 768 to 1199 because the flank paragraphs
-       overlap the portrait here and its cut lower edge would otherwise sit as a
-       hard line behind the copy. Only true desktop escapes this, where the
-       figure is narrow enough that the flanks clear it entirely.
-
-       Stops moved late (was 72/88/99). Mask percentages resolve against the
-       100vh ELEMENT BOX, but the pre-cropped asset is bottom-seated and much
-       shorter than that box, so the old stops landed at ~57% of the FIGURE and
-       dissolved it from the chest down. 86/94/100 lands at ~78-86% of the
-       figure in every tablet geometry — a fade confined to the cut edge. */
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 86%,
-      rgba(0, 0, 0, 0.5) 94%,
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 86%,
-      rgba(0, 0, 0, 0.5) 94%,
-      transparent 100%
-    );
+    /* No mask. Earlier revisions faded this edge because the asset was a
+       full-length figure whose bottom was either a hard cut or a painted grey
+       tail. This cutout ends at the shoulders with real alpha, so there is
+       nothing to dissolve and a mask would only eat the chest. */
   }
 }
 
@@ -722,26 +695,10 @@
      The vw cap stays tight: at 900x600 the stage is short and wide, and a
      height-led figure would spill sideways across the whole hero. */
   .hero .hero-profile-img {
-    /* Short and wide: a ~600px stage crops hard under cover, so the cap stays
-       tight to stop the figure spreading sideways as it fills the height. */
+    /* Short and wide: keep the cap tight so a height-led figure does not
+       spread sideways across the whole hero. */
     max-width: 34vw;
-
-    /* Same box-vs-figure correction as the tablet band (was 70/86/98, which cut
-       into the ribcage once the asset stopped carrying its own fade tail). */
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 85%,
-      rgba(0, 0, 0, 0.5) 93%,
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 85%,
-      rgba(0, 0, 0, 0.5) 93%,
-      transparent 100%
-    );
+    /* No mask here either -- same reason as the tablet band. */
   }
   /* Cards are decoration over the portrait, not content — they yield first. */
   .hero .hero-cards-wrap {
@@ -753,29 +710,39 @@
    Source breakpoints: tablet 991px has no hero overrides; mobile at 767px.
    ========================================================================== */
 @media screen and (max-width: 767px) {
+  /* The phone hero is exactly one screen: wordmark at the top, portrait
+     sitting on the bottom edge. It no longer has to be ~220vw tall to make
+     room for a copy block underneath the figure, because that copy is hidden
+     here -- so the section collapses back to a single viewport.
+
+     `max(100svh, 128vw)` keeps it honest on both axes: 100svh (small-viewport
+     height, so a mobile browser's collapsing URL bar cannot make the figure
+     jump) with a vw floor so an unusually short landscape phone still gives
+     the portrait room. No padding-bottom -- the image must touch the edge. */
   .hero {
     pointer-events: auto;
-    min-height: clamp(45.5rem, 220.7vw + 1.38rem, 105.7rem);
+    min-height: max(100svh, 128vw);
     height: auto;
-    padding-bottom: clamp(2.67rem, 13.33vw, 6.39rem);
+    padding-bottom: 0;
     overflow: hidden;
     font-size: clamp(0.91rem, 4.53vw, 2.17rem);
   }
 
   .hero.hero--pinned {
-    min-height: clamp(45.5rem, 220.7vw + 1.38rem, 105.7rem);
-    padding-bottom: clamp(2.67rem, 13.33vw, 6.39rem);
+    min-height: max(100svh, 128vw);
+    padding-bottom: 0;
   }
 
-  /* THE MOBILE STACK.
-     Below 767 the hero stops being a 100vh stage and becomes an ordinary
-     column: portrait, then copy. Everything here follows from that. */
+  /* A positioned full-height stage. With the copy gone the portrait no longer
+     needs to be in flow (flow only mattered so the section could grow to fit
+     text below the figure), so it goes back to being an absolutely-positioned
+     layer pinned to the bottom -- which is the only way to guarantee the image
+     touches the hero's bottom edge at every height. */
   .hero .hero-sticky {
-    flex-flow: column;
-    justify-content: flex-start;
     align-items: stretch;
     height: auto;
-    min-height: clamp(45.5rem, 220.7vw + 1.38rem, 105.7rem);
+    min-height: max(100svh, 128vw);
+    padding-bottom: 0;
     position: relative;
   }
 
@@ -805,155 +772,56 @@
     display: none;
   }
 
-  /* The copy block: eyebrow -> H1 -> paragraph, in that reading order, in
-     normal flow directly after the portrait. `order` puts it last in the
-     column; `margin-top` is the gap the user asked for between the image and
-     the text. It is `auto`-height, so the section grows to fit it instead of
-     clipping it. */
+  /* HIDDEN ON PHONES, by request.
+
+     The eyebrow, the <h1> and the closing paragraph are all suppressed below
+     767px. This is a deliberate editorial choice, not a workaround: with one
+     near-square portrait there is no longer a tall faded tail to park copy
+     underneath, and the phone hero reads as a single portrait statement --
+     wordmark, face, skills chip. The same copy still appears verbatim on
+     tablet and desktop, and the About section carries it on every device, so
+     nothing is lost to a phone reader or to a crawler.
+
+     `display: none` rather than visually-hidden is correct here: this text is
+     duplicated elsewhere in the page, so exposing it to screen readers only
+     would make the phone experience MORE verbose than the visual one. */
   .hero .hero-container {
-    order: 3;
-    flex-flow: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: clamp(0.75rem, 3.5vw, 1.6rem);
-    width: 100%;
-    /* Negative, because the portrait's lower ~57vw is the fade the mask
-       dissolves — flowing the copy at the wrap's true bottom would leave a
-       huge transparent void above it. Pulling up by 34vw reproduces the exact
-       landing the user approved (solid figure ends, ~23vw of clean gap, then
-       the eyebrow), the difference being that this offset is a MARGIN, which
-       shortens the flow instead of overflowing it. */
-    margin-top: calc(-1 * clamp(7rem, 34vw, 16.5rem));
-    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
-    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
-    position: relative;
-  }
-
-  /* Static, not absolute. As an absolutely-positioned box the <h1> was pulled
-     out of flow and pinned over the card cluster; in the stack it is simply
-     the middle row of the copy block. Gutters come from .hero-container now,
-     so they are dropped here to avoid double-padding. */
-  .hero .hero-content-layout {
-    position: static;
-    inset: auto;
-    bottom: auto;
-    align-items: flex-start;
-    width: 100%;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .hero .hero-heading {
-    font-size: clamp(2.25rem, 10.91vw + 0.068rem, 5.23rem);
-    text-align: left;
+    display: none;
   }
 
   
-  /* The flank paragraphs sit in the gap BELOW the portrait, not over it.
 
-     `top: clamp(2.67rem, 13.33vw, 6.39rem)` (heynesh's value) pinned them just
-     under the wordmark — which works for heynesh because their mobile figure's
-     head starts lower. With this asset the head is high and that offset drops
-     the copy straight across the face, which is what the screenshot shows.
+  /* The skills chip is the only card left on phones, so the cluster stops
+     being a tall two-column overlay and becomes a thin band pinned near the
+     jaw. Measured off the bitmap: the neck is at 57.9% of the image height and
+     the shoulders flare at 59.4%, i.e. 46-48vw above the hero's bottom edge
+     once the figure is 113.6vw tall. Seating the band at 40vw puts the chip
+     just under the jawline, against the shoulder, exactly where the user
+     approved it -- and it now tracks the face automatically, because both the
+     figure and this offset are derived from the same expression.
 
-     The portrait's own bottom is a painted fade, so the readable landing zone
-     is the area under it: wrap top + wrap height, minus the fade tail the mask
-     dissolves. Anchoring to that keeps the sequence the user described — image
-     ends, small gap, then the text — at every width, because both terms are
-     driven by the same clamps. */
-  .hero .hero-left-text,
-  .hero .hero-right-text {
-    width: 100%;
-    /* No `top`. The previous pass pushed these down with a large relative
-       offset, which is why the eyebrow, the H1 and the closing paragraph were
-       INVISIBLE on phones: `top` on a position:relative box is a paint-time
-       shift that reserves no space, so .hero (height:auto) never grew to cover
-       it and `overflow:hidden` clipped all three away. Measured, the copy
-       landed 30-75px past the hero's own bottom edge at every phone width.
-       They now sit in normal flow inside .hero-container, which grows the
-       section honestly. */
-    top: auto;
-  }
-
-  /* The cards overlay the portrait, so they are anchored to the PORTRAIT, not
-     to the section. Previously they were pinned to the hero's bottom edge;
-     that edge has now moved down by the height of the copy block, which would
-     have dragged the cards off the figure and onto the text.
-
-     `bottom: 34.67vw` reproduces the exact offset the old geometry produced —
-     measured across 320-767px, the cards' bottom always sat 34.67vw above the
-     image wrap's bottom (max error 0.4px) — so the cards keep landing beside
-     the jaw, which is the placement the user signed off on. */
-  .hero .mobile-hero-image-wrap {
-    position: relative;
-  }
-
+     The offset must track the IMAGE height, not the viewport width, now that
+     the figure is height-led -- so it reuses the identical clamp and takes 35%
+     of it, landing just below the jaw (neck 57.9%, shoulders 59.4%) at every
+     geometry instead of drifting up the chest on tall phones. */
   .hero .hero-cards-wrap {
     opacity: 1;
     pointer-events: auto;
-    order: 2;
+    z-index: 10;
     width: 100%;
-    height: clamp(23.07rem, 115.47vw, 55.42rem);
-    margin-top: calc(-1 * clamp(23.07rem, 115.47vw, 55.42rem));
-    position: relative;
-    inset: auto;
-    top: calc(-1 * clamp(6.93rem, 34.67vw, 16.63rem));
-  }
-
-  .hero .hero-cards-left {
-    height: 100%;
-    padding-top: clamp(3.2rem, 16vw, 7.67rem);
-  }
-
-  .hero .hero-card-1 {
-    grid-column-gap: clamp(0.53rem, 2.67vw, 1.28rem);
-    grid-row-gap: clamp(0.53rem, 2.67vw, 1.28rem);
-    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
-    padding: clamp(0.86rem, 4.16vw + 0.026rem, 1.99rem);
-    overflow: hidden;
-  }
-
-  .hero .experience-number {
-    width: clamp(3.2rem, 16vw, 7.67rem);
-  }
-
-  .hero .experience-text-wrap {
-    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
-  }
-
-  .hero .hero-card-2 {
-    aspect-ratio: auto;
-    grid-column-gap: clamp(0.43rem, 2.13vw, 1.02rem);
-    grid-row-gap: clamp(0.43rem, 2.13vw, 1.02rem);
-    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
-    padding: clamp(0.86rem, 4.16vw + 0.026rem, 1.99rem);
-    overflow: hidden;
-  }
-
-  .hero .hero-card-2-wrap {
+    height: auto;
+    margin: 0;
     position: absolute;
-    inset: auto auto 0% clamp(0.85rem, 4.27vw, 2.05rem);
+    inset: auto 0% calc(0.35 * clamp(113.57vw, 74svh, 145vw));
   }
 
-  .hero .hero-projects-number {
-    font-size: clamp(1.5rem, 7.47vw, 3.58rem);
-  }
-
-  .hero .hero-webflow-icon-wrap {
-    width: clamp(2.99rem, 14.93vw, 7.16rem);
-  }
-
-  .hero .hero-webflow-icon {
-    width: 100%;
-  }
-
-  .hero .hero-webflow-projects-text {
-    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
-  }
-
-  .hero .hero-card-2-bg {
-    pointer-events: none;
-    border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
+  /* The "80+ Webflow Projects" and "Years of experience" cards are hidden on
+     phones, by request. Their column is what forced the card cluster to be
+     tall, and with them gone the skills chip can sit directly against the jaw
+     -- which is the composition the user asked for. Both stats remain on
+     tablet and desktop. */
+  .hero .hero-cards-left {
+    display: none;
   }
 
   .hero .hero-card-3 {
@@ -962,7 +830,12 @@
     border-radius: clamp(0.43rem, 2.13vw, 1.02rem);
     padding: clamp(0.86rem, 4.16vw + 0.026rem, 1.99rem);
     font-size: clamp(0.75rem, 3.73vw, 1.79rem);
-    inset: 0% auto auto clamp(1.17rem, 5.87vw, 2.81rem);
+    /* Static inside the band above; the band owns the vertical position. */
+    position: relative;
+    inset: auto;
+    margin-left: clamp(1.07rem, 5.33vw, 2.56rem);
+    width: -moz-fit-content;
+    width: fit-content;
   }
 
   .hero .hero-card-3-item {
@@ -972,12 +845,6 @@
 
   .hero .hero-card-3-icon {
     width: clamp(0.75rem, 3.73vw, 1.79rem);
-  }
-
-  .hero .hero-card-1-wrap {
-    align-self: flex-end;
-    margin-right: clamp(0.64rem, 3.2vw, 1.53rem);
-    left: 0;
   }
 
   /* The mobile portrait is a BOTTOM-ANCHORED layer, not a top-offset block.
@@ -993,82 +860,60 @@
      section floor is .hero's padding edge below it. Pulling down by exactly
      that padding lands the figure ON the boundary instead of floating the
      43-102px short that the screenshot shows. */
-  /* MOBILE PORTRAIT — heynesh's actual mechanism, which differs from desktop
-     by DESIGN rather than by degree.
 
-     Their two rules, verbatim from the source stylesheet:
+  /* THE PORTRAIT LAYER — bottom-flush, full-bleed, unmasked.
 
-       desktop  .hero-profile-img  { width:100%; height:100%; object-fit:contain }
-                .profile-img-wrap  { position:fixed; width:100vw; height:100vh }
-       <=767px  .mobile-hero-image { width:100% }        <- height auto, NO object-fit
-                .profile-img-wrap  { display:none }
+     Anchored with `inset: auto 0 0`, so its bottom edge IS the hero's bottom
+     edge at every viewport height: the figure is attached to the end of the
+     section, never floating. The asset is opaque to its final pixel row
+     (measured: 99.6% coverage), so that flush edge reads as the frame ending,
+     not as the image being chopped.
 
-     On desktop both axes are pinned to the viewport, so the box is LANDSCAPE
-     while the asset is portrait; `contain` fits the tighter axis (height) and
-     the figure stands exactly 100vh with its bottom flush to the fold. Because
-     the asset ends mid-torso, that fold reads as a deliberate bottom crop.
+     No mask anywhere. Every previous revision faded this edge to hide either a
+     hard cut through a torso or a painted grey tail; this cutout ends at the
+     shoulders in real alpha, so a fade would only erase chest the design keeps.
 
-     On mobile there is no box to fit into at all. `width:100%` with height auto
-     means the <img> renders at its INTRINSIC ratio, so object-fit never runs and
-     nothing can ever be cropped — the whole photo is always visible. The wrap is
-     taller than the image and bottom-aligned, so the surplus falls ABOVE the
-     figure, and that gap is exactly where the flank copy sits.
-
-     We had `object-fit: cover` here, which is the precise opposite: cover always
-     crops. Hence the reported mismatch — our mobile figure was cropped and welded
-     to the section floor, while theirs is whole with air above it. */
+     `height: auto` with a full-bleed width means the figure scales purely with
+     the viewport -- 100vw wide, 113.6vw tall (1/0.8805) -- and because the hero
+     is at least 128vw tall there is always ~14vw of clear headroom above the
+     hair for the wordmark to occupy. */
   .hero .mobile-hero-image-wrap {
     z-index: 6;
     pointer-events: none;
     justify-content: center;
     align-items: flex-end;
-    /* Taller than the image so the leftover space lands above it — that
-       headroom is what the wordmark occupies. */
-    height: clamp(40.7rem, 197.4vw + 1.23rem, 94.6rem);
     display: flex;
-
-    /* IN FLOW (was absolute). The portrait is the first row of the mobile
-       stack, so it must contribute its height to the section; as an absolute
-       box it contributed nothing and the copy below it had no room to live in.
-       The old `inset` top offset survives as a margin so the figure still
-       clears the wordmark by the same amount. */
-    order: 1;
-    position: relative;
-    inset: auto;
-    margin-top: clamp(4.77rem, 23.09vw + 0.15rem, 11.07rem);
+    position: absolute;
+    inset: auto 0% 0%;
   }
 
-  /* height:auto is the whole point — do not reintroduce object-fit here. */
+  /* HEIGHT-LED, not width-led.
+
+     Sizing the figure at a flat 100vw looked right on a 320x568 phone and far
+     too small on a modern tall one: at 390x844 it filled only ~52% of the
+     screen, leaving a dead beige band above the hair. The fix is to drive the
+     figure from the viewport HEIGHT and let its width follow the ratio:
+
+       height = clamp(113.57vw, 74svh, 145vw)
+
+     74svh is the target presence (the portrait owns roughly three-quarters of
+     the screen, the wordmark the rest). The 113.57vw floor is exactly 100vw
+     worth of width, so the figure is never narrower than the screen; the 145vw
+     ceiling stops a very tall, narrow phone from inflating it without bound.
+     Measured across 320x568 through 767x1024 this holds the figure at 67-85%
+     of the hero height everywhere.
+
+     Above the floor the figure is WIDER than the viewport and its shoulders
+     bleed off both edges -- at most 15% per side, and since the head occupies
+     roughly the middle 50% of the frame, the face is never touched. Bleeding
+     the shoulders is also the more natural crop: it reads as the frame being
+     tight, not as the subject being shrunk. */
   .hero .mobile-hero-image {
-    width: 100%;
-    height: auto;
+    height: clamp(113.57vw, 74svh, 145vw);
+    width: auto;
+    max-width: none;
     aspect-ratio: auto;
-    align-self: flex-end;
-
-    /* Dissolve the bottom edge into the page.
-
-       The asset carries its own fade, but it is painted in COLOUR (toward a
-       grey #bfb3a7) while its ALPHA stays opaque. Against the page's #d5cfbe
-       that lands as a visible grey band, not a blend — so an alpha mask is
-       still required. The two act on different channels and do not double up.
-
-       Measured from the bitmap, the baked colour fade begins around 72% of the
-       asset's height, so the alpha mask starts there: fading earlier would eat
-       torso the design intends to keep, later would leave the grey band. */
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 72%,
-      rgba(0, 0, 0, 0.5) 88%,
-      transparent 99%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 72%,
-      rgba(0, 0, 0, 0.5) 88%,
-      transparent 99%
-    );
+    display: block;
   }
 }
 
@@ -1076,10 +921,6 @@
 @media screen and (max-width: 479px) {
   .hero {
     overflow: hidden;
-  }
-
-  .hero .experience-number {
-    width: clamp(4.29rem, 20.79vw + 0.13rem, 9.96rem);
   }
 
   /* A long name at 19vw/char hits the 92vw cap and its cap-height dominates a
@@ -1098,10 +939,6 @@
   /* The 3-card stack is taller than the space it is given once the heading
      wraps. Tighten the gaps rather than hiding a card — they carry the only
      numbers in the hero. */
-  .hero .hero-cards-left {
-    grid-row-gap: clamp(0.4rem, 2vw, 0.8rem);
-    padding-top: clamp(2.2rem, 12vw, 5rem);
-  }
 
   /* Long words in the flank copy (e.g. "technical excellence") overflow a
      360px column at the inherited size. */
