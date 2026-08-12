@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import CountUp from "../animations/CountUp";
@@ -108,13 +108,39 @@ const WebflowIcon = () => (
   </span>
 );
 
+/* Shipped portrait: a 1689x1920 alpha cutout whose subject bleeds off the
+   bottom edge, emitted at two widths from one master. The ratio is exported to
+   CSS so the layout box is reserved before the bitmap decodes. */
+/* Mean advance of a capital in "Tr 3 A" at font-size:100, measured from the
+   round-three overflow (the text painted at 125.8% of a 62-unit/char box, so
+   the true advance is 62 x 1.258). It only has to be CLOSE: textLength absorbs
+   the remainder exactly. Its job is to keep that correction small enough not to
+   visibly distort the glyphs. */
+const GLYPH_ADVANCE = 78;
+
+const BUNDLED_PORTRAIT = {
+  src: "/hero-waqas-1400.webp",
+  srcSet: "/hero-waqas-900.webp 900w, /hero-waqas-1400.webp 1400w",
+  ratio: 1689 / 1920,
+};
+
 const Hero = ({ content }: { content?: HeroContent }) => {
   /* Fall back to defaults so the component still renders standalone (e.g. in
      isolation or before any admin save has happened). */
   const HERO_COPY = content ?? DEFAULT_HERO;
+  const markChars = Math.max(HERO_COPY.brandMark.trim().length, 1);
+  /* The shipped portrait is emitted at two widths. Serving the 1400w file to a
+     phone wastes ~43KB on the critical path, so a srcSet lets the browser pick
+     — but ONLY for the bundled asset: an admin-uploaded image exists at exactly
+     one width, and advertising widths that do not exist would have the browser
+     request 404s. Hence the identity check rather than string interpolation. */
+  const isBundledPortrait = HERO_COPY.profileImg === BUNDLED_PORTRAIT.src;
   const HERO_ASSETS = {
     profileImg: HERO_COPY.profileImg,
     profileImgAlt: HERO_COPY.profileImgAlt,
+    srcSet: isBundledPortrait ? BUNDLED_PORTRAIT.srcSet : undefined,
+    /* Mirrors the CSS: full-bleed under 767px, ~40vw above it. */
+    sizes: isBundledPortrait ? "(max-width: 767px) 100vw, 40vw" : undefined,
   };
   /* Ghost-target FLIP (heynesh.com technique): the wordmark mounts in an
    * mid-viewport "intro" slot and morphs into its measured resting position
@@ -139,6 +165,13 @@ const Hero = ({ content }: { content?: HeroContent }) => {
       initial="initial"
       animate="animate"
       aria-label="Hero — heynesh.com port"
+      /* Only the bundled portrait's ratio is known at build time. An uploaded
+         image keeps the CSS default rather than asserting a wrong shape. */
+      style={
+        isBundledPortrait
+          ? ({ "--portrait-ratio": BUNDLED_PORTRAIT.ratio } as CSSProperties)
+          : undefined
+      }
     >
       {/* ================= .hero-sticky — 100vh sticky frame ================= */}
       <div className="hero-sticky">
@@ -158,7 +191,11 @@ const Hero = ({ content }: { content?: HeroContent }) => {
               className="nesh-logo"
               style={
                 {
-                  "--mark-chars": Math.max(HERO_COPY.brandMark.length, 1),
+                  "--mark-chars": markChars,
+                  /* The box must be exactly as tall as the SVG paints, or it
+                     reserves dead space that pushes everything below it down.
+                     Both derive from the same viewBox, so they cannot drift. */
+                  "--mark-ratio": (markChars * GLYPH_ADVANCE) / 100,
                 } as React.CSSProperties
               }
             >
@@ -176,29 +213,39 @@ const Hero = ({ content }: { content?: HeroContent }) => {
                * matches how the source behaves rather than how it is authored.
                */}
               {/*
-               * Fixed viewBox + textLength: the renderer fits the glyphs to
-               * exactly 1000 units whatever the name is.
+               * viewBox + textLength: the renderer fits the glyphs to exactly
+               * the viewBox width whatever the name is, so nothing can overflow
+               * regardless of the font's real metrics.
                *
                * Two earlier attempts failed here. Live text at font-size:24vw
                * overflowed once the name grew past 4 characters. Deriving the
                * viewBox from the character count then used an ESTIMATED glyph
                * advance that was ~20% low, so the text painted at 126% of the
-               * box and spilled past both edges. Letting the browser do the
-               * measuring removes the guess entirely.
+               * box and spilled past both edges.
+               *
+               * The third attempt fixed the overflow but introduced a subtler
+               * bug: a CONSTANT 1000-unit viewBox meant textLength stretched
+               * every name to the same width, so the shorter the name the more
+               * the letters were smeared sideways — "WAQAS" rendered at 2.56x
+               * its natural width. Scaling the viewBox with the character count
+               * instead keeps textLength a no-op-sized correction (it only
+               * absorbs the few-percent error between the estimate and the real
+               * metrics) rather than a 2-3x distortion, so the glyphs keep their
+               * designed proportions at any length.
                */}
               <svg
                 className="nesh-logo-svg"
-                viewBox="0 0 1000 100"
+                viewBox={`0 0 ${markChars * GLYPH_ADVANCE} 100`}
                 preserveAspectRatio="xMidYMid meet"
                 role="img"
                 aria-label={HERO_COPY.brandMark}
               >
                 <text
-                  x="500"
-                  y="76"
+                  x={(markChars * GLYPH_ADVANCE) / 2}
+                  y="78"
                   textAnchor="middle"
                   className="nesh-logo-text"
-                  textLength="1000"
+                  textLength={markChars * GLYPH_ADVANCE}
                   lengthAdjust="spacingAndGlyphs"
                 >
                   {HERO_COPY.brandMark}
@@ -284,10 +331,13 @@ const Hero = ({ content }: { content?: HeroContent }) => {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={HERO_ASSETS.profileImg}
+            srcSet={HERO_ASSETS.srcSet}
+            sizes={HERO_ASSETS.sizes}
             alt={HERO_ASSETS.profileImgAlt}
             className="hero-profile-img"
             loading="eager"
             decoding="async"
+            fetchPriority="high"
           />
         </motion.div>
 
@@ -332,6 +382,8 @@ const Hero = ({ content }: { content?: HeroContent }) => {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={HERO_ASSETS.profileImg}
+            srcSet={HERO_ASSETS.srcSet}
+            sizes={HERO_ASSETS.sizes}
             alt={HERO_ASSETS.profileImgAlt}
             className="mobile-hero-image"
             loading="lazy"

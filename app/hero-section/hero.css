@@ -21,6 +21,12 @@
   --white: white;
   --tra: "Tr 3 A", Arial, sans-serif;
 
+  /* Intrinsic ratio of the portrait cutout (1689/1920). Declared once here and
+     consumed by both the desktop and mobile portrait layers so the box is
+     reserved at the correct shape before the bitmap decodes. Hero.tsx
+     overrides it inline when an admin uploads a differently-shaped image. */
+  --portrait-ratio: 0.8797;
+
   /* .hero (source) — the section shell.
      Source scroll-pin: `min-height: 300vh; padding-bottom: 180vh;` drives the
      GSAP scroll choreography and the following sections overlap it via a
@@ -117,7 +123,11 @@
      letters, and a 5+ letter name stretched to full bleed swallowed the
      portrait. 15.5vw per character keeps the CAP HEIGHT roughly constant
      whatever the name, so the mark reads as a wordmark rather than a banner. */
-  aspect-ratio: 3.5;
+  /* Matches the SVG's own viewBox ratio (set inline by Hero.tsx) so the box is
+     exactly as tall as the mark paints. The old hardcoded 3.5 came from the
+     source's 4-letter logo and reserved ~2.9x the painted height as dead space,
+     silently pushing the layout below it down. */
+  aspect-ratio: var(--mark-ratio, 3.5);
   transform-origin: 0 0;
   width: min(78vw, calc(var(--mark-chars, 4) * 15.5vw));
   margin-inline: auto;
@@ -241,17 +251,34 @@
   inset: 0%;
 }
 
+/* The portrait is sized by HEIGHT, not width.
+
+   The previous rule set a width and let `object-fit: contain` derive the
+   height. That inverts the control you actually want: the asset is a 1689x1920
+   cutout (ratio 0.88) whose subject bleeds off the BOTTOM edge, so its box
+   height is the figure's height — there is no transparent footer to absorb
+   slack. Constraining width meant `contain` fitted on the width axis and
+   letterboxed ~40% dead space above the head, which is why the rendered figure
+   read small however generous the width cap looked on paper.
+
+   Driving height and letting `width: auto` follow the intrinsic ratio makes
+   the two axes agree, so the box IS the figure and every declared value is the
+   figure's real size. `aspect-ratio` reserves that box before the bitmap
+   arrives (no layout shift); `contain` stays as a fallback so an admin-uploaded
+   image of a different ratio letterboxes instead of stretching.
+
+   min(vh, vw) is the load-bearing part: the vh term sets the figure against the
+   sticky 100vh stage, the vw term stops a short-and-wide viewport from blowing
+   the figure out sideways. Whichever is smaller wins, so the rendered width
+   settles at a near-constant ~37% of the viewport from 1024px to 2560px
+   instead of drifting 26–42% as it did before. */
 .hero .hero-profile-img {
   object-fit: contain;
   object-position: 50% 100%;
-  /* Constrain by WIDTH, not just height. width:100% on a portrait asset makes
-     the rendered figure scale with the viewport's width, so on a wide screen
-     the head pushed up into the wordmark. Capping the width keeps the figure
-     at a human scale and lets object-fit letterbox the rest. */
-  width: min(100%, 46vh);
-  max-width: 34vw;
-  height: 88%;
-  max-height: 88vh;
+  aspect-ratio: var(--portrait-ratio);
+  height: min(74vh, 42vw);
+  width: auto;
+  max-width: 92vw;
   align-self: flex-end;
 }
 
@@ -626,12 +653,11 @@
     margin-bottom: 2vw;
   }
 
-  /* Portrait is composed for a wide stage; keep it clear of the cards. */
+  /* Portrait is composed for a wide stage; keep it clear of the cards. The vw
+     term leads in this band — a 768px-wide tablet has plenty of height, so
+     height alone would let the figure grow wider than the card cluster. */
   .hero .hero-profile-img {
-    width: min(100%, 40vh);
-    max-width: 42vw;
-    height: 80%;
-    max-height: 74vh;
+    height: min(66vh, 52vw);
   }
 }
 
@@ -646,11 +672,10 @@
     font-size: clamp(1.75rem, 4vh + 0.5rem, 2.75rem);
     margin-bottom: 1rem;
   }
+  /* Cards are hidden in this band, so the portrait may use the freed height;
+     it is the only thing left competing with the wordmark. */
   .hero .hero-profile-img {
-    width: min(100%, 34vh);
-    max-width: 34vw;
-    height: 70%;
-    max-height: 60vh;
+    height: min(62vh, 34vw);
   }
   /* Cards are decoration over the portrait, not content — they yield first. */
   .hero .hero-cards-wrap {
@@ -837,9 +862,16 @@
     inset: clamp(4.77rem, 23.09vw + 0.15rem, 11.07rem) 0% 0%;
   }
 
+  /* Same height-driven sizing as the desktop layer. `width:100%` here forced a
+     0.88 portrait to fit the phone's full width and letterbox vertically inside
+     a container already taller than it needed to be, so the figure floated
+     small in a tall empty box. Sizing on height and letting width follow makes
+     the figure fill the container it was given. */
   .hero .mobile-hero-image {
-    width: 100%;
     height: 100%;
+    width: auto;
+    max-width: 100%;
+    aspect-ratio: var(--portrait-ratio);
     object-fit: contain;
     object-position: 50% 100%;
   }

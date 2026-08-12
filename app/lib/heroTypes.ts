@@ -22,7 +22,7 @@ export type HeroContent = {
 };
 
 export const DEFAULT_HERO: HeroContent = {
-  brandMark: "NESH",
+  brandMark: "WAQAS",
   leftText: "The Webflow Expert. That's Nenad.",
   /* Empty by default — the headline is optional and the buttons below it
      were removed, so the hero leads with the wordmark and the portrait. */
@@ -36,7 +36,9 @@ export const DEFAULT_HERO: HeroContent = {
   yearsStat: 7,
   yearsLabelLines: ["Years of", "experience"],
   skills: ["Creative", "Reliable", "Strategist", "Builder", "Efficient"],
-  profileImg:
-    "https://cdn.prod.website-files.com/691d7c9f14d0280ebe2d4108/69708b99545c57d03ebb5cd9_Frame%202147258154.avif",
-  profileImgAlt: "Nenad Popadic",
+  /* Local asset, not the reference site's CDN: /_next/image cannot proxy remote
+     URLs in this sandbox, and the hero portrait is the LCP element — it must
+     not depend on a third-party origin. */
+  profileImg: "/hero-waqas-1400.webp",
+  profileImgAlt: "Waqas ul Haq Qureshi",
 };
