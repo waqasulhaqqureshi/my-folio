@@ -18,22 +18,41 @@
  * The two widths come from one master; the ratio is exported so the layout box
  * can be reserved before the bitmap decodes.
  */
+/*
+ * TWO portrait assets, cut from one master — this is what heynesh does.
+ *
+ * Their desktop figure renders full-height at ~33vw wide, which under
+ * `object-fit: contain` means the ASSET's own ratio is ~0.716. Their mobile
+ * wrap clamps imply ~0.494. Those cannot be the same file: the desktop asset is
+ * a head-and-torso crop, the mobile one keeps the long faded tail.
+ *
+ * Serving one file to both is what forced the earlier compromises — either the
+ * desktop figure was a thin sliver (fitting a 0.49 asset into a 100vh stage) or
+ * mobile lost its rhythm (cropping the asset to suit desktop). Two crops from
+ * one master removes the conflict entirely, and `cover`/hand-tuned masks are no
+ * longer needed to hide the mismatch.
+ */
 export const HERO_PORTRAIT = {
-  src: "/hero-portrait-1140.webp",
-  srcSet: "/hero-portrait-760.webp 760w, /hero-portrait-1140.webp 1140w",
-  sizes: "(max-width: 767px) 100vw, 46vw",
+  /* 1009x1409, ratio 0.7161 — top 69% of the master, bottom cropped away.
+     Matches heynesh's measured desktop ratio (~0.716). */
+  desktop: {
+    src: "/hero-portrait-desktop-1050.webp",
+    srcSet:
+      "/hero-portrait-desktop-700.webp 700w, /hero-portrait-desktop-1050.webp 1050w",
+    sizes: "46vw",
+    ratio: 1009 / 1409,
+  },
+  /* 1009x2039, ratio 0.4949 — the full InShot export, only its transparent
+     margins trimmed. The long bottom is the fade heynesh paints into their own
+     mobile portrait; it is within 0.002 of the 0.4940 implied by their mobile
+     wrap clamps, which is why the mobile rhythm only works with this shape. */
+  mobile: {
+    src: "/hero-portrait-1140.webp",
+    srcSet: "/hero-portrait-760.webp 760w, /hero-portrait-1140.webp 1140w",
+    sizes: "100vw",
+    ratio: 1009 / 2039,
+  },
   alt: "Waqas ul Haq Qureshi",
-  /* 1009x2039, ratio 0.4949.
-
-     This is the InShot export with only its fully-transparent margins trimmed.
-     An earlier pass cropped the bottom third off as an outpainting artifact —
-     that was wrong twice over. It is the fade heynesh paints into their own
-     mobile asset, and it is what makes the ratio 0.4949, which is within 0.002
-     of the 0.4940 implied by heynesh's mobile wrap clamps. Their whole mobile
-     rhythm (head high, cards beside the jaw, copy below the shoulders) is
-     authored for an asset of exactly this shape, so cropping it broke the
-     rhythm no matter how the CSS was retuned. */
-  ratio: 1009 / 2039,
 } as const;
 
 export type HeroContent = {
@@ -53,9 +72,11 @@ export type HeroContent = {
 export const DEFAULT_HERO: HeroContent = {
   brandMark: "WAQAS",
   leftText: "The Webflow Expert. That's Nenad.",
-  /* Empty by default — the headline is optional and the buttons below it
-     were removed, so the hero leads with the wordmark and the portrait. */
-  headingLines: [],
+  /* The headline remains OPTIONAL (clearing it in the admin panel still hides
+     the <h1> entirely), but it ships populated: an empty default meant the hero
+     rendered with no H1 at all, which is both a missing-content bug and an
+     accessibility problem — the page had no top-level heading. */
+  headingLines: ["Webflow,", "Applied", "Differently."],
   ctaPrimary: "Book a Call",
   ctaSecondary: "About Me",
   rightText:

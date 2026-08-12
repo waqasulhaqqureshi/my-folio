@@ -108,13 +108,28 @@ export default function HeroEditor({ initial }: { initial: HeroContent }) {
           <section className="nm-card-solid h-fit rounded-[var(--radius-card)] p-5">
             <h2 className="nm-h3 mb-4 text-[18px]">Portrait</h2>
 
-            <div className="nm-plate mb-4 overflow-hidden rounded-[var(--radius-inner)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={HERO_PORTRAIT.src}
-                alt={HERO_PORTRAIT.alt}
-                className="block max-h-64 w-full object-contain"
-              />
+            {/* Two crops now ship — a bottom-cropped desktop asset and the
+                full-length mobile one — so the panel previews both rather than
+                implying a single image is in play. */}
+            <div className="mb-4 grid grid-cols-2 gap-2">
+              {[
+                { ...HERO_PORTRAIT.desktop, label: "Desktop" },
+                { ...HERO_PORTRAIT.mobile, label: "Mobile" },
+              ].map((v) => (
+                <figure key={v.label} className="m-0">
+                  <div className="nm-plate overflow-hidden rounded-[var(--radius-inner)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={v.src}
+                      alt={`${HERO_PORTRAIT.alt} — ${v.label.toLowerCase()} crop`}
+                      className="block max-h-56 w-full object-contain"
+                    />
+                  </div>
+                  <figcaption className="nm-small mt-1.5 text-ink/45">
+                    {v.label} · {v.ratio.toFixed(3)}
+                  </figcaption>
+                </figure>
+              ))}
             </div>
 
             <div className="flex items-start gap-2 rounded-[var(--radius-inner)] bg-ink/5 px-3 py-2.5">

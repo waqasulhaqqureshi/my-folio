@@ -152,7 +152,15 @@ const Hero = ({ content }: { content?: HeroContent }) => {
       aria-label="Hero — heynesh.com port"
       /* The portrait is locked, so its ratio is known at build time and can be
          asserted unconditionally — no uploaded image of unknown shape exists. */
-      style={{ "--portrait-ratio": HERO_PORTRAIT.ratio } as CSSProperties}
+      style={
+        {
+          /* Two ratios: the desktop crop reserves its own box, mobile keeps the
+             tall faded master. Publishing both means no breakpoint has to fake
+             the other's shape with object-fit. */
+          "--portrait-ratio": HERO_PORTRAIT.desktop.ratio,
+          "--portrait-ratio-mobile": HERO_PORTRAIT.mobile.ratio,
+        } as CSSProperties
+      }
     >
       {/* ================= .hero-sticky — 100vh sticky frame ================= */}
       <div className="hero-sticky">
@@ -311,9 +319,9 @@ const Hero = ({ content }: { content?: HeroContent }) => {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HERO_PORTRAIT.src}
-            srcSet={HERO_PORTRAIT.srcSet}
-            sizes={HERO_PORTRAIT.sizes}
+            src={HERO_PORTRAIT.desktop.src}
+            srcSet={HERO_PORTRAIT.desktop.srcSet}
+            sizes={HERO_PORTRAIT.desktop.sizes}
             alt={HERO_PORTRAIT.alt}
             className="hero-profile-img"
             loading="eager"
@@ -362,9 +370,9 @@ const Hero = ({ content }: { content?: HeroContent }) => {
         <div className="mobile-hero-image-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HERO_PORTRAIT.src}
-            srcSet={HERO_PORTRAIT.srcSet}
-            sizes={HERO_PORTRAIT.sizes}
+            src={HERO_PORTRAIT.mobile.src}
+            srcSet={HERO_PORTRAIT.mobile.srcSet}
+            sizes={HERO_PORTRAIT.mobile.sizes}
             alt={HERO_PORTRAIT.alt}
             className="mobile-hero-image"
             loading="lazy"
