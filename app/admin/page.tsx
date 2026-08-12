@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { isAuthed } from "../lib/adminAuth";
 import { getHeroContent } from "../lib/heroContent";
 import { getProjects } from "../lib/projectContent";
+import { getSettings } from "../lib/settingsContent";
 import AdminGate from "./AdminGate";
 import AdminShell from "./AdminShell";
 
@@ -26,6 +27,10 @@ export default async function AdminPage({
   const { next } = await searchParams;
   if (next && !next.startsWith("/")) redirect("/admin"); // open-redirect guard
 
-  const [hero, projects] = await Promise.all([getHeroContent(), getProjects()]);
-  return <AdminShell hero={hero} projects={projects} />;
+  const [hero, projects, settings] = await Promise.all([
+    getHeroContent(),
+    getProjects(),
+    getSettings(),
+  ]);
+  return <AdminShell hero={hero} projects={projects} settings={settings} />;
 }

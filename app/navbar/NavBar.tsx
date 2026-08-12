@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useDockGenie } from "../hooks/useDockGenie";
+import { DEFAULT_SETTINGS, type SiteSettings } from "../lib/settingsTypes";
 import "./navbar.css";
 
 /*
@@ -68,7 +69,7 @@ const ICONS: Record<IconKey, React.ReactNode> = {
 
 const RESUME_URL = process.env.NEXT_PUBLIC_RESUME_URL ?? "";
 
-const NavBar = () => {
+const NavBar = ({ settings = DEFAULT_SETTINGS }: { settings?: SiteSettings }) => {
   const [active, setActive] = useState<string>("home");
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -181,6 +182,15 @@ const NavBar = () => {
       aria-label="Primary"
       className="nm-dock"
       data-collapsed={collapsed}
+      /* The capsule offset is authored in the admin panel and applied as a
+         custom property rather than an inline `margin-left`, so the CSS keeps
+         ownership of the clamp and the breakpoint behaviour. */
+      style={
+        {
+          "--nm-capsule-shift": `${settings.dockCapsuleOffset}%`,
+          "--nm-capsule-max": `${settings.dockCapsuleMaxRem}rem`,
+        } as React.CSSProperties
+      }
       onPointerEnter={() => setPeek(true)}
       onPointerLeave={() => setPeek(false)}
       /* Focus entering the dock (keyboard tabbing) must expand it too — a

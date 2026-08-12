@@ -256,18 +256,20 @@ const Hero = ({ content }: { content?: HeroContent }) => {
 
           {/* Centre: heading + buttons (absolute bottom, full width) */}
           <div className="hero-content-layout">
-            <h1 className="hero-heading">
-              {HERO_COPY.headingLines.map((line, i) => (
-                <span className="line" key={line}>
-                  <motion.span
-                    className="hero-line-text"
-                    {...lineReveal(i)}
-                  >
-                    {line}
-                  </motion.span>
-                </span>
-              ))}
-            </h1>
+            {/* The headline is optional: cleared in the admin panel it must
+                vanish entirely, not leave an empty <h1> holding vertical space
+                and an empty landmark in the a11y tree. */}
+            {HERO_COPY.headingLines.length > 0 && (
+              <h1 className="hero-heading">
+                {HERO_COPY.headingLines.map((line, i) => (
+                  <span className="line" key={line}>
+                    <motion.span className="hero-line-text" {...lineReveal(i)}>
+                      {line}
+                    </motion.span>
+                  </span>
+                ))}
+              </h1>
+            )}
 
             <motion.div className="hero-buttons-wrap" {...fadeUp(0.75)}>
               {/* Source pre-state: .hero-cta-button starts at opacity:0 */}

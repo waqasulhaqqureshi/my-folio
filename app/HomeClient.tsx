@@ -2,6 +2,7 @@
 import Hero from "./hero-section/Hero";
 import type { HeroContent } from "./lib/heroTypes";
 import type { Project } from "./lib/projectTypes";
+import type { SiteSettings } from "./lib/settingsTypes";
 import { useEffect } from "react";
 import PreLoader from "./animations/PreLoader/PreLoader";
 import NavBar from "./navbar/NavBar";
@@ -25,9 +26,11 @@ const Footer = dynamic(() => import("./footer/Footer"));
 export default function HomeClient({
   hero,
   projects,
+  settings,
 }: {
   hero: HeroContent;
   projects: Project[];
+  settings: SiteSettings;
 }) {
   useEffect(() => {
     window.scrollTo({
@@ -40,7 +43,7 @@ export default function HomeClient({
     <>
       <PreLoader />
 
-      <NavBar />
+      <NavBar settings={settings} />
 
       <main className="flex flex-col items-center justify-center">
         <Hero content={hero} />
