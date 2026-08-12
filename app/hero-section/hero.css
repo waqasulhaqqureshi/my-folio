@@ -256,39 +256,34 @@
   inset: 0%;
 }
 
-/* The portrait is sized by HEIGHT, not width.
+/* DESKTOP PORTRAIT — heynesh's mechanism.
 
-   The previous rule set a width and let `object-fit: contain` derive the
-   height. That inverts the control you actually want: the asset is a 1689x1920
-   cutout (ratio 0.88) whose subject bleeds off the BOTTOM edge, so its box
-   height is the figure's height — there is no transparent footer to absorb
-   slack. Constraining width meant `contain` fitted on the width axis and
-   letterboxed ~40% dead space above the head, which is why the rendered figure
-   read small however generous the width cap looked on paper.
+   Source, verbatim:
+     .profile-img-wrap { position:fixed; width:100vw; height:100vh;
+                         display:flex; align-items:flex-end }
+     .hero-profile-img { width:100%; height:100%; object-fit:contain;
+                         object-position:50% 100%; margin-left:-3vw }
 
-   Driving height and letting `width: auto` follow the intrinsic ratio makes
-   the two axes agree, so the box IS the figure and every declared value is the
-   figure's real size. `aspect-ratio` reserves that box before the bitmap
-   arrives (no layout shift); `contain` stays as a fallback so an admin-uploaded
-   image of a different ratio letterboxes instead of stretching.
+   Both axes are pinned to the viewport, so the box takes the VIEWPORT's
+   landscape aspect while the asset is portrait. `contain` therefore fits the
+   tighter axis — the height — and the figure stands exactly as tall as the
+   stage with its bottom flush to the fold. Since the asset ends mid-torso,
+   that fold reads as a deliberate bottom crop rather than a mistake.
 
-   min(vh, vw) is the load-bearing part: the vh term sets the figure against the
-   sticky 100vh stage, the vw term stops a short-and-wide viewport from blowing
-   the figure out sideways. Whichever is smaller wins, so the rendered width
-   settles at a near-constant fraction of the viewport across the whole desktop
-   range instead of drifting 26–42% as it did before.
+   This replaces a min(vh,vw) height cap. That cap was doing the same job less
+   directly and had to be retuned by hand every time the asset's ratio changed
+   (54vw for the 0.88 bust, 72vw for the 0.67 half-body). Deriving the size from
+   the stage instead makes it ratio-independent: swap the portrait and the
+   composition still holds.
 
-   The vh term deliberately EXCEEDS the stage height. The portrait layer sits
-   above the wordmark (see z-index below) and the head is allowed to cross it,
-   so the figure is no longer boxed in by the space under the mark — the limit
-   is the stage, not the mark. */
+   The vw guard remains as `max-width`, not as a height term: on a short, wide
+   viewport a pure 100vh figure would grow wider than the copy beneath it. */
 .hero .hero-profile-img {
   object-fit: contain;
   object-position: 50% 100%;
-  aspect-ratio: var(--portrait-ratio);
-  height: min(96vh, 72vw);
-  width: auto;
-  max-width: 92vw;
+  height: 100%;
+  width: 100%;
+  max-width: 76vw;
   align-self: flex-end;
 }
 
@@ -667,7 +662,10 @@
      so height alone would let the figure grow wider than the card cluster.
      Raised in step with desktop now that the head may cross the wordmark. */
   .hero .hero-profile-img {
-    height: min(88vh, 82vw);
+    /* Height now comes from the 100vh stage (see the base rule); only the
+       sideways guard changes per band. A portrait tablet is narrow relative to
+       its height, so the figure would otherwise span most of the width. */
+    max-width: 88vw;
   }
 }
 
@@ -686,7 +684,9 @@
      The vw cap stays tight: at 900x600 the stage is short and wide, and a
      height-led figure would spill sideways across the whole hero. */
   .hero .hero-profile-img {
-    height: min(92vh, 54vw);
+    /* Short and wide: the stage is only ~600px tall, so a full-height figure is
+       small anyway; the tight cap stops it spreading sideways. */
+    max-width: 52vw;
   }
   /* Cards are decoration over the portrait, not content — they yield first. */
   .hero .hero-cards-wrap {
@@ -875,38 +875,48 @@
      section floor is .hero's padding edge below it. Pulling down by exactly
      that padding lands the figure ON the boundary instead of floating the
      43-102px short that the screenshot shows. */
+  /* MOBILE PORTRAIT — heynesh's actual mechanism, which differs from desktop
+     by DESIGN rather than by degree.
+
+     Their two rules, verbatim from the source stylesheet:
+
+       desktop  .hero-profile-img  { width:100%; height:100%; object-fit:contain }
+                .profile-img-wrap  { position:fixed; width:100vw; height:100vh }
+       <=767px  .mobile-hero-image { width:100% }        <- height auto, NO object-fit
+                .profile-img-wrap  { display:none }
+
+     On desktop both axes are pinned to the viewport, so the box is LANDSCAPE
+     while the asset is portrait; `contain` fits the tighter axis (height) and
+     the figure stands exactly 100vh with its bottom flush to the fold. Because
+     the asset ends mid-torso, that fold reads as a deliberate bottom crop.
+
+     On mobile there is no box to fit into at all. `width:100%` with height auto
+     means the <img> renders at its INTRINSIC ratio, so object-fit never runs and
+     nothing can ever be cropped — the whole photo is always visible. The wrap is
+     taller than the image and bottom-aligned, so the surplus falls ABOVE the
+     figure, and that gap is exactly where the flank copy sits.
+
+     We had `object-fit: cover` here, which is the precise opposite: cover always
+     crops. Hence the reported mismatch — our mobile figure was cropped and welded
+     to the section floor, while theirs is whole with air above it. */
   .hero .mobile-hero-image-wrap {
     z-index: 6;
     pointer-events: none;
     justify-content: center;
     align-items: flex-end;
-    height: clamp(26.75rem, 132vw, 69.3rem);
+    /* Taller than the image so the leftover space lands above it. */
+    height: clamp(40.7rem, 197.4vw + 1.23rem, 94.6rem);
     display: flex;
     position: absolute;
-    top: auto;
-    inset: auto 0% calc(-1 * clamp(2.67rem, 13.33vw, 6.39rem)) 0%;
+    inset: clamp(4.77rem, 23.09vw + 0.15rem, 11.07rem) 0% 0%;
   }
 
-  /* object-fit: COVER here, not contain.
-
-     `contain` guarantees the whole image is visible, which sounds right and is
-     exactly what broke this. The box is portrait-tall but the phone is narrow,
-     so `max-width:100%` clamped the width, `contain` then refitted on the width
-     axis, and the drawn figure collapsed to ~56% of the box height — opening
-     346-642px of dead space ABOVE it and pushing the figure below the fold.
-     That is the "my image is nowhere" symptom: it was rendering, just far down
-     and tiny.
-
-     `cover` fills the box on both axes and crops the overflow instead. With
-     `object-position: 50% 100%` the crop is taken off the TOP, which is the
-     safe end: the asset already bleeds off its own bottom edge, so the chin and
-     torso stay put and only empty headroom is lost. */
+  /* height:auto is the whole point — do not reintroduce object-fit here. */
   .hero .mobile-hero-image {
-    height: 100%;
     width: 100%;
+    height: auto;
     aspect-ratio: auto;
-    object-fit: cover;
-    object-position: 50% 100%;
+    align-self: flex-end;
   }
 }
 
