@@ -108,10 +108,19 @@
 }
 
 .hero .nesh-logo {
-  /* aspect-ratio 3.5 · transform-origin 0 0 · full-width yellow wordmark */
+  /* Source is aspect-ratio 3.5 at 94.44vw, sized for the 4-letter "NESH".
+     textLength stretches any name to the full width, so a longer name would
+     be rendered at the same enormous cap height and dominate the hero. Tying
+     the box width to the character count keeps the LETTERS a consistent size
+     instead: see --mark-chars, set inline by Hero.tsx. */
+  /* Cap at 78vw rather than the source's 94.44vw: the source mark is 4 short
+     letters, and a 5+ letter name stretched to full bleed swallowed the
+     portrait. 15.5vw per character keeps the CAP HEIGHT roughly constant
+     whatever the name, so the mark reads as a wordmark rather than a banner. */
   aspect-ratio: 3.5;
   transform-origin: 0 0;
-  width: 94.44vw;
+  width: min(78vw, calc(var(--mark-chars, 4) * 15.5vw));
+  margin-inline: auto;
   height: auto;
   position: relative;
   color: var(--yellow);
@@ -120,14 +129,17 @@
   align-items: center;
 }
 
-/* SVG wordmark: the viewBox does the scaling, so the mark always spans the
-   container regardless of how many characters the brand name has. No vw
-   font-size, therefore no character-count overflow. */
+/* SVG wordmark. The viewBox does the scaling and textLength forces the fit,
+   so the mark spans the container for any brand length.
+
+   overflow:hidden is deliberate — it was `visible` while the glyph advance was
+   being estimated, which is why an oversized mark could paint past both edges
+   instead of being visibly clipped during development. */
 .hero .nesh-logo-svg {
   display: block;
   width: 100%;
   height: auto;
-  overflow: visible;
+  overflow: hidden;
   color: var(--yellow);
 }
 
@@ -232,12 +244,14 @@
 .hero .hero-profile-img {
   object-fit: contain;
   object-position: 50% 100%;
-  width: 100%;
-  /* Slightly under the full stage height: at 100% the portrait's head reached
-     the wordmark and the figure read as oversized against the cards. */
-  height: 92%;
-  max-height: 92vh;
-  margin-left: -3vw;
+  /* Constrain by WIDTH, not just height. width:100% on a portrait asset makes
+     the rendered figure scale with the viewport's width, so on a wide screen
+     the head pushed up into the wordmark. Capping the width keeps the figure
+     at a human scale and lets object-fit letterbox the rest. */
+  width: min(100%, 46vh);
+  max-width: 34vw;
+  height: 88%;
+  max-height: 88vh;
   align-self: flex-end;
 }
 
@@ -569,6 +583,12 @@
 }
 
 @media screen and (min-width: 768px) and (max-width: 1199px) {
+  /* The mark may take more of the width here — there is less competing with
+     it once the flanks have narrowed. */
+  .hero .nesh-logo {
+    width: min(88vw, calc(var(--mark-chars, 4) * 17.5vw));
+  }
+
   /* Wider container: 93.06vw is a desktop proportion and wastes ~50px here. */
   .hero .hero-container {
     width: 95vw;
@@ -608,9 +628,10 @@
 
   /* Portrait is composed for a wide stage; keep it clear of the cards. */
   .hero .hero-profile-img {
-    height: 84%;
-    max-height: 78vh;
-    margin-left: 0;
+    width: min(100%, 40vh);
+    max-width: 42vw;
+    height: 80%;
+    max-height: 74vh;
   }
 }
 
@@ -626,8 +647,10 @@
     margin-bottom: 1rem;
   }
   .hero .hero-profile-img {
-    height: 72%;
-    max-height: 62vh;
+    width: min(100%, 34vh);
+    max-width: 34vw;
+    height: 70%;
+    max-height: 60vh;
   }
   /* Cards are decoration over the portrait, not content — they yield first. */
   .hero .hero-cards-wrap {
@@ -666,8 +689,11 @@
     padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
   }
 
-  .hero .nesh-logo-svg {
-    font-size: 23vw;
+  /* font-size no longer drives the mark (the viewBox does), so the mobile
+     size is set on the BOX. Full bleed minus the page gutters: on a phone the
+     wordmark is the hero's main graphic, so it earns the width. */
+  .hero .nesh-logo {
+    width: min(92vw, calc(var(--mark-chars, 4) * 19vw));
   }
 
   .hero .hero-links-ghost-wrapper,
@@ -827,6 +853,12 @@
 
   .hero .experience-number {
     width: clamp(4.29rem, 20.79vw + 0.13rem, 9.96rem);
+  }
+
+  /* A long name at 19vw/char hits the 92vw cap and its cap-height dominates a
+     360px screen. Trim the per-character share so 5-7 letters stay legible. */
+  .hero .nesh-logo {
+    width: min(94vw, calc(var(--mark-chars, 4) * 17vw));
   }
 
   /* At 360px the 767px block's heading still resolves to ~2.5rem, which wraps
