@@ -8,13 +8,16 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
+    "predev": "node scripts/preflight.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/preflight.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
-    "build:analyze": "ANALYZE=true next build"
+    "build:analyze": "ANALYZE=true next build",
+    "reinstall": "rm -rf node_modules package-lock.json .next && npm install"
   },
   "dependencies": {
     "@tailwindcss/line-clamp": "^0.4.2",
