@@ -14,8 +14,6 @@ export type ProjectProps = {
   /** Local poster still (first frame stand-in) — reserved box, zero CLS. */
   image: string;
   video: string;
-  /** Portrait phone screen (704x1520 source, served as 640x1382 webp). */
-  mobile: string;
   available: boolean;
 };
 
@@ -29,7 +27,6 @@ export const devProjects: ProjectProps[] = [
     demo: "https://www.1910.ai/",
     image: "/projects/synthetix.png",
     video: "/videos/work-01.webm",
-    mobile: "/projects/mobile/1910.webp",
     available: true,
   },
   {
@@ -41,7 +38,6 @@ export const devProjects: ProjectProps[] = [
     demo: "https://www.semiconbio.com/",
     image: "/projects/interlock-new.png",
     video: "/videos/work-02.webm",
-    mobile: "/projects/mobile/semiconbio.webp",
     available: true,
   },
   {
@@ -53,7 +49,6 @@ export const devProjects: ProjectProps[] = [
     demo: "https://happyring.fiftyseven.co/",
     image: "/projects/odunsi.png",
     video: "/videos/work-03.webm",
-    mobile: "/projects/mobile/happyring.webp",
     available: true,
   },
   {
@@ -65,7 +60,6 @@ export const devProjects: ProjectProps[] = [
     demo: "https://pssltd.co.uk/",
     image: "/projects/propellent-new.png",
     video: "/videos/work-04.webm",
-    mobile: "/projects/mobile/pssltd.webp",
     available: true,
   },
   {
@@ -77,7 +71,6 @@ export const devProjects: ProjectProps[] = [
     demo: "https://www.lilipadlibrary.org/",
     image: "/projects/flixify-new.png",
     video: "/videos/work-05.webm",
-    mobile: "/projects/mobile/lilipad.webp",
     available: true,
   },
   {
@@ -89,7 +82,6 @@ export const devProjects: ProjectProps[] = [
     demo: "https://omicronblockchain.com/",
     image: "/projects/crown.webp",
     video: "/videos/work-06.webm",
-    mobile: "/projects/mobile/omicron.webp",
     available: true,
   },
   {
@@ -101,7 +93,6 @@ export const devProjects: ProjectProps[] = [
     demo: "https://www.careerpuck.com/",
     image: "/projects/hsl.webp",
     video: "/videos/work-01.webm",
-    mobile: "/projects/mobile/puck.webp",
     available: true,
   },
   {
@@ -113,7 +104,6 @@ export const devProjects: ProjectProps[] = [
     demo: "https://www.alosant.com/",
     image: "/projects/rags.webp",
     video: "/videos/work-03.webm",
-    mobile: "/projects/mobile/alosant.webp",
     available: true,
   },
   {
@@ -125,7 +115,6 @@ export const devProjects: ProjectProps[] = [
     demo: "https://getray.ai/",
     image: "/projects/titi.webp",
     video: "/videos/work-05.webm",
-    mobile: "/projects/mobile/rayai.webp",
     available: true,
   },
 ];

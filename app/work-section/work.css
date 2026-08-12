@@ -204,12 +204,34 @@
    to the image, and any resize would drift the two apart.
    ========================================================================== */
 
+/* Base (mobile / tablet): arrows hug the device, text stacks underneath in
+   DOM order. The desktop grid below overrides this. */
 .work-stage {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: clamp(0.75rem, 2vw, 2.5rem);
   width: 100%;
+}
+
+/* ---------- Desktop: read everything without scrolling --------------------
+   Title + CTA left, device centre, description + stack right. The caption
+   used to sit below the device, which pushed it past the fold and forced a
+   scroll to read who the project even was.
+
+   Column widths are minmax(0, …) so long words cannot inflate a track past
+   its share and squeeze the device; the centre track is auto so the frame
+   keeps its own intrinsic width and the text absorbs the remainder.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  .work-stage {
+    display: grid;
+    grid-template-columns:
+      auto minmax(11rem, 1fr) auto minmax(11rem, 1fr) auto;
+    align-items: center;
+    column-gap: clamp(1rem, 2.2vw, 2.75rem);
+  }
 }
 
 /* The frame column is the flexible one; arrows stay fixed so they never
@@ -336,7 +358,7 @@
 }
 
 .work-slide-media,
-.work-slide-media img,
+.work-slide-media > img,
 .work-slide-media video {
   position: absolute;
   inset: 0;
@@ -353,12 +375,73 @@
   opacity: 1;
 }
 
-/* ---------- Caption under the device -------------------------------------- */
+/* ---------- Info columns --------------------------------------------------
+   Below 1024px these are ordinary centred blocks stacked under the device
+   (order forces title-then-description regardless of grid source order).
+   -------------------------------------------------------------------------- */
 
-.work-stage-caption {
-  margin-top: clamp(1rem, 1.8vw, 1.9rem);
-  text-align: center;
+.work-info {
   color: var(--cream);
+  text-align: center;
+  /* Full row on small screens so left/right sit under the frame, not beside
+     it — flex-wrap in .work-stage does the breaking. */
+  flex: 1 1 100%;
+  min-width: 0;
+  /* Re-runs on every project change because Work.tsx re-keys these nodes. */
+  animation: work-info-in 0.55s var(--ease-nm) both;
+}
+
+.work-info--left {
+  order: 3;
+}
+.work-info--right {
+  order: 4;
+}
+
+@media (min-width: 1024px) {
+  .work-info {
+    flex: none;
+  }
+  .work-info--left {
+    order: 0;
+    text-align: right;
+    /* Pull the CTA and title to the edge nearest the device so the eye
+       travels title -> device -> description in one sweep. */
+    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    animation-name: work-info-in-left;
+  }
+  .work-info--right {
+    order: 0;
+    text-align: left;
+    animation-name: work-info-in-right;
+  }
+}
+
+/* Gentle: a short fade with a few pixels of travel. Anything larger reads as
+   a slide transition and competes with the device swap itself. */
+@keyframes work-info-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes work-info-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+@keyframes work-info-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+
+.work-stage-total {
+  opacity: 0.6;
 }
 
 .work-stage-index {
@@ -377,7 +460,7 @@
 }
 
 .work-stage-desc {
-  margin: 0.6em auto 0;
+  margin: 0 auto;
   max-width: 46ch;
   font-size: clamp(0.8rem, 1vw, 1.05rem);
   line-height: 1.55;
@@ -388,6 +471,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  /* aligned per-column on desktop below */
   gap: clamp(0.28rem, 0.5vw, 0.6rem);
   margin-top: clamp(0.7rem, 1.1vw, 1.1rem);
 }
@@ -562,4 +646,154 @@
   .work-switch__btn {
     transition: none;
   }
+  /* Kill every looping attractor and the strip pan. The strip then shows its
+     first screen as a plain still, which is a valid poster. */
+  .phone-scroll img,
+  .work-info,
+  .work-switch__btn[data-idle="true"],
+  .work-switch__btn[data-idle="true"]::before {
+    animation: none;
+  }
+  .work-switch__btn[data-idle="true"]::before {
+    opacity: 0;
+  }
 }
+/* ---------- Desktop column alignment -------------------------------------- */
+
+@media (min-width: 1024px) {
+  .work-info--left .work-stage-title {
+    font-size: clamp(1.6rem, 2.6vw, 3rem);
+  }
+  .work-info--left .work-stage-link {
+    margin-top: clamp(1rem, 1.5vw, 1.6rem);
+  }
+  .work-info--right .work-stage-desc {
+    margin: 0;
+    max-width: 34ch;
+  }
+  .work-info--right .work-stage-labels {
+    justify-content: flex-start;
+  }
+}
+
+/* ---------- Mobile preview: one scrolling strip ---------------------------
+   public/projects/mobile-strip.webp stacks 6 app screens plus a repeat of the
+   first (7 x 950px at 440 wide). Translating it by -6/7 of its own height
+   therefore lands on a pixel-identical copy of frame one, so `infinite` loops
+   with no seam and no JS.
+
+   Only `transform` animates, so this stays on the compositor: no per-frame
+   image decode, unlike the animated WebP/APNG this replaced.
+   -------------------------------------------------------------------------- */
+
+.phone-scroll {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.phone-scroll img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  /* Not `fill`/`cover`: the strip must overflow the frame vertically at its
+     natural ratio, otherwise the pan would squash it. */
+  object-fit: fill;
+  will-change: transform;
+  animation: phone-scroll 26s linear infinite;
+}
+
+@keyframes phone-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -85.7143%, 0);
+  }
+}
+
+/* ---------- Idle tab: travelling yellow glow ------------------------------
+   When Mobile is showing, the Web tab advertises itself. Two layers:
+   a sweeping highlight that crosses the pill, and a soft pulsing yellow
+   shadow. Both run on the inactive tab only, via [data-idle="true"].
+   -------------------------------------------------------------------------- */
+
+.work-switch__btn[data-idle="true"] {
+  position: relative;
+  /* Clip the sweep to the pill. */
+  overflow: hidden;
+  animation: work-tab-pulse 2.4s ease-in-out infinite;
+}
+
+/* The sweep. A narrow yellow band pushed across the button on a loop with a
+   long tail of dead time, so it reads as an occasional glint, not a strobe. */
+.work-switch__btn[data-idle="true"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 35, 0) 32%,
+    rgba(255, 255, 35, 0.42) 48%,
+    rgba(255, 255, 220, 0.55) 52%,
+    rgba(255, 255, 35, 0.42) 56%,
+    rgba(255, 255, 35, 0) 72%,
+    transparent 100%
+  );
+  background-size: 260% 100%;
+  animation: work-tab-sweep 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* A thin yellow rim that brightens with the pulse, so the target edge is
+   readable even when the sweep is off-screen. */
+.work-switch__btn[data-idle="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 35, 0.45);
+  pointer-events: none;
+}
+
+/* Hovering means the user already found it — drop the attractor. */
+.work-switch__btn[data-idle="true"]:hover,
+.work-switch__btn[data-idle="true"]:focus-visible {
+  animation: none;
+  color: var(--cream);
+}
+.work-switch__btn[data-idle="true"]:hover::before,
+.work-switch__btn[data-idle="true"]:focus-visible::before {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes work-tab-sweep {
+  0% {
+    background-position: 130% 0;
+  }
+  /* Reaches the far edge at 55%, then holds off-screen for the remainder. */
+  55%,
+  100% {
+    background-position: -130% 0;
+  }
+}
+
+@keyframes work-tab-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 35, 0),
+      0 2px 10px rgba(255, 255, 35, 0.12);
+    color: rgba(255, 255, 255, 0.72);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 255, 35, 0.09),
+      0 4px 22px rgba(255, 255, 35, 0.4);
+    color: #fff;
+  }
+}
+
