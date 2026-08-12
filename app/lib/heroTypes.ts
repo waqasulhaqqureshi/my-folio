@@ -19,11 +19,16 @@
  * can be reserved before the bitmap decodes.
  */
 export const HERO_PORTRAIT = {
-  src: "/hero-waqas-1400.webp",
-  srcSet: "/hero-waqas-900.webp 900w, /hero-waqas-1400.webp 1400w",
-  sizes: "(max-width: 767px) 100vw, 40vw",
+  src: "/hero-portrait-1140.webp",
+  srcSet: "/hero-portrait-760.webp 760w, /hero-portrait-1140.webp 1140w",
+  sizes: "(max-width: 767px) 100vw, 46vw",
   alt: "Waqas ul Haq Qureshi",
-  ratio: 1689 / 1920,
+  /* 976x1457. The source PNG was 1009x2048, but its bottom third was an
+     outpainted artifact: below y=1480 the silhouette snapped to the full frame
+     width and the alpha lost its margins (detected by the left/right edge of
+     the cutout jumping to 0/1008 and staying there). Cropped to the real
+     subject before encoding, so the hero never has to hide a smudge. */
+  ratio: 976 / 1457,
 } as const;
 
 export type HeroContent = {

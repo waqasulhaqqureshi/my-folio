@@ -23,9 +23,9 @@
 
   /* Intrinsic ratio of the portrait cutout (1689/1920). Declared once here and
      consumed by both the desktop and mobile portrait layers so the box is
-     reserved at the correct shape before the bitmap decodes. Hero.tsx
-     overrides it inline when an admin uploads a differently-shaped image. */
-  --portrait-ratio: 0.8797;
+     reserved at the correct shape before the bitmap decodes. Set inline by
+     Hero.tsx from the locked asset; this value is the fallback. */
+  --portrait-ratio: 0.6699;
 
   /* .hero (source) — the section shell.
      Source scroll-pin: `min-height: 300vh; padding-bottom: 180vh;` drives the
@@ -286,7 +286,7 @@
   object-fit: contain;
   object-position: 50% 100%;
   aspect-ratio: var(--portrait-ratio);
-  height: min(96vh, 54vw);
+  height: min(96vh, 72vw);
   width: auto;
   max-width: 92vw;
   align-self: flex-end;
@@ -667,7 +667,7 @@
      so height alone would let the figure grow wider than the card cluster.
      Raised in step with desktop now that the head may cross the wordmark. */
   .hero .hero-profile-img {
-    height: min(88vh, 62vw);
+    height: min(88vh, 82vw);
   }
 }
 
@@ -686,7 +686,7 @@
      The vw cap stays tight: at 900x600 the stage is short and wide, and a
      height-led figure would spill sideways across the whole hero. */
   .hero .hero-profile-img {
-    height: min(92vh, 40vw);
+    height: min(92vh, 54vw);
   }
   /* Cards are decoration over the portrait, not content — they yield first. */
   .hero .hero-cards-wrap {
