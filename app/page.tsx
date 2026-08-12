@@ -1,4 +1,5 @@
 import { getHeroContent } from "./lib/heroContent";
+import { getVisibleProjects } from "./lib/projectContent";
 import HomeClient from "./HomeClient";
 
 /*
@@ -9,5 +10,9 @@ import HomeClient from "./HomeClient";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  return <HomeClient hero={await getHeroContent()} />;
+  const [hero, projects] = await Promise.all([
+    getHeroContent(),
+    getVisibleProjects(),
+  ]);
+  return <HomeClient hero={hero} projects={projects} />;
 }

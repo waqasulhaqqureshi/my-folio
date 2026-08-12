@@ -1,6 +1,7 @@
 "use client";
 import Hero from "./hero-section/Hero";
 import type { HeroContent } from "./lib/heroTypes";
+import type { Project } from "./lib/projectTypes";
 import { useEffect } from "react";
 import PreLoader from "./animations/PreLoader/PreLoader";
 import NavBar from "./navbar/NavBar";
@@ -21,7 +22,13 @@ const Footer = dynamic(() => import("./footer/Footer"));
  * cursor coordinates in a rAF loop and drives compositor-only transforms.
  * See app/hooks/useMagnetic.ts.
  */
-export default function HomeClient({ hero }: { hero: HeroContent }) {
+export default function HomeClient({
+  hero,
+  projects,
+}: {
+  hero: HeroContent;
+  projects: Project[];
+}) {
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -37,7 +44,7 @@ export default function HomeClient({ hero }: { hero: HeroContent }) {
 
       <main className="flex flex-col items-center justify-center">
         <Hero content={hero} />
-        <Work />
+        <Work projects={projects} />
         <Certificates />
         <About />
         <Blog />

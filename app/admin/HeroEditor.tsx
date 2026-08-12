@@ -131,30 +131,9 @@ export default function HeroEditor({ initial }: { initial: HeroContent }) {
     }
   }
 
-  async function logout() {
-    await fetch("/api/admin/login", { method: "DELETE" });
-    router.refresh();
-  }
-
   return (
-    <main className="min-h-screen bg-canvas px-5 py-10 text-ink md:px-10">
-      <div className="mx-auto w-full max-w-5xl">
-        {/* Header */}
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="nm-eyebrow mb-2">Admin</p>
-            <h1 className="nm-h2">Hero section</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <a href="/" className="nm-btn-ghost">
-              View site
-            </a>
-            <button onClick={logout} className="nm-btn-ghost">
-              Log out
-            </button>
-          </div>
-        </div>
-
+    <div>
+      <div>
         {/* Status */}
         {status.kind !== "idle" && (
           <div
@@ -321,6 +300,6 @@ export default function HeroEditor({ initial }: { initial: HeroContent }) {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
