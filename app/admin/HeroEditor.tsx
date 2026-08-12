@@ -243,13 +243,7 @@ export default function HeroEditor({ initial }: { initial: HeroContent }) {
                 </Field>
               </div>
 
-              <Field label="Primary button">
-                <input className={inputCls} value={form.ctaPrimary} onChange={(e) => set("ctaPrimary", e.target.value)} />
-              </Field>
 
-              <Field label="Secondary button">
-                <input className={inputCls} value={form.ctaSecondary} onChange={(e) => set("ctaSecondary", e.target.value)} />
-              </Field>
 
               <Field label="Projects stat" hint='e.g. "80+"'>
                 <input className={inputCls} value={form.projectsStat} onChange={(e) => set("projectsStat", e.target.value)} />

@@ -24,7 +24,9 @@ export type HeroContent = {
 export const DEFAULT_HERO: HeroContent = {
   brandMark: "NESH",
   leftText: "The Webflow Expert. That's Nenad.",
-  headingLines: ["Webflow,", "Applied", "Differently."],
+  /* Empty by default — the headline is optional and the buttons below it
+     were removed, so the hero leads with the wordmark and the portrait. */
+  headingLines: [],
   ctaPrimary: "Book a Call",
   ctaSecondary: "About Me",
   rightText:
