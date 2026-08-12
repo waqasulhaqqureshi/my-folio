@@ -8,15 +8,20 @@ import type { DeviceKind } from "./DeviceFrame";
 /*
  * WorkSlide — the media inside the device screen.
  *
- * Only the ACTIVE project renders this, so exactly one <video> is ever mounted.
- * That is what makes the one-at-a-time layout cheaper than the old 3-up rail,
- * where three decoders were live at once.
+ * WEB: the per-project .webm capture, lazily attached and fully released when
+ * it leaves the viewport or the slide unmounts.
  *
- * The mobile view is a still image, so it mounts no <video> at all — switching
- * to the Mobile tab unmounts this component (see the key in Work.tsx), which
- * fires useLazyVideo's cleanup and runs the full WHATWG
- * pause/removeAttribute/load() reset. The decoder is released on tab switch
- * rather than left buffering behind a hidden panel.
+ * MOBILE: one shared vertical strip (public/projects/mobile-strip.webp) of six
+ * app screens, translated upward by a CSS keyframe. This replaced a set of
+ * nine separate stills and an attempted animated WebP/APNG:
+ *   - Pillow's WebP and GIF writers silently collapsed runs of similar frames
+ *     (110 frames in, 25 out) and wrote a zero duration, so the animation
+ *     never advanced.
+ *   - The APNG that did encode correctly was 1.6MB for 9 seconds.
+ *   - The strip is 217KB total, animates on the compositor (transform only,
+ *     no per-frame decode), and needs no decoder at all.
+ * The strip repeats its first screen at the end, so a linear 0 -> -85.7143%
+ * loop wraps with no visible jump.
  */
 export default function WorkSlide({
   project,
@@ -29,13 +34,22 @@ export default function WorkSlide({
     return (
       <div className="work-slide">
         <div className="work-slide-media">
-          <Image
-            src={project.mobile}
-            alt={`${project.name} — mobile view`}
-            fill
-            sizes="(max-width: 767px) 46vw, 15vw"
-            className="object-cover"
-          />
+          <div className="phone-scroll" aria-hidden="true">
+            {/*
+             * Plain <img>: next/image wants to fill its parent box, but this
+             * element is deliberately ~15x taller than the frame so it can be
+             * translated through it. Sizing is handled entirely in CSS.
+             */}
+            <img
+              src="/projects/mobile-strip.webp"
+              alt=""
+              decoding="async"
+              loading="lazy"
+            />
+          </div>
+          <span className="sr-only">
+            {project.name} — mobile app preview
+          </span>
         </div>
       </div>
     );
@@ -45,9 +59,9 @@ export default function WorkSlide({
 }
 
 /*
- * Split into its own component so the video hook is only ever called on the
- * web branch. Calling useLazyVideo above the `kind` check would violate the
- * rules of hooks the moment the early return fires.
+ * Split out so the video hook is only called on the web branch — calling it
+ * above the `kind` check would break the rules of hooks the moment the mobile
+ * early return fires.
  */
 function WebSlide({ project }: { project: ProjectProps }) {
   const { videoRef, state } = useLazyVideo(project.video);
@@ -55,8 +69,8 @@ function WebSlide({ project }: { project: ProjectProps }) {
   return (
     <div className="work-slide">
       <div className="work-slide-media">
-        {/* Poster stays beneath until playback actually starts, so a slow
-            clip shows the still rather than a black rectangle. */}
+        {/* Poster stays beneath until playback starts, so a slow clip shows
+            the still rather than a black rectangle. */}
         <Image
           src={project.image}
           alt={`${project.name} — site preview`}
