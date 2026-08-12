@@ -92,19 +92,7 @@
   color: var(--cream);
 }
 
-/* ---------- Rail: [prev] [3-up viewport] [next] -----------------------------
-   A 3-column flex row. The arrows are `flex:none` and the viewport is
-   `min-width:0` so the track — not the buttons — absorbs every resize; without
-   the min-width override a flex item refuses to shrink below its content and
-   the arrows would be pushed off the panel. */
-.work-rail {
-  --work-gap: 2.08vw;
-  --work-per-view: 3;
-  display: flex;
-  align-items: center;
-  gap: clamp(0.75rem, 1.6vw, 2rem);
-  width: 100%;
-}
+/* ---------- Controls + header type (shared by the device stage) ---------- */
 
 .work-nav-btn {
   flex: none;
@@ -122,25 +110,28 @@
   transition: background-color 0.3s ease, color 0.3s ease,
     border-color 0.3s ease, transform 0.3s var(--ease-nm), opacity 0.3s ease;
 }
+
 .work-nav-btn svg {
   width: 42%;
   height: 42%;
 }
+
 .work-nav-btn:hover:not(:disabled) {
   background-color: var(--cream);
   border-color: var(--cream);
   color: var(--ink);
   transform: translateY(-2px);
 }
+
 .work-nav-btn:active:not(:disabled) {
   transform: translateY(0);
 }
+
 .work-nav-btn:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
-/* Disabled = one end of the rail reached. Kept visible (not hidden) so the
-   control set never shifts position, but clearly inert. */
+
 .work-nav-btn:disabled {
   background-color: transparent;
   border-color: rgba(255, 255, 255, 0.25);
@@ -148,7 +139,6 @@
   cursor: not-allowed;
 }
 
-/* Source .label — note the source's own padding is .21vw all round */
 .work_section .label {
   text-transform: uppercase;
   white-space: nowrap;
@@ -164,170 +154,6 @@
   color: var(--cream);
 }
 
-.work_section .h2-style-white {
-  color: var(--cream);
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1;
-  font-size: clamp(2.24rem, 4.58vw, 5rem);
-}
-/* Source: .max-width-700{max-width:clamp(300px,32vw,800px)} */
-.work_section .max-width-700 {
-  max-width: clamp(300px, 32vw, 800px);
-}
-
-/* ---------- Track (source: padding-left:55%, scrubbed horizontally) -------- */
-/* Source uses padding-left:55% to park the track off-screen for the scrub.
-   Arrow-driven, it starts at the first card and scrolls natively instead. */
-.work-track-wrap {
-  display: flex;
-  /* min-width:0 lets this shrink inside .work-rail; flex-basis:0 + grow makes
-     it claim exactly the space the two arrows don't. */
-  flex: 1 1 0;
-  min-width: 0;
-  /* Sizing context for the cards. .work-track is content-sized, so a % width
-     on a card would be circular; cqw resolves against THIS box instead. */
-  container-type: inline-size;
-  overflow-x: auto;
-  overflow-y: hidden;
-  /* proximity, not mandatory: mandatory can refuse to rest at max scrollLeft
-     when the last step is shorter than one card, stranding the final card. */
-  scroll-snap-type: x proximity;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.work-track-wrap::-webkit-scrollbar {
-  display: none;
-}
-.work-track-wrap:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 4px;
-  border-radius: 0.83vw;
-}
-
-.work-track {
-  grid-column-gap: var(--work-gap);
-  grid-row-gap: var(--work-gap);
-  gap: var(--work-gap);
-  flex-flow: row;
-  flex: none;
-  display: flex;
-  /* The track must be exactly as wide as its cards; `flex:none` alone would
-     still let it shrink to the scroll container in some engines. */
-  min-width: min-content;
-}
-
-@media (max-width: 1100px) {
-  .work-rail {
-    --work-per-view: 2;
-  }
-}
-
-/* ---------- Card ----------------------------------------------------------- */
-.work-card {
-  border-radius: 0.83vw;
-  /* Exactly three per viewport: subtract the two inter-card gaps from the
-     rail's inline size, then split the remainder three ways. Driven off the
-     --work-gap token so gap and width can never drift apart. */
-  width: calc(
-    (100cqw - (var(--work-per-view) - 1) * var(--work-gap)) /
-      var(--work-per-view)
-  );
-  /* Source derives card height at runtime; the local assets are 778×1100, so
-     the box is reserved from that intrinsic ratio → zero CLS. */
-  aspect-ratio: 778 / 1100;
-  transition-property: opacity;
-  transition-duration: 0.4s;
-  transition-timing-function: ease;
-  position: relative;
-  overflow: hidden;
-  flex: none;
-  display: block;
-  text-decoration: none;
-  color: var(--cream);
-  scroll-snap-align: start;
-}
-
-.work-card:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 4px;
-}
-
-.work-image,
-.work-video {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-}
-
-.work-image {
-  z-index: 0;
-  transition: opacity 0.4s ease;
-}
-.work-image[data-hidden="true"] {
-  opacity: 0;
-}
-
-.work-video {
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-.work-video[data-state="active"] {
-  opacity: 1;
-}
-
-/* Source: .work-image-overlay{z-index:10;opacity:0;background:#0009;
-   width:101%;height:101%;transition:opacity .4s} */
-.work-image-overlay {
-  z-index: 10;
-  opacity: 0;
-  pointer-events: none;
-  background-color: #0009;
-  width: 101%;
-  height: 101%;
-  margin-left: auto;
-  margin-right: auto;
-  transition: opacity 0.4s;
-  position: absolute;
-  inset: 0;
-}
-.work-card:hover .work-image-overlay {
-  opacity: 1;
-}
-
-/* Source gradient scrim — exact stops */
-.work-card-content {
-  z-index: 2;
-  background-image: linear-gradient(#0000004d, #33333308 50%, #0006);
-  flex-flow: column;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25vw 1.25vw 1.81vw;
-  display: flex;
-  position: absolute;
-  inset: 0;
-}
-
-.work-card-content-top-layout {
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  display: flex;
-}
-
-.work-card-index {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: clamp(0.625rem, 0.97vw, 1.5rem);
-  line-height: 1;
-  color: var(--cream);
-}
-
-/* Source: .work-label-wrap{gap:.28vw;justify-content:flex-start;
-   align-items:center;display:flex} */
 .work-label-wrap {
   grid-column-gap: 0.28vw;
   grid-row-gap: 0.28vw;
@@ -337,9 +163,19 @@
   display: flex;
 }
 
-/* Source: .work-label{background:#000;border:1px solid #ffffff4d;
-   border-radius:5.14vw;padding:.345vw .69vw;
-   font-size:clamp(.625rem,.97vw,1.5rem);line-height:1} */
+.work_section .h2-style-white {
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  font-size: clamp(2.24rem, 4.58vw, 5rem);
+}
+
+.work_section .max-width-700 {
+  max-width: clamp(300px, 32vw, 800px);
+}
+
+/* Tech chips under the device (source: .work-label) */
 .work-label {
   background-color: #000;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -352,193 +188,248 @@
   white-space: nowrap;
 }
 
-.work-card-content-bottom-layout {
-  flex-flow: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  width: 100%;
-  padding-right: clamp(2.5rem, 3.47vw, 4rem);
-  line-height: 1.3;
-  display: flex;
-  position: relative;
-}
-
-.work-card-heading {
-  margin-top: 0;
-  margin-bottom: 0.4vw;
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 1.94vw, 3rem);
-  font-weight: 500;
-  line-height: 1;
-  color: var(--cream);
-}
-
-.work_section .op80 {
-  opacity: 0.8;
-  font-family: var(--font-body);
-  font-size: clamp(0.75rem, 1.04vw, 1.25rem);
-  line-height: 1.3;
-  color: var(--cream);
-}
-
-/* Source: yellow circular FAB pinned bottom-right, with a two-arrow
-   "slide-through" hover (arrow 1 exits, arrow 2 enters). */
-.work-card-arrow-wrap {
-  background-color: var(--accent);
-  color: var(--ink);
-  border-radius: 50%;
-  justify-content: center;
-  align-items: center;
-  width: clamp(1.75rem, 2.5vw, 2.75rem);
-  height: clamp(1.75rem, 2.5vw, 2.75rem);
-  transition-property: color, background-color;
-  transition-duration: 0.3s;
-  transition-timing-function: ease;
-  display: flex;
-  position: absolute;
-  inset: auto 0% 0% auto;
-  z-index: 11;
-}
-
-.work-card-arrow-icon {
-  flex-flow: column;
-  justify-content: flex-end;
-  align-items: flex-start;
-  width: 1.25vw;
-  height: 1.25vw;
-  display: flex;
-  position: relative;
-  overflow: hidden;
-}
-
-.work-card-arrow {
-  flex: none;
-  width: 1.25vw;
-  height: 1.25vw;
-  transition: margin 0.25s;
-}
-.work-card-arrow-2 {
-  margin-bottom: -100%;
-  margin-left: -100%;
-  position: static;
-}
-.work-card:hover .work-card-arrow:not(.work-card-arrow-2) {
-  margin-bottom: 100%;
-  margin-left: 100%;
-}
-.work-card:hover .work-card-arrow-2 {
-  margin-bottom: 0;
-  margin-left: 0;
-}
-
-/* ---------- Mobile: source drops the pin entirely -------------------------- */
-/* Source 767px block:
-     .work_section{min-height:auto}
-     .work-sticky{min-height:auto;padding:clamp(4.27rem,21.33vw,10.23rem) 0;
-                  position:static}
-     .work-track-wrap{width:100%;padding-inline:clamp(1.07rem,5.33vw,2.56rem);
-                      overflow:scroll}
-     .work-card{width:clamp(16.53rem,82.67vw,39.59rem)}                        */
-@media screen and (max-width: 767px) {
-  .work-sticky {
-    min-height: auto;
-    padding: clamp(4.27rem, 21.33vw, 10.23rem) 0 clamp(7rem, 26vw, 12rem);
-  }
-  .work-top-layout {
-    grid-column-gap: clamp(0.96rem, 4.8vw, 2.3rem);
-    grid-row-gap: clamp(0.96rem, 4.8vw, 2.3rem);
-    grid-template-columns: 1fr;
-    margin-bottom: clamp(3.73rem, 18.67vw, 8.96rem);
-    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
-    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
-  }
-  .work_section .h2-style-white.max-width-700,
-  .work-top-text {
-    max-width: 100%;
-  }
-  .work-top-right {
-    align-items: flex-start;
-    gap: clamp(1.5rem, 6vw, 2.5rem);
-  }
-  /* Phones swipe: the rail stops flanking and the arrows drop below it, so a
-     one-up card keeps the full viewport width. order:2 on the next button
-     keeps DOM order (prev, rail, next) intact for screen readers. */
-  .work-rail {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: clamp(1.07rem, 5.33vw, 2.56rem);
-    padding-left: clamp(1.07rem, 5.33vw, 2.56rem);
-  }
-  .work-rail > .work-nav-btn:first-child {
-    order: 2;
-  }
-  .work-track-wrap {
-    order: 1;
-    flex: 1 0 100%;
-    min-width: 100%;
-    padding-left: 0;
-    padding-right: clamp(1.07rem, 5.33vw, 2.56rem);
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .work-rail > .work-nav-btn:last-child {
-    order: 3;
-  }
-  .work-track-wrap::-webkit-scrollbar {
-    display: none;
-  }
-  .work-track {
-    grid-column-gap: clamp(1.28rem, 6.4vw, 3.07rem);
-    gap: clamp(1.28rem, 6.4vw, 3.07rem);
-  }
-  .work-card {
-    border-radius: clamp(0.64rem, 3.2vw, 1.53rem);
-    width: clamp(16.53rem, 82.67vw, 39.59rem);
-    scroll-snap-align: start;
-  }
-  .work-card-content {
-    padding: clamp(0.86rem, 4.16vw + 0.026rem, 1.99rem);
-  }
+@media (max-width: 767px) {
   .work-label {
     padding: clamp(0.27rem, 1.33vw, 0.64rem) clamp(0.53rem, 2.67vw, 1.28rem);
-    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
-  }
-  .work-label-wrap {
-    grid-column-gap: clamp(0.21rem, 1.07vw, 0.51rem);
-    gap: clamp(0.21rem, 1.07vw, 0.51rem);
-  }
-  .work-card-content-bottom-layout {
-    padding-right: clamp(2.99rem, 14.93vw, 7.16rem);
-    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
-  }
-  .work-card-heading {
-    margin-bottom: clamp(0.32rem, 1.6vw, 0.77rem);
-    font-size: clamp(1.49rem, 7.47vw, 3.58rem);
-  }
-  .work-card-index,
-  .work_section .op80 {
-    font-size: clamp(0.75rem, 3.73vw, 1.79rem);
-  }
-  .work-card-arrow-wrap {
-    width: clamp(1.92rem, 9.6vw, 4.61rem);
-    height: clamp(1.92rem, 9.6vw, 4.61rem);
-  }
-  .work-card-arrow-icon,
-  .work-card-arrow {
-    width: clamp(0.85rem, 4.27vw, 2.05rem);
-    height: clamp(0.85rem, 4.27vw, 2.05rem);
+    font-size: clamp(0.7rem, 3vw, 1rem);
   }
 }
 
-/* Reduced motion: no scrub, native rail instead (matches the mobile fallback) */
+/* ==========================================================================
+   DEVICE SHOWCASE — one project at a time inside a tablet bezel
+   --------------------------------------------------------------------------
+   Replaces the 3-up rail. Every clip in public/videos is 778x1100 (0.7073),
+   so the screen box uses that exact ratio and object-fit never crops.
+   The bezel is CSS-only: a bitmap mockup would need the video pixel-matched
+   to the image, and any resize would drift the two apart.
+   ========================================================================== */
+
+.work-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.75rem, 2vw, 2.5rem);
+  width: 100%;
+}
+
+/* The frame column is the flexible one; arrows stay fixed so they never
+   shrink below the 44px WCAG target. */
+.work-stage-viewport {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  /* Anchors the absolutely-positioned outgoing slide during a transition. */
+  position: relative;
+}
+
+.work-stage-viewport:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 1.5rem;
+}
+
+/* ---------- Device frame -------------------------------------------------- */
+
+.device-frame {
+  /* Height-led sizing: the stage is constrained vertically far more than
+     horizontally, so drive off vh and let width follow the aspect ratio.
+     min() with a vw term stops it overflowing on narrow viewports. */
+  width: min(clamp(15rem, 27vw, 24rem), 74vw);
+  max-height: 68vh;
+  flex: none;
+}
+
+.device-body {
+  position: relative;
+  /* Bezel. Thicker at the bottom is what reads as "tablet" rather than
+     "picture frame". */
+  padding: clamp(0.5rem, 0.9vw, 0.95rem);
+  padding-bottom: clamp(0.75rem, 1.35vw, 1.45rem);
+  border-radius: clamp(1rem, 1.9vw, 2rem);
+  background: linear-gradient(160deg, #2b2b2b 0%, #101010 42%, #262626 100%);
+  /* Outer hairline = the machined edge; inner ring = the glass lip. */
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 0 2px rgba(0, 0, 0, 0.85),
+    0 clamp(1rem, 2.2vw, 2.2rem) clamp(2rem, 4.5vw, 4rem) rgba(0, 0, 0, 0.55);
+}
+
+.device-camera {
+  position: absolute;
+  top: clamp(0.24rem, 0.42vw, 0.45rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(4px, 0.42vw, 7px);
+  height: clamp(4px, 0.42vw, 7px);
+  border-radius: 50%;
+  background: #0b0b0b;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.device-screen {
+  position: relative;
+  /* Intrinsic ratio of every clip in public/videos — no crop, no pillarbox. */
+  aspect-ratio: 778 / 1100;
+  width: 100%;
+  overflow: hidden;
+  border-radius: clamp(0.4rem, 0.75vw, 0.8rem);
+  background: #000;
+  /* Isolate so the slide transform inside cannot escape the bezel. */
+  isolation: isolate;
+}
+
+/* ---------- Slides -------------------------------------------------------- */
+
+.work-slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.work-slide-media,
+.work-slide-media img,
+.work-slide-media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.work-slide-media video {
+  opacity: 0;
+  transition: opacity 0.45s var(--ease-nm);
+}
+.work-slide-media video[data-state="active"] {
+  opacity: 1;
+}
+
+/* ---------- Caption under the device -------------------------------------- */
+
+.work-stage-caption {
+  margin-top: clamp(1rem, 1.8vw, 1.9rem);
+  text-align: center;
+  color: var(--cream);
+}
+
+.work-stage-index {
+  font-family: var(--font-body-md);
+  font-size: clamp(0.7rem, 0.9vw, 1rem);
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+}
+
+.work-stage-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.05;
+  font-size: clamp(1.35rem, 2.2vw, 2.5rem);
+  margin-top: 0.25em;
+}
+
+.work-stage-desc {
+  margin: 0.6em auto 0;
+  max-width: 46ch;
+  font-size: clamp(0.8rem, 1vw, 1.05rem);
+  line-height: 1.55;
+  opacity: 0.8;
+}
+
+.work-stage-labels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(0.28rem, 0.5vw, 0.6rem);
+  margin-top: clamp(0.7rem, 1.1vw, 1.1rem);
+}
+
+.work-stage-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: clamp(0.9rem, 1.4vw, 1.5rem);
+  padding: clamp(0.45rem, 0.65vw, 0.8rem) clamp(0.95rem, 1.3vw, 1.6rem);
+  border-radius: 5.14vw;
+  background: var(--accent);
+  color: #000;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(0.75rem, 1vw, 1.1rem);
+  transition: transform 0.3s var(--ease-nm), background-color 0.3s ease;
+}
+.work-stage-link:hover {
+  background: var(--cream);
+  transform: translateY(-2px);
+}
+.work-stage-link:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.work-stage-link svg {
+  width: 1em;
+  height: 1em;
+}
+
+/* ---------- Progress dots ------------------------------------------------- */
+
+.work-dots {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: clamp(1.1rem, 1.8vw, 2rem);
+}
+
+.work-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  transition: width 0.3s var(--ease-nm), background-color 0.3s ease;
+}
+.work-dot:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+.work-dot[aria-current="true"] {
+  width: 22px;
+  background: var(--accent);
+}
+.work-dot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* On coarse pointers the dots double as targets, so grow the hit area
+   without changing the painted size. */
+@media (pointer: coarse) {
+  .work-dot {
+    position: relative;
+  }
+  .work-dot::after {
+    content: "";
+    position: absolute;
+    inset: -12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .work-stage {
+    gap: 0.5rem;
+  }
+  .device-frame {
+    width: min(62vw, 17rem);
+  }
+  .work-stage-desc {
+    font-size: clamp(0.8rem, 3.5vw, 1rem);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .work-image,
-  .work-video,
-  .work-image-overlay,
-  .work-card-arrow {
+  .work-slide,
+  .work-stage-link,
+  .work-dot,
+  .work-slide-media video {
     transition: none;
   }
 }
