@@ -25,7 +25,7 @@
      consumed by both the desktop and mobile portrait layers so the box is
      reserved at the correct shape before the bitmap decodes. Set inline by
      Hero.tsx from the locked asset; this value is the fallback. */
-  --portrait-ratio: 0.6699;
+  --portrait-ratio: 0.4949;
 
   /* .hero (source) — the section shell.
      Source scroll-pin: `min-height: 300vh; padding-bottom: 180vh;` drives the
@@ -279,11 +279,24 @@
    The vw guard remains as `max-width`, not as a height term: on a short, wide
    viewport a pure 100vh figure would grow wider than the copy beneath it. */
 .hero .hero-profile-img {
-  object-fit: contain;
-  object-position: 50% 100%;
+  /* COVER, not contain, and that is the desktop-vs-mobile split the user asked
+     for. The asset is 0.4949 — very tall, because its lower third is the fade
+     tail that mobile needs. Fitting that whole shape into a 100vh stage would
+     make the figure only ~28vw wide, a thin sliver.
+
+     `cover` fills the stage on both axes and crops the surplus; with
+     `object-position: 50% 0%` the crop is taken off the BOTTOM, discarding
+     exactly the fade tail and leaving the subject. That is heynesh's desktop
+     behaviour — the portrait ends at the fold, cropped mid-torso — while mobile
+     keeps `height:auto` and shows the asset whole.
+
+     Cropping from the bottom is safe here precisely because the bottom is the
+     painted fade rather than the subject. */
+  object-fit: cover;
+  object-position: 50% 0%;
   height: 100%;
   width: 100%;
-  max-width: 76vw;
+  max-width: 46vw;
   align-self: flex-end;
 }
 
@@ -662,10 +675,9 @@
      so height alone would let the figure grow wider than the card cluster.
      Raised in step with desktop now that the head may cross the wordmark. */
   .hero .hero-profile-img {
-    /* Height now comes from the 100vh stage (see the base rule); only the
-       sideways guard changes per band. A portrait tablet is narrow relative to
-       its height, so the figure would otherwise span most of the width. */
-    max-width: 88vw;
+    /* Wider cap than desktop: a tablet stage is squarer, so cover would
+       otherwise crop away most of the torso to fill the height. */
+    max-width: 62vw;
 
     /* Same bottom fade as mobile, and for the same reason: from 768 to 1199 the
        flank paragraphs still overlap the portrait, so its hard lower edge would
@@ -674,16 +686,16 @@
     -webkit-mask-image: linear-gradient(
       to bottom,
       #000 0%,
-      #000 62%,
-      rgba(0, 0, 0, 0.55) 81%,
-      transparent 98%
+      #000 72%,
+      rgba(0, 0, 0, 0.5) 88%,
+      transparent 99%
     );
     mask-image: linear-gradient(
       to bottom,
       #000 0%,
-      #000 62%,
-      rgba(0, 0, 0, 0.55) 81%,
-      transparent 98%
+      #000 72%,
+      rgba(0, 0, 0, 0.5) 88%,
+      transparent 99%
     );
   }
 }
@@ -703,25 +715,25 @@
      The vw cap stays tight: at 900x600 the stage is short and wide, and a
      height-led figure would spill sideways across the whole hero. */
   .hero .hero-profile-img {
-    /* Short and wide: the stage is only ~600px tall, so a full-height figure is
-       small anyway; the tight cap stops it spreading sideways. */
-    max-width: 52vw;
+    /* Short and wide: a ~600px stage crops hard under cover, so the cap stays
+       tight to stop the figure spreading sideways as it fills the height. */
+    max-width: 34vw;
 
     /* A short stage crushes the portrait and the copy together, so the fade
        starts earlier here than in any other band. */
     -webkit-mask-image: linear-gradient(
       to bottom,
       #000 0%,
-      #000 54%,
-      rgba(0, 0, 0, 0.5) 76%,
-      transparent 96%
+      #000 70%,
+      rgba(0, 0, 0, 0.5) 86%,
+      transparent 98%
     );
     mask-image: linear-gradient(
       to bottom,
       #000 0%,
-      #000 54%,
-      rgba(0, 0, 0, 0.5) 76%,
-      transparent 96%
+      #000 70%,
+      rgba(0, 0, 0, 0.5) 86%,
+      transparent 98%
     );
   }
   /* Cards are decoration over the portrait, not content — they yield first. */
@@ -803,10 +815,25 @@
   }
 
   
+  /* The flank paragraphs sit in the gap BELOW the portrait, not over it.
+
+     `top: clamp(2.67rem, 13.33vw, 6.39rem)` (heynesh's value) pinned them just
+     under the wordmark — which works for heynesh because their mobile figure's
+     head starts lower. With this asset the head is high and that offset drops
+     the copy straight across the face, which is what the screenshot shows.
+
+     The portrait's own bottom is a painted fade, so the readable landing zone
+     is the area under it: wrap top + wrap height, minus the fade tail the mask
+     dissolves. Anchoring to that keeps the sequence the user described — image
+     ends, small gap, then the text — at every width, because both terms are
+     driven by the same clamps. */
   .hero .hero-left-text,
   .hero .hero-right-text {
     width: 100%;
-    top: clamp(2.67rem, 13.33vw, 6.39rem);
+    top: calc(
+      clamp(4.77rem, 23.09vw + 0.15rem, 11.07rem) +
+        clamp(40.7rem, 197.4vw + 1.23rem, 94.6rem) - clamp(7rem, 34vw, 16.5rem)
+    );
   }
 
   .hero .hero-cards-wrap {
@@ -954,34 +981,29 @@
     aspect-ratio: auto;
     align-self: flex-end;
 
-    /* Fade the bottom of the photo into the page.
+    /* Dissolve the bottom edge into the page.
 
-       Below desktop the copy sits OVER the lower part of the portrait, and a
-       hard-edged photo behind dark text is unreadable — that hard horizontal
-       line where the t-shirt stops is exactly what the screenshot shows.
+       The asset carries its own fade, but it is painted in COLOUR (toward a
+       grey #bfb3a7) while its ALPHA stays opaque. Against the page's #d5cfbe
+       that lands as a visible grey band, not a blend — so an alpha mask is
+       still required. The two act on different channels and do not double up.
 
-       heynesh solves this in the ASSET: their mobile portrait has the fade
-       painted in. The user's InShot export has one too, but it fades to a grey
-       (#bfb3a7) rather than to the page colour (#d5cfbe), so baking it in
-       leaves a visible seam and breaks the moment the background changes.
-
-       Masking ALPHA instead composites against whatever is actually behind the
-       image, so there is no seam and no colour to keep in sync. The fade spans
-       the bottom third, which is where the flank copy lands at every width
-       below 768px. -webkit- prefix included: iOS Safari still needs it. */
+       Measured from the bitmap, the baked colour fade begins around 72% of the
+       asset's height, so the alpha mask starts there: fading earlier would eat
+       torso the design intends to keep, later would leave the grey band. */
     -webkit-mask-image: linear-gradient(
       to bottom,
       #000 0%,
-      #000 58%,
-      rgba(0, 0, 0, 0.55) 78%,
-      transparent 97%
+      #000 72%,
+      rgba(0, 0, 0, 0.5) 88%,
+      transparent 99%
     );
     mask-image: linear-gradient(
       to bottom,
       #000 0%,
-      #000 58%,
-      rgba(0, 0, 0, 0.55) 78%,
-      transparent 97%
+      #000 72%,
+      rgba(0, 0, 0, 0.5) 88%,
+      transparent 99%
     );
   }
 }

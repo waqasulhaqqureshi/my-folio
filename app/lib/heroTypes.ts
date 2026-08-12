@@ -23,12 +23,17 @@ export const HERO_PORTRAIT = {
   srcSet: "/hero-portrait-760.webp 760w, /hero-portrait-1140.webp 1140w",
   sizes: "(max-width: 767px) 100vw, 46vw",
   alt: "Waqas ul Haq Qureshi",
-  /* 976x1457. The source PNG was 1009x2048, but its bottom third was an
-     outpainted artifact: below y=1480 the silhouette snapped to the full frame
-     width and the alpha lost its margins (detected by the left/right edge of
-     the cutout jumping to 0/1008 and staying there). Cropped to the real
-     subject before encoding, so the hero never has to hide a smudge. */
-  ratio: 976 / 1457,
+  /* 1009x2039, ratio 0.4949.
+
+     This is the InShot export with only its fully-transparent margins trimmed.
+     An earlier pass cropped the bottom third off as an outpainting artifact —
+     that was wrong twice over. It is the fade heynesh paints into their own
+     mobile asset, and it is what makes the ratio 0.4949, which is within 0.002
+     of the 0.4940 implied by heynesh's mobile wrap clamps. Their whole mobile
+     rhythm (head high, cards beside the jaw, copy below the shoulders) is
+     authored for an asset of exactly this shape, so cropping it broke the
+     rhythm no matter how the CSS was retuned. */
+  ratio: 1009 / 2039,
 } as const;
 
 export type HeroContent = {
