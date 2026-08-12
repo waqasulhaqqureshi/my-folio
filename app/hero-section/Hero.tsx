@@ -155,9 +155,35 @@ const Hero = ({ content }: { content?: HeroContent }) => {
             transition={{ duration: 0.9, ease: EASE }}
           >
             <div className="nesh-logo">
-              {/* Source ships an inline SVG wordmark; text rendering uses the
-                  same "Tr 3 A" Bold face and the same 3.5/3.8 aspect frame. */}
-              <span className="nesh-logo-svg">{HERO_COPY.brandMark}</span>
+              {/*
+               * The source ships an INLINE SVG wordmark, which scales to its
+               * container for free. Rendering live text instead means the
+               * width depends on the character count: at font-size:24vw the
+               * source's 4-letter "NESH" measures ~70vw, but a 5-letter mark
+               * measures ~97vw and overflows the 94.44vw box — the wordmark
+               * ran off the right edge.
+               *
+               * Fix: wrap the text in an SVG with a viewBox and
+               * preserveAspectRatio, so the browser scales the glyphs to the
+               * available width no matter how many characters there are. This
+               * matches how the source behaves rather than how it is authored.
+               */}
+              <svg
+                className="nesh-logo-svg"
+                viewBox={`0 0 ${Math.max(HERO_COPY.brandMark.length, 1) * 62} 100`}
+                preserveAspectRatio="xMidYMid meet"
+                role="img"
+                aria-label={HERO_COPY.brandMark}
+              >
+                <text
+                  x="50%"
+                  y="78"
+                  textAnchor="middle"
+                  className="nesh-logo-text"
+                >
+                  {HERO_COPY.brandMark}
+                </text>
+              </svg>
               <span className="nesh-copyright-wrap" aria-hidden="true">
                 <svg
                   className="nesh-copyright-icon"
@@ -271,29 +297,6 @@ const Hero = ({ content }: { content?: HeroContent }) => {
               </h1>
             )}
 
-            <motion.div className="hero-buttons-wrap" {...fadeUp(0.75)}>
-              {/* Source pre-state: .hero-cta-button starts at opacity:0 */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.9 }}
-              >
-                <Link
-                  href={HERO_LINKS["book a call"]}
-                  className="hero-cta-button"
-                  aria-label="BOOK A CALL"
-                >
-                  {HERO_COPY.ctaPrimary}
-                </Link>
-              </motion.div>
-              <Link
-                href={HERO_LINKS["about me cta"]}
-                className="hero-button"
-                aria-label="About Me"
-              >
-                {HERO_COPY.ctaSecondary}
-              </Link>
-            </motion.div>
           </div>
 
           {/* Right flank paragraph (source: width clamp(200px,24.64vw,420px)) */}

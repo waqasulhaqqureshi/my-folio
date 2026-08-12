@@ -120,22 +120,23 @@
   align-items: center;
 }
 
+/* SVG wordmark: the viewBox does the scaling, so the mark always spans the
+   container regardless of how many characters the brand name has. No vw
+   font-size, therefore no character-count overflow. */
 .hero .nesh-logo-svg {
-  /* text-rendered wordmark standing in for the source inline SVG */
-  transform-origin: 0 0;
-  justify-content: center;
-  align-items: center;
+  display: block;
   width: 100%;
-  display: flex;
-  position: relative;
+  height: auto;
   overflow: visible;
+  color: var(--yellow);
+}
+
+.hero .nesh-logo-text {
+  fill: currentColor;
   font-family: var(--tra);
   font-weight: 700;
-  font-size: 24vw;
-  line-height: 0.75;
+  font-size: 100px; /* viewBox units — the viewBox maps these to the box */
   letter-spacing: -0.02em;
-  color: var(--yellow);
-  white-space: nowrap;
 }
 
 .hero .nesh-copyright-wrap {
@@ -232,8 +233,12 @@
   object-fit: contain;
   object-position: 50% 100%;
   width: 100%;
-  height: 100%;
+  /* Slightly under the full stage height: at 100% the portrait's head reached
+     the wordmark and the figure read as oversized against the cards. */
+  height: 92%;
+  max-height: 92vh;
   margin-left: -3vw;
+  align-self: flex-end;
 }
 
 /* ---------- Bottom band: flank paragraphs + centered heading/buttons ------- */
@@ -302,42 +307,7 @@
   overflow: hidden;
 }
 
-.hero .hero-buttons-wrap {
-  grid-column-gap: 0.83vw;
-  grid-row-gap: 0.83vw;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-}
-
 /* Primary CTA (source animates it from opacity:0 on load) */
-.hero .hero-cta-button {
-  pointer-events: auto;
-  color: var(--black);
-  background-color: #ffff23;
-  border-radius: 0.83vw;
-  padding: clamp(0.5rem, 0.695vw, 1.25rem) 1.39vw;
-  font-family: var(--tra);
-  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
-  font-weight: 500;
-  line-height: 1;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.hero .hero-button {
-  pointer-events: auto;
-  color: var(--black);
-  background-color: #ffff23;
-  border-radius: 0.83vw;
-  padding: clamp(0.5rem, 0.695vw, 1.25rem) 1.39vw;
-  font-family: var(--tra);
-  font-size: clamp(0.75rem, 1.18vw, 1.5rem);
-  font-weight: 500;
-  line-height: 1;
-  text-decoration: none;
-  cursor: pointer;
-}
 
 /* ---------- Fixed cards cluster (bottom, over the sticky frame) ------------ */
 /* Source: .hero-cards-wrap is position:fixed, bottom 2.78%. Contained in the
@@ -573,59 +543,56 @@
 }
 
 /* ============================================================================
-   Tablet / small-laptop range (768px – 1199px)
+   Tablet / small-laptop range — the band heynesh never needed
    ----------------------------------------------------------------------------
-   The source ships nothing between its 767px mobile block and the desktop
-   layout, which leaves a ~430px-wide band where the desktop composition is
-   still in force but there is no longer room for it. Measured at 768px:
+   heynesh ships nothing between 767px and desktop, and that is fine FOR
+   HEYNESH: its desktop hero rules are pure-vw, so they keep shrinking forever.
+   Ours inherited clamp() FLOORS, and a floor is a value that stops responding.
+   Measured, each floor stops tracking the viewport well before mobile:
 
-     hero-container   715px   (93.06vw)
-     left flank       128px   (clamp floor, 8rem)
-     right flank      200px   (clamp floor, 200px)
-     free centre      387px   for a heading whose clamp floor is 3rem
-     cards-wrap       500px   (clamp floor) — WIDER than the free centre, so
-                              the glass cards sit on top of both flanks
+     .hero-left-text    floor  8rem/128px  → frozen below 1164px
+     .hero-right-text   floor 200px        → frozen below  812px
+     .hero-cards-wrap   floor 500px        → frozen below  778px
 
-   Both flank widths and the cards width hit their clamp FLOORS before the
-   viewport stops shrinking, so they stop scaling while everything around them
-   keeps getting narrower. That is the actual bug: fluid values that bottom out
-   too early. This block re-scales them for the band.
+   So between ~1164px and 768px the flanks and the card cluster hold their
+   size while the viewport keeps narrowing — at 768px the 500px cluster is
+   wider than the 387px gap between the flanks and lands on top of both. The
+   fix is to restore vw tracking in this band, i.e. behave like the source.
    ========================================================================== */
+
+/* Upper band: the left flank has already frozen, nothing else has. Only that
+   one column needs releasing, so the desktop composition is left intact. */
+@media screen and (min-width: 1200px) and (max-width: 1439px) {
+  .hero .hero-left-text {
+    width: clamp(7rem, 10.5vw, 14rem);
+  }
+}
+
 @media screen and (min-width: 768px) and (max-width: 1199px) {
-  /* Give the composition its margins back — 93.06vw is a desktop proportion. */
+  /* Wider container: 93.06vw is a desktop proportion and wastes ~50px here. */
   .hero .hero-container {
-    width: 94vw;
-    gap: clamp(0.75rem, 2vw, 1.5rem);
+    width: 95vw;
+    gap: clamp(0.6rem, 1.8vw, 1.4rem);
   }
 
-  /* Let the flanks keep shrinking instead of bottoming out at their floors. */
+  /* Release the frozen floors so all three track the viewport again. */
   .hero .hero-left-text {
-    width: clamp(6.5rem, 14vw, 9rem);
+    width: clamp(5.5rem, 13vw, 9rem);
   }
   .hero .hero-right-text {
-    width: clamp(9rem, 24vw, 16rem);
+    width: clamp(8.5rem, 23vw, 15.5rem);
   }
-
-  /* Flank copy is secondary here; drop it a step so it cannot out-shout the
-     heading in the reduced space. */
   .hero .hero-left-text,
   .hero .hero-right-text {
-    font-size: clamp(0.68rem, 1.35vw, 0.85rem);
+    font-size: clamp(0.66rem, 1.3vw, 0.85rem);
     line-height: 1.45;
+    overflow-wrap: break-word;
   }
 
-  /* The heading's 3rem floor is too large once the centre column is ~390px:
-     "Differently." alone overruns it. Scale with the viewport instead. */
-  .hero .hero-heading {
-    font-size: clamp(2.1rem, 5.6vw, 3.6rem);
-    margin-bottom: 2.2vw;
-  }
-
-  /* Cards: the 500px floor is the single worst offender — it is wider than the
-     free centre at 768px, so the cluster overlaps both flanks. Track the
-     viewport and cap to the container. */
+  /* The cluster is the worst offender — its 500px floor exceeds the free
+     centre. Track vw and cap to what the container can actually hold. */
   .hero .hero-cards-wrap {
-    width: min(86vw, 40rem);
+    width: min(88vw, 38rem);
     inset: auto 0% 4%;
   }
   .hero .hero-cards-left {
@@ -633,40 +600,25 @@
     grid-row-gap: 1.1vw;
   }
 
-  /* The portrait is sized for a wide stage; pull it in so it does not crowd
-     the cards, and anchor it to the bottom where the composition expects it. */
-  .hero .profile-img-wrap {
-    width: 100%;
-    max-width: 100vw;
+  /* Optional headline: when present it must still fit the reduced centre. */
+  .hero .hero-heading {
+    font-size: clamp(2rem, 5.4vw, 3.5rem);
+    margin-bottom: 2vw;
   }
+
+  /* Portrait is composed for a wide stage; keep it clear of the cards. */
   .hero .hero-profile-img {
-    max-height: 76vh;
-    object-fit: contain;
-    object-position: 50% 100%;
-  }
-
-  /* Wordmark tracks the viewport rather than sitting at its desktop size. */
-  .hero .nesh-logo-svg {
-    font-size: clamp(4rem, 13vw, 9rem);
-  }
-
-  /* Both CTAs still fit side by side here, but not at their desktop padding. */
-  .hero .hero-buttons-wrap {
-    gap: clamp(0.5rem, 1.2vw, 0.9rem);
-  }
-  .hero .hero-cta-button,
-  .hero .hero-button {
-    padding-left: clamp(1rem, 2.2vw, 1.75rem);
-    padding-right: clamp(1rem, 2.2vw, 1.75rem);
-    font-size: clamp(0.72rem, 1.3vw, 0.95rem);
+    height: 84%;
+    max-height: 78vh;
+    margin-left: 0;
   }
 }
 
 /* ---------- Short viewports (landscape phones, split-screen laptops) --------
-   The hero is composed against viewport HEIGHT: a 100vh sticky stage with the
-   portrait anchored to the bottom and the cards overlaid near it. Under about
-   620px of height the heading, the buttons and the card cluster collide
-   regardless of how wide the screen is — a width breakpoint cannot catch this.
+   The hero composes against viewport HEIGHT: a sticky 100vh stage with the
+   portrait anchored bottom and the cards overlaid near it. Below ~620px tall
+   those layers collide no matter how wide the screen is, so no width query
+   can catch it.
    -------------------------------------------------------------------------- */
 @media screen and (min-width: 768px) and (max-height: 620px) {
   .hero .hero-heading {
@@ -674,10 +626,10 @@
     margin-bottom: 1rem;
   }
   .hero .hero-profile-img {
+    height: 72%;
     max-height: 62vh;
   }
-  /* The cards are the least essential layer when vertical space runs out —
-     they are decoration over the portrait, not content. */
+  /* Cards are decoration over the portrait, not content — they yield first. */
   .hero .hero-cards-wrap {
     display: none;
   }
@@ -752,10 +704,7 @@
     text-align: left;
   }
 
-  .hero .hero-buttons-wrap {
-    display: none;
-  }
-
+  
   .hero .hero-left-text,
   .hero .hero-right-text {
     width: 100%;
