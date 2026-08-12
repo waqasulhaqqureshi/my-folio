@@ -586,16 +586,10 @@
   padding-top: clamp(1rem, 2.5vw, 2.5rem);
 }
 
-/* Plain section heading. The per-character AnimatedTitle and its eyebrow were
-   removed — one word does not need a staggered reveal, and the animation
-   delayed the only label the section has. */
-.work-title {
-  font-family: var(--font-display);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.01em;
-  font-size: clamp(2.25rem, 5.2vw, 4.5rem);
-  color: var(--cream);
+/* Centred heading: with the device stage centred below it, a left-aligned
+   two-column header left the composition lopsided. */
+.work-head .h2-style-white {
+  max-width: 18ch;
 }
 
 .work-switch {
@@ -623,6 +617,14 @@
   letter-spacing: 0.02em;
   color: rgba(255, 255, 255, 0.62);
   transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s var(--ease-nm);
+}
+
+.work-switch__inner {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
 }
 
 .work-switch__btn svg {
@@ -665,10 +667,10 @@
      first screen as a plain still, which is a valid poster. */
   .work-info,
   .work-switch__btn[data-hint="true"],
-  .work-switch__btn[data-hint="true"]::before {
+  .work-switch__sweep {
     animation: none;
   }
-  .work-switch__btn[data-hint="true"]::before {
+  .work-switch__sweep {
     opacity: 0;
   }
 }
@@ -706,10 +708,14 @@
   animation: work-tab-pulse 2.4s ease-in-out 2 forwards;
 }
 
-/* The sweep. A narrow yellow band pushed across the button on a loop with a
-   long tail of dead time, so it reads as an occasional glint, not a strobe. */
-.work-switch__btn[data-hint="true"]::before {
-  content: "";
+/* The sweep. A narrow yellow band pushed across the button, with a long tail
+   of dead time so it reads as a glint rather than a strobe.
+
+   A real element, not a pseudo-element: React remounts it (keyed on the run
+   token) to restart the animation on every toggle. A pseudo-element cannot be
+   remounted, and re-adding a class does not replay an animation that has
+   already spent its iteration count. */
+.work-switch__sweep {
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -745,8 +751,8 @@
   animation: none;
   color: var(--cream);
 }
-.work-switch__btn[data-hint="true"]:hover::before,
-.work-switch__btn[data-hint="true"]:focus-visible::before {
+.work-switch__btn[data-hint="true"]:hover .work-switch__sweep,
+.work-switch__btn[data-hint="true"]:focus-visible .work-switch__sweep {
   animation: none;
   opacity: 0;
 }

@@ -12,9 +12,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * "which project is showing" a derived, race-prone value rather than the
  * source of truth.
  *
- * Non-wrapping by design: the arrows disable at the ends so the length of the
- * roster stays legible. A wrapping carousel gives the user no sense of how
- * much is left, which is the exact complaint that killed the scroll-scrub.
+ * WRAPPING: prev at the first project jumps to the last, and next at the last
+ * returns to the first. The arrows are therefore never disabled — a dead
+ * control at 1/9 looks broken, and the "how much is left" signal the disabled
+ * state used to give is carried by the visible NN / NN counter and the dot
+ * row instead.
  */
 export function useProjectStepper(count: number) {
   const [index, setIndex] = useState(0);
@@ -27,6 +29,7 @@ export function useProjectStepper(count: number) {
     [count]
   );
 
+  /** Absolute jump (dots) — clamped, never wrapped. */
   const go = useCallback(
     (next: number) => {
       setIndex((current) => {
@@ -39,11 +42,33 @@ export function useProjectStepper(count: number) {
     [clamp]
   );
 
-  const prev = useCallback(() => go(index - 1), [go, index]);
-  const next = useCallback(() => go(index + 1), [go, index]);
+  /*
+   * Relative step (arrows) — wraps via modulo.
+   *
+   * Uses the functional updater and derives the target from `current` rather
+   * than the captured `index`, so two fast clicks cannot both compute from the
+   * same stale index and land on the same slide.
+   *
+   * Direction stays the direction of TRAVEL, not of the index change: wrapping
+   * 8 -> 0 is still a forward move, and animating it backwards would look like
+   * the carousel rewound through every slide.
+   */
+  const step = useCallback(
+    (delta: 1 | -1) => {
+      if (count < 1) return;
+      setDirection(delta);
+      setIndex((current) => (current + delta + count) % count);
+    },
+    [count]
+  );
 
-  const canPrev = index > 0;
-  const canNext = index < count - 1;
+  const prev = useCallback(() => step(-1), [step]);
+  const next = useCallback(() => step(1), [step]);
+
+  // Retained for API compatibility; both are always true while a roster exists,
+  // since the arrows wrap. A single-project roster has nowhere to go.
+  const canPrev = count > 1;
+  const canNext = count > 1;
 
   /*
    * Left/Right arrow keys step the carousel when focus is inside it.

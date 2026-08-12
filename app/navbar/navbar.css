@@ -376,3 +376,176 @@
     transform: none;
   }
 }
+
+/* ============================================================================
+   Genie minimise — dock collapses while the projects section owns the screen
+   ----------------------------------------------------------------------------
+   The projects section is the tallest block on the page and its controls land
+   exactly where the dock sits, so the dock shrinks to a small pill instead of
+   overlapping them. Hover / focus / tap restores it.
+
+   PERFORMANCE CONTRACT (the reason this is built the way it is)
+   Only `transform` and `opacity` are animated — both compositor properties.
+   Nothing animates width, height, padding or position, so the collapse cannot
+   trigger layout or paint on the main thread while the user is scrolling the
+   heaviest section of the page.
+
+   GEOMETRY
+   The dock is NOT translated off-screen. It stays put and its CONTENT scales
+   away toward the bottom-centre, with the handle fading in over the same
+   point. Sliding the container down instead would either take the handle with
+   it, or require animating `bottom`, which is a layout property. The dock's
+   box therefore never moves; only what is painted inside it changes.
+   ========================================================================== */
+
+/* The wrapper is display:contents so the flex layout is unchanged while
+   expanded — the children remain direct flex items of .nm-dock. It exists
+   purely as an `inert` target for the collapsed state. */
+.nm-dock__content {
+  display: contents;
+}
+
+/* The collapsed dock keeps its box (moving it would mean animating layout),
+   but that box must not swallow pointer events across the full width of the
+   screen while only a small pill is visible. The handle re-enables its own. */
+.nm-dock[data-collapsed="true"] {
+  pointer-events: none;
+}
+.nm-dock[data-collapsed="true"] .nm-dock__handle {
+  pointer-events: auto;
+}
+
+/* Items fold individually with a small stagger, which is what sells the genie:
+   a single uniform scale reads as a resize, whereas items folding away in
+   sequence reads as the dock being pulled in. The stagger is pure CSS
+   transition-delay — no JS timers, nothing to keep in sync. */
+.nm-dock__item,
+.nm-dock__sep,
+.nm-dock__cta {
+  transform-origin: 50% 100%;
+  transition: transform 0.38s var(--ease-nm), opacity 0.26s ease;
+}
+
+.nm-dock[data-collapsed="true"] .nm-dock__item,
+.nm-dock[data-collapsed="true"] .nm-dock__sep,
+.nm-dock[data-collapsed="true"] .nm-dock__cta {
+  opacity: 0;
+  transform: translateY(10px) scale(0.55);
+  /* Not visibility:hidden — not animatable, and it would pop. The `inert`
+     property set in NavBar.tsx removes these from the tab order instead. */
+}
+
+/* Fold order: leftmost leaves first on collapse... */
+.nm-dock[data-collapsed="true"] .nm-dock__item:nth-child(1) { transition-delay: 0ms; }
+.nm-dock[data-collapsed="true"] .nm-dock__item:nth-child(2) { transition-delay: 25ms; }
+.nm-dock[data-collapsed="true"] .nm-dock__item:nth-child(3) { transition-delay: 50ms; }
+.nm-dock[data-collapsed="true"] .nm-dock__item:nth-child(4) { transition-delay: 75ms; }
+.nm-dock[data-collapsed="true"] .nm-dock__cta { transition-delay: 100ms; }
+
+/* ...and the stagger reverses on expand, so the CTA does not trail behind. */
+.nm-dock[data-collapsed="false"] .nm-dock__item:nth-child(1) { transition-delay: 100ms; }
+.nm-dock[data-collapsed="false"] .nm-dock__item:nth-child(2) { transition-delay: 75ms; }
+.nm-dock[data-collapsed="false"] .nm-dock__item:nth-child(3) { transition-delay: 50ms; }
+.nm-dock[data-collapsed="false"] .nm-dock__item:nth-child(4) { transition-delay: 25ms; }
+.nm-dock[data-collapsed="false"] .nm-dock__cta { transition-delay: 0ms; }
+
+/* The glass pane shrinks to the handle's footprint. scaleX/scaleY rather than
+   width/height keeps it on the compositor; the pane is a plain filled box, so
+   the scale distortion is invisible. */
+.nm-dock__bg {
+  transition: transform 0.42s var(--ease-nm);
+  transform-origin: 50% 100%;
+}
+.nm-dock[data-collapsed="true"] .nm-dock__bg {
+  transform: scale(0.34, 0.62);
+  opacity: 0;
+}
+
+/* ---- The collapsed handle ------------------------------------------------- */
+
+.nm-dock__handle {
+  position: absolute;
+  /* Anchored to the dock's own centre. The dock never moves, so neither does
+     this — the handle is always exactly where the dock was. */
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-family: var(--font-body-md);
+  font-size: clamp(0.68rem, 0.85vw, 0.8rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(0, 0, 0, 0.72);
+  background-color: var(--glass-pane);
+  border: 1px solid var(--glass-line);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 1px 2px rgba(28, 22, 12, 0.08), 0 4px 10px rgba(28, 22, 12, 0.12),
+    0 10px 24px rgba(28, 22, 12, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  /* Hidden while expanded. pointer-events off so it can never intercept a
+     click meant for a nav item underneath. */
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.7);
+  transition: opacity 0.22s ease, transform 0.34s var(--ease-nm),
+    background-color 0.3s ease;
+}
+
+.nm-dock[data-collapsed="true"] .nm-dock__handle {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+  /* Arrive only once the items have folded away. */
+  transition-delay: 120ms;
+}
+
+.nm-dock__handle-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.nm-dock__handle-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.6;
+}
+
+.nm-dock__handle:hover {
+  background-color: var(--accent);
+}
+.nm-dock__handle:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---- Reduced motion: no genie at all -------------------------------------- */
+/* useDockGenie already returns false under this preference, so the dock never
+   collapses. These resets make that guarantee structural rather than relying
+   on the hook alone. */
+@media (prefers-reduced-motion: reduce) {
+  .nm-dock__bg,
+  .nm-dock__item,
+  .nm-dock__sep,
+  .nm-dock__cta,
+  .nm-dock__handle {
+    transition: none;
+  }
+  .nm-dock[data-collapsed="true"] .nm-dock__bg,
+  .nm-dock[data-collapsed="true"] .nm-dock__item,
+  .nm-dock[data-collapsed="true"] .nm-dock__sep,
+  .nm-dock[data-collapsed="true"] .nm-dock__cta {
+    opacity: 1;
+    transform: none;
+  }
+  .nm-dock[data-collapsed="true"] .nm-dock__handle {
+    opacity: 0;
+    pointer-events: none;
+  }
+}

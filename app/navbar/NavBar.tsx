@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useDockGenie } from "../hooks/useDockGenie";
 import "./navbar.css";
 
 /*
@@ -26,6 +27,11 @@ import "./navbar.css";
  * A11Y (kept from the previous pass): real nav > ul > li > a, aria-current
  * synced by an IntersectionObserver scroll-spy, arrow/Home/End roving focus,
  * visible focus rings, 44px hit targets.
+ *
+ * GENIE MINIMISE: while the projects section owns the viewport the dock
+ * shrinks to a pill so it stops covering that section's controls. Hovering,
+ * focusing or tapping the pill restores it immediately — the collapsed state
+ * is a courtesy, never a lock-out. See useDockGenie for the perf rationale.
  */
 
 type IconKey = "home" | "work" | "about" | "contact";
@@ -65,6 +71,35 @@ const RESUME_URL = process.env.NEXT_PUBLIC_RESUME_URL ?? "";
 const NavBar = () => {
   const [active, setActive] = useState<string>("home");
   const listRef = useRef<HTMLUListElement>(null);
+
+  /* Collapse while #work owns the screen. */
+  const minimized = useDockGenie("work");
+  /* A deliberate peek overrides the collapse. Kept separate from `minimized`
+     so leaving the dock returns to whatever the scroll position dictates,
+     rather than latching open. */
+  const [peek, setPeek] = useState(false);
+  const collapsed = minimized && !peek;
+
+  /* Any in-dock navigation must un-collapse first, otherwise the click target
+     the user is aiming at moves out from under them mid-gesture. */
+  useEffect(() => {
+    if (!minimized) setPeek(false);
+  }, [minimized]);
+
+  /*
+   * `inert` on the collapsed content: it is visually scaled to nothing, so its
+   * links must also leave the tab order and the a11y tree — otherwise Tab
+   * lands on an invisible control.
+   *
+   * Set imperatively because the installed @types/react (18) predates the
+   * inert prop, and React 19 is what actually runs. Touching the DOM property
+   * directly works on both and needs no cast.
+   */
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = contentRef.current;
+    if (el) el.inert = collapsed;
+  }, [collapsed]);
 
   /* Scroll-spy: one observer, no scroll handler. */
   useEffect(() => {
@@ -142,10 +177,50 @@ const NavBar = () => {
   };
 
   return (
-    <nav aria-label="Primary" className="nm-dock">
+    <nav
+      aria-label="Primary"
+      className="nm-dock"
+      data-collapsed={collapsed}
+      onPointerEnter={() => setPeek(true)}
+      onPointerLeave={() => setPeek(false)}
+      /* Focus entering the dock (keyboard tabbing) must expand it too — a
+         collapsed dock with a focused-but-invisible link is a keyboard trap. */
+      onFocusCapture={() => setPeek(true)}
+      onBlurCapture={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setPeek(false);
+        }
+      }}
+    >
+      {/*
+       * The collapsed handle. Rendered always (not conditionally) so the
+       * genie is a pure CSS cross-fade between two stable layers — mounting a
+       * node mid-transition would cause a layout pass at the worst moment.
+       * aria-hidden + inert while expanded so it never reaches the a11y tree
+       * or the tab order as a duplicate control.
+       */}
+      <button
+        type="button"
+        className="nm-dock__handle"
+        aria-hidden={!collapsed}
+        tabIndex={-1}
+        onClick={() => setPeek(true)}
+      >
+        <span className="nm-dock__handle-dots" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+        <span className="nm-dock__handle-label">Menu</span>
+      </button>
+
       {/* Source .nav-menu-bg — the glass pane the whole dock rides on */}
       <span className="nm-dock__bg" aria-hidden="true" />
 
+      {/* Everything that collapses, in one layer: the genie animates this
+          single node rather than each child, so the browser composites one
+          transform instead of N. */}
+      <div className="nm-dock__content" ref={contentRef}>
       <ul className="nm-dock__list" role="list" ref={listRef} onKeyDown={handleKeyDown}>
         {NAV_ITEMS.map((item) => {
           const isActive = active === item.id;
@@ -199,6 +274,7 @@ const NavBar = () => {
           Book a Call
         </a>
       )}
+      </div>
     </nav>
   );
 };

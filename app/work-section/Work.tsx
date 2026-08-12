@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import AnimatedTitle from "../animations/AnimatedTitle";
 import type { Project } from "../lib/projectTypes";
 import { useProjectStepper } from "./useProjectStepper";
 import DeviceFrame, { DeviceKind } from "./DeviceFrame";
@@ -18,9 +19,10 @@ import "./work.css";
  * viewport, no scrolling. Below 1024px it collapses to a stacked column.
  */
 
-/* The idle-tab attractor runs twice and then stops for good. An indefinite
-   loop reads as a broken element after the first few seconds; two passes is
-   enough to be noticed and short enough not to nag. */
+/* The idle tab pulses twice, then stops. An indefinite loop reads as a broken
+   element after a few seconds; two passes is enough to be noticed and short
+   enough not to nag. It replays on every toggle, so whichever tab just became
+   inactive advertises itself — not only on first load. */
 const ATTRACTOR_CYCLES = 2;
 const CYCLE_MS = 2400;
 
@@ -33,26 +35,31 @@ const Work = ({ projects }: { projects: Project[] }) => {
   /*
    * Attractor lifecycle.
    *
-   * `hint` gates the animation. It restarts on every switch (the newly-idle
-   * tab is a different button and deserves its own two passes) and is cancelled
-   * the moment the user actually interacts with the switch — at that point they
-   * have found the control and the animation is pure noise.
+   * `run` is a monotonically increasing token rather than a boolean, because
+   * the animation must RESTART on a toggle even though the target element is
+   * the same DOM node. Re-setting a boolean that is already true is a no-op to
+   * React, and CSS would keep the old (finished) animation. Feeding the token
+   * into the key of the animated layer forces a fresh element, so the two
+   * passes genuinely replay every time.
+   *
+   * The timer is cleared and re-armed on every switch, so rapid toggling can
+   * never leave a stale timeout that cuts the new run short.
    */
+  const [run, setRun] = useState(0);
   const [hint, setHint] = useState(true);
-  const engaged = useRef(false);
 
   useEffect(() => {
-    if (engaged.current) return;
     setHint(true);
     const t = setTimeout(() => setHint(false), ATTRACTOR_CYCLES * CYCLE_MS);
     return () => clearTimeout(t);
-  }, [kind]);
+  }, [run]);
 
   function choose(k: DeviceKind) {
-    // Any click on the switch permanently retires the attractor.
-    engaged.current = true;
-    setHint(false);
+    if (k === kind) return;
     setKind(k);
+    // Bump the token AFTER the kind change so the newly-idle tab is the one
+    // that animates.
+    setRun((n) => n + 1);
   }
 
   if (!project) return null;
@@ -62,7 +69,13 @@ const Work = ({ projects }: { projects: Project[] }) => {
       <div className="work-sticky">
         <div className="work-container">
           <header className="work-head">
-            <h2 className="work-title">Projects</h2>
+            <div className="label is-secondary">Projects</div>
+            <AnimatedTitle
+              text={"Things I've Built"}
+              className="h2-style-white"
+              wordSpace={"mr-[0.18em]"}
+              charSpace={"mr-[0.001em]"}
+            />
 
             {/*
              * Tablist: both buttons share aria-controls pointing at the single
@@ -86,6 +99,16 @@ const Work = ({ projects }: { projects: Project[] }) => {
                   data-hint={kind !== k && hint}
                   onClick={() => choose(k)}
                 >
+                  {/* Keyed on `run`: remounting the layer restarts the CSS
+                      animation from frame zero. Toggling a class cannot — the
+                      animation has already completed its iteration count. */}
+                  {kind !== k && hint && (
+                    <span
+                      key={run}
+                      className="work-switch__sweep"
+                      aria-hidden="true"
+                    />
+                  )}
                   <span className="work-switch__inner">
                     {k === "mobile" ? (
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
