@@ -238,8 +238,13 @@
    living outside the <section> so it can slide above the hero during the
    pinned scroll. For strict component isolation it is absolutely contained
    inside the hero here (visually identical at rest). */
+/* Stacking: the portrait sits ABOVE the wordmark (z-index 0) so the head is
+   free to cross it, but BELOW the flank paragraphs and cards (z-index 10+) so
+   the copy stays readable over the figure's chest. It previously shared
+   z-index 10 with .hero-container and lost on DOM order, which meant a taller
+   figure would have been painted over by the text band. */
 .hero .profile-img-wrap {
-  z-index: 10;
+  z-index: 6;
   pointer-events: none;
   background-image: none;
   justify-content: center;
@@ -270,13 +275,18 @@
    min(vh, vw) is the load-bearing part: the vh term sets the figure against the
    sticky 100vh stage, the vw term stops a short-and-wide viewport from blowing
    the figure out sideways. Whichever is smaller wins, so the rendered width
-   settles at a near-constant ~37% of the viewport from 1024px to 2560px
-   instead of drifting 26–42% as it did before. */
+   settles at a near-constant fraction of the viewport across the whole desktop
+   range instead of drifting 26–42% as it did before.
+
+   The vh term deliberately EXCEEDS the stage height. The portrait layer sits
+   above the wordmark (see z-index below) and the head is allowed to cross it,
+   so the figure is no longer boxed in by the space under the mark — the limit
+   is the stage, not the mark. */
 .hero .hero-profile-img {
   object-fit: contain;
   object-position: 50% 100%;
   aspect-ratio: var(--portrait-ratio);
-  height: min(74vh, 42vw);
+  height: min(96vh, 54vw);
   width: auto;
   max-width: 92vw;
   align-self: flex-end;
@@ -653,11 +663,11 @@
     margin-bottom: 2vw;
   }
 
-  /* Portrait is composed for a wide stage; keep it clear of the cards. The vw
-     term leads in this band — a 768px-wide tablet has plenty of height, so
-     height alone would let the figure grow wider than the card cluster. */
+  /* The vw term leads in this band — a 768px-wide tablet has plenty of height,
+     so height alone would let the figure grow wider than the card cluster.
+     Raised in step with desktop now that the head may cross the wordmark. */
   .hero .hero-profile-img {
-    height: min(66vh, 52vw);
+    height: min(88vh, 62vw);
   }
 }
 
@@ -672,10 +682,11 @@
     font-size: clamp(1.75rem, 4vh + 0.5rem, 2.75rem);
     margin-bottom: 1rem;
   }
-  /* Cards are hidden in this band, so the portrait may use the freed height;
-     it is the only thing left competing with the wordmark. */
+  /* Cards are hidden in this band, so the portrait may use the freed height.
+     The vw cap stays tight: at 900x600 the stage is short and wide, and a
+     height-led figure would spill sideways across the whole hero. */
   .hero .hero-profile-img {
-    height: min(62vh, 34vw);
+    height: min(92vh, 40vw);
   }
   /* Cards are decoration over the portrait, not content — they yield first. */
   .hero .hero-cards-wrap {
@@ -851,28 +862,50 @@
     left: 0;
   }
 
+  /* The mobile portrait is a BOTTOM-ANCHORED layer, not a top-offset block.
+     
+     It used `inset: <top> 0 0` plus an independent vw-driven height, so the top
+     edge and the height grew on different curves and the box could not stay
+     welded to the section floor. Anchoring bottom/left/right and leaving `top`
+     auto means one edge is fixed by definition, and the height then only has to
+     say how tall the figure is — the two can no longer disagree.
+
+     `bottom` is negative by the hero's own padding-bottom: this element is
+     positioned against .hero-sticky, which has no padding, while the visible
+     section floor is .hero's padding edge below it. Pulling down by exactly
+     that padding lands the figure ON the boundary instead of floating the
+     43-102px short that the screenshot shows. */
   .hero .mobile-hero-image-wrap {
-    z-index: 1;
+    z-index: 6;
     pointer-events: none;
     justify-content: center;
     align-items: flex-end;
-    height: clamp(40.7rem, 197.4vw + 1.23rem, 94.6rem);
+    height: clamp(26.75rem, 132vw, 69.3rem);
     display: flex;
     position: absolute;
-    inset: clamp(4.77rem, 23.09vw + 0.15rem, 11.07rem) 0% 0%;
+    top: auto;
+    inset: auto 0% calc(-1 * clamp(2.67rem, 13.33vw, 6.39rem)) 0%;
   }
 
-  /* Same height-driven sizing as the desktop layer. `width:100%` here forced a
-     0.88 portrait to fit the phone's full width and letterbox vertically inside
-     a container already taller than it needed to be, so the figure floated
-     small in a tall empty box. Sizing on height and letting width follow makes
-     the figure fill the container it was given. */
+  /* object-fit: COVER here, not contain.
+
+     `contain` guarantees the whole image is visible, which sounds right and is
+     exactly what broke this. The box is portrait-tall but the phone is narrow,
+     so `max-width:100%` clamped the width, `contain` then refitted on the width
+     axis, and the drawn figure collapsed to ~56% of the box height — opening
+     346-642px of dead space ABOVE it and pushing the figure below the fold.
+     That is the "my image is nowhere" symptom: it was rendering, just far down
+     and tiny.
+
+     `cover` fills the box on both axes and crops the overflow instead. With
+     `object-position: 50% 100%` the crop is taken off the TOP, which is the
+     safe end: the asset already bleeds off its own bottom edge, so the chin and
+     torso stay put and only empty headroom is lost. */
   .hero .mobile-hero-image {
     height: 100%;
-    width: auto;
-    max-width: 100%;
-    aspect-ratio: var(--portrait-ratio);
-    object-fit: contain;
+    width: 100%;
+    aspect-ratio: auto;
+    object-fit: cover;
     object-position: 50% 100%;
   }
 }
