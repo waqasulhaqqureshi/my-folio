@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { HeroContent } from "../lib/heroTypes";
+import { HERO_PORTRAIT, type HeroContent } from "../lib/heroTypes";
 
 /*
- * Hero editor. Everything the hero renders is editable here; the section is
- * scaffolded so future sections drop in as sibling panels.
+ * Hero editor. Everything the hero renders is editable here EXCEPT the
+ * portrait, which is locked to the bundled asset and shown read-only.
+ * The section is scaffolded so future sections drop in as sibling panels.
  */
 
 type Status = { kind: "idle" | "ok" | "err"; msg?: string };
@@ -42,9 +43,7 @@ export default function HeroEditor({ initial }: { initial: HeroContent }) {
   const [form, setForm] = useState<HeroContent>(initial);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const set = <K extends keyof HeroContent>(k: K, v: HeroContent[K]) => {
@@ -82,55 +81,6 @@ export default function HeroEditor({ initial }: { initial: HeroContent }) {
     }
   }
 
-  async function upload(file: File) {
-    setUploading(true);
-    setStatus({ kind: "idle" });
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error || "Upload failed.");
-      // The server already persisted profileImg; mirror it locally so the
-      // preview updates without a round trip.
-      setForm((f) => ({ ...f, profileImg: json.src }));
-      setStatus({ kind: "ok", msg: "Image replaced." });
-      router.refresh();
-    } catch (e) {
-      setStatus({ kind: "err", msg: e instanceof Error ? e.message : "Upload failed." });
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  }
-
-  /*
-   * Download the current hero image.
-   *
-   * A plain <a download> only works same-origin — for the remote CDN default
-   * the attribute is ignored and the browser navigates to the image instead.
-   * Fetching to a blob makes download work for both cases.
-   */
-  async function download() {
-    try {
-      const res = await fetch(form.profileImg, { mode: "cors" });
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = form.profileImg.split("/").pop()?.split("?")[0] || "hero-image";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch {
-      // CORS can block the blob path on a third-party CDN; opening the image
-      // in a new tab always works and the user can save it manually.
-      window.open(form.profileImg, "_blank", "noopener,noreferrer");
-    }
-  }
-
   return (
     <div>
       <div>
@@ -149,56 +99,36 @@ export default function HeroEditor({ initial }: { initial: HeroContent }) {
         )}
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          {/* ---------------- Image panel ---------------- */}
+          {/* ---------------- Image panel (read-only) ----------------
+              The portrait is locked to the bundled asset, so this panel is a
+              preview and nothing more: no file input, no replace button, no alt
+              field. The controls are REMOVED rather than disabled — a disabled
+              button invites clicking and implies the capability still exists
+              somewhere, whereas the endpoint behind it now returns 410. */}
           <section className="nm-card-solid h-fit rounded-[var(--radius-card)] p-5">
             <h2 className="nm-h3 mb-4 text-[18px]">Portrait</h2>
 
             <div className="nm-plate mb-4 overflow-hidden rounded-[var(--radius-inner)]">
-              {/* Deliberately a plain <img>, not next/image: the src is
-                  user-supplied and may point at a host that is not in
-                  remotePatterns, which would throw at render. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={form.profileImg}
-                alt={form.profileImgAlt}
+                src={HERO_PORTRAIT.src}
+                alt={HERO_PORTRAIT.alt}
                 className="block max-h-64 w-full object-contain"
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                className="nm-btn w-full justify-center disabled:opacity-50"
+            <div className="flex items-start gap-2 rounded-[var(--radius-inner)] bg-ink/5 px-3 py-2.5">
+              <svg
+                viewBox="0 0 16 16"
+                className="mt-[2px] h-3.5 w-3.5 shrink-0 fill-current text-ink/50"
+                aria-hidden="true"
               >
-                {uploading ? "Uploading…" : "Replace image"}
-              </button>
-              <button onClick={download} className="nm-btn-ghost w-full justify-center">
-                Download current
-              </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
-                className="sr-only"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) upload(f);
-                }}
-              />
-              <p className="nm-small mt-1 text-ink/40">
-                JPG, PNG, WebP, AVIF or GIF · max 8MB. Replacing saves immediately.
+                <path d="M4.5 7V5a3.5 3.5 0 1 1 7 0v2H12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h.5Zm1.5 0h4V5a2 2 0 1 0-4 0v2Z" />
+              </svg>
+              <p className="nm-small text-ink/50">
+                This image is fixed as part of the site design and can&rsquo;t be
+                changed here.
               </p>
-            </div>
-
-            <div className="mt-5">
-              <Field label="Image alt text" hint="Describes the photo to screen readers.">
-                <input
-                  className={inputCls}
-                  value={form.profileImgAlt}
-                  onChange={(e) => set("profileImgAlt", e.target.value)}
-                />
-              </Field>
             </div>
           </section>
 

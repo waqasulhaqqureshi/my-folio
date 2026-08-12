@@ -66,8 +66,11 @@ function coerce(raw: unknown): HC {
         : DEFAULTS.yearsStat,
     yearsLabelLines: list(o.yearsLabelLines, DEFAULTS.yearsLabelLines),
     skills: list(o.skills, DEFAULTS.skills),
-    profileImg: str(o.profileImg, DEFAULTS.profileImg),
-    profileImgAlt: str(o.profileImgAlt, DEFAULTS.profileImgAlt),
+    /* No profileImg/profileImgAlt: the portrait is locked to HERO_PORTRAIT.
+       coerce() builds the result field-by-field from a fixed key list rather
+       than spreading the input, so any portrait keys left in an older data file
+       are dropped here and never reach the render — and the next save rewrites
+       the file without them. */
   };
 }
 

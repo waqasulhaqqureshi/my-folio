@@ -2,7 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import CountUp from "../animations/CountUp";
-import { DEFAULT_HERO, type HeroContent } from "../lib/heroTypes";
+import { DEFAULT_HERO, HERO_PORTRAIT, type HeroContent } from "../lib/heroTypes";
 import "./hero.css";
 
 /* ============================================================================
@@ -118,30 +118,15 @@ const WebflowIcon = () => (
    visibly distort the glyphs. */
 const GLYPH_ADVANCE = 78;
 
-const BUNDLED_PORTRAIT = {
-  src: "/hero-waqas-1400.webp",
-  srcSet: "/hero-waqas-900.webp 900w, /hero-waqas-1400.webp 1400w",
-  ratio: 1689 / 1920,
-};
-
 const Hero = ({ content }: { content?: HeroContent }) => {
   /* Fall back to defaults so the component still renders standalone (e.g. in
      isolation or before any admin save has happened). */
   const HERO_COPY = content ?? DEFAULT_HERO;
   const markChars = Math.max(HERO_COPY.brandMark.trim().length, 1);
-  /* The shipped portrait is emitted at two widths. Serving the 1400w file to a
-     phone wastes ~43KB on the critical path, so a srcSet lets the browser pick
-     — but ONLY for the bundled asset: an admin-uploaded image exists at exactly
-     one width, and advertising widths that do not exist would have the browser
-     request 404s. Hence the identity check rather than string interpolation. */
-  const isBundledPortrait = HERO_COPY.profileImg === BUNDLED_PORTRAIT.src;
-  const HERO_ASSETS = {
-    profileImg: HERO_COPY.profileImg,
-    profileImgAlt: HERO_COPY.profileImgAlt,
-    srcSet: isBundledPortrait ? BUNDLED_PORTRAIT.srcSet : undefined,
-    /* Mirrors the CSS: full-bleed under 767px, ~40vw above it. */
-    sizes: isBundledPortrait ? "(max-width: 767px) 100vw, 40vw" : undefined,
-  };
+  /* The portrait comes from the locked constant, never from `content`. It is
+     always the bundled asset, so the two emitted widths can be advertised
+     unconditionally — the earlier "is this the bundled image?" check existed
+     only because an upload could produce a single-width file. */
   /* Ghost-target FLIP (heynesh.com technique): the wordmark mounts in an
    * mid-viewport "intro" slot and morphs into its measured resting position
    * the moment the PreLoader's exit wipe starts. `nm:intro-exit` drives it;
@@ -165,13 +150,9 @@ const Hero = ({ content }: { content?: HeroContent }) => {
       initial="initial"
       animate="animate"
       aria-label="Hero — heynesh.com port"
-      /* Only the bundled portrait's ratio is known at build time. An uploaded
-         image keeps the CSS default rather than asserting a wrong shape. */
-      style={
-        isBundledPortrait
-          ? ({ "--portrait-ratio": BUNDLED_PORTRAIT.ratio } as CSSProperties)
-          : undefined
-      }
+      /* The portrait is locked, so its ratio is known at build time and can be
+         asserted unconditionally — no uploaded image of unknown shape exists. */
+      style={{ "--portrait-ratio": HERO_PORTRAIT.ratio } as CSSProperties}
     >
       {/* ================= .hero-sticky — 100vh sticky frame ================= */}
       <div className="hero-sticky">
@@ -330,10 +311,10 @@ const Hero = ({ content }: { content?: HeroContent }) => {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HERO_ASSETS.profileImg}
-            srcSet={HERO_ASSETS.srcSet}
-            sizes={HERO_ASSETS.sizes}
-            alt={HERO_ASSETS.profileImgAlt}
+            src={HERO_PORTRAIT.src}
+            srcSet={HERO_PORTRAIT.srcSet}
+            sizes={HERO_PORTRAIT.sizes}
+            alt={HERO_PORTRAIT.alt}
             className="hero-profile-img"
             loading="eager"
             decoding="async"
@@ -381,10 +362,10 @@ const Hero = ({ content }: { content?: HeroContent }) => {
         <div className="mobile-hero-image-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HERO_ASSETS.profileImg}
-            srcSet={HERO_ASSETS.srcSet}
-            sizes={HERO_ASSETS.sizes}
-            alt={HERO_ASSETS.profileImgAlt}
+            src={HERO_PORTRAIT.src}
+            srcSet={HERO_PORTRAIT.srcSet}
+            sizes={HERO_PORTRAIT.sizes}
+            alt={HERO_PORTRAIT.alt}
             className="mobile-hero-image"
             loading="lazy"
             decoding="async"
